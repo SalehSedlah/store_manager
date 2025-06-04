@@ -11,27 +11,32 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next-intl/navigation"; 
+import { useTranslations } from "next-intl";
+import { useParams } from 'next/navigation'; // Standard hook for params
 
 export function AppHeader() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const router = useRouter();
+  const t = useTranslations("AppHeader");
+  const tToast = useTranslations("Toast");
+  const params = useParams(); // Get locale from here
+  const locale = typeof params.locale === 'string' ? params.locale : 'en';
 
-  const toastLogoutSuccessTitle = "Logged Out";
-  const toastLogoutSuccessDescription = "You have been successfully logged out.";
-  const toastLogoutFailedTitle = "Logout Failed";
-  const userAvatarHintText = "user avatar";
-  const userInitialsFallbackText = "DV";
-  const logoutMenuItemText = "Logout";
-
+  const toastLogoutSuccessTitle = tToast("logoutSuccessTitle");
+  const toastLogoutSuccessDescription = tToast("logoutSuccessDescription");
+  const toastLogoutFailedTitle = tToast("logoutFailedTitle");
+  const userAvatarHintText = t("userAvatarHint");
+  const userInitialsFallbackText = t("userInitialsFallback");
+  const logoutMenuItemText = t("logoutMenuItemText");
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push("/login"); 
+      router.push(`/${locale}/login`); 
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }
@@ -50,6 +55,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       {isMobile && <SidebarTrigger />}
       <div className="flex-1" />
+      {/* TODO: Add Language Switcher Here */}
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -1,8 +1,7 @@
 
 "use client";
 
-import Link from "next/link"; 
-import { usePathname, useRouter } from "next/navigation"; 
+import { Link, useRouter, usePathname } from "next-intl/navigation"; 
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -22,24 +21,32 @@ import {
 import type { NavLink as NavLinkTypeDefinition } from "@/config/links"; 
 import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
+import { useParams } from 'next/navigation'; // Standard hook for params
 
 export function AppSidebar() {
-  const pathname = usePathname(); 
+  const pathname = usePathname(); // next-intl version (locale-agnostic)
+  const params = useParams(); // next/navigation version to get current locale
+  const currentLocale = typeof params.locale === 'string' ? params.locale : 'en';
+
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter(); 
   const { state: sidebarState } = useSidebar();
+  const tSidebar = useTranslations("Sidebar");
+  const tToast = useTranslations("Toast");
+  const tAppName = useTranslations("App.name");
 
-  const toastLogoutSuccessTitle = "Logged Out";
-  const toastLogoutSuccessDescription = "You have been successfully logged out.";
-  const toastLogoutFailedTitle = "Logout Failed";
-  const logoutButtonText = "Logout";
+  const toastLogoutSuccessTitle = tToast("logoutSuccessTitle");
+  const toastLogoutSuccessDescription = tToast("logoutSuccessDescription");
+  const toastLogoutFailedTitle = tToast("logoutFailedTitle");
+  const logoutButtonText = tSidebar("logout");
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push("/login"); 
+      router.push(`/login`, {locale: currentLocale}); 
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }
@@ -47,15 +54,15 @@ export function AppSidebar() {
 
   const renderNavLink = (link: NavLinkTypeDefinition, index: number) => (
     <SidebarMenuItem key={`${link.labelKey}-${index}`}>
-      <Link href={link.href} passHref legacyBehavior>
+      <Link href={link.href} passHref legacyBehavior locale={currentLocale}>
         <SidebarMenuButton
           asChild
           isActive={pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))}
-          tooltip={sidebarState === "collapsed" ? link.label : undefined} 
+          tooltip={sidebarState === "collapsed" ? tSidebar(link.labelKey as any) : undefined} 
         >
           <a>
             <link.icon />
-            <span>{link.label}</span> 
+            <span>{tSidebar(link.labelKey as any)}</span> 
           </a>
         </SidebarMenuButton>
       </Link>
@@ -65,9 +72,9 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
-        <Link href="/dashboard" className="flex items-center gap-2 text-primary"> 
+        <Link href="/dashboard" locale={currentLocale} className="flex items-center gap-2 text-primary"> 
             <TrendingUp className="h-8 w-8" />
-            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
+            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">{tAppName()}</span>}
         </Link>
       </SidebarHeader>
 

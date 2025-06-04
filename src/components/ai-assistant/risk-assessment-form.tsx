@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Debtor } from "@/types/debt";
 import { Sparkles, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { useTranslations } from "next-intl"; // Removed
+import { useTranslations } from "next-intl";
 
 const riskAssessmentFormSchema = z.object({
   debtorId: z.string().optional(), 
@@ -38,37 +38,35 @@ const riskAssessmentFormSchema = z.object({
 type RiskAssessmentFormValues = z.infer<typeof riskAssessmentFormSchema>;
 
 export function RiskAssessmentForm() {
-  // const t = useTranslations("RiskAssessmentForm"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
+  const t = useTranslations("RiskAssessmentForm");
+  const tToast = useTranslations("Toast");
   const { debtors, getDebtorById } = useDebtors();
   const { toast } = useToast();
   const [assessmentResult, setAssessmentResult] = useState<DebtorRiskAssessmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
 
-  // Hardcoded strings
-  const cardTitle = "Debtor Risk Assessment";
-  const cardDescription = "Analyze a debtor's risk profile using AI.";
-  const selectDebtorLabel = "Select Debtor (Optional)";
-  const selectDebtorPlaceholder = "Select a debtor or enter manually";
-  const selectDebtorManualOption = "Enter Manually";
-  const selectDebtorDescription = "Select an existing debtor to pre-fill some fields, or choose \"Enter Manually\".";
-  const paymentBehaviorLabel = "Payment Behavior";
-  const paymentBehaviorPlaceholder = "e.g., Consistently pays on time, occasional late payments...";
-  const debtAmountLabel = "Debt Amount ($)";
-  const creditLimitLabel = "Credit Limit ($) (Optional)";
-  const creditScoreLabel = "Credit Score (Optional)";
-  const creditScorePlaceholder = "300-850";
-  const assessRiskButtonText = "Assess Risk";
-  const assessingRiskButtonText = "Assessing Risk...";
-  const resultTitle = "Assessment Result:";
-  const riskLevelLabel = "Risk Level:";
-  const riskFactorsLabel = "Risk Factors:";
-  const suggestedActionsLabel = "Suggested Actions:";
-  const toastAssessmentCompleteTitle = "Risk Assessment Complete";
-  const toastAssessmentCompleteDescription = "AI analysis finished.";
-  const toastAssessmentFailedTitle = "Assessment Failed";
-
+  const cardTitle = t("cardTitle");
+  const cardDescription = t("cardDescription");
+  const selectDebtorLabel = t("selectDebtorLabel");
+  const selectDebtorPlaceholder = t("selectDebtorPlaceholder");
+  const selectDebtorManualOption = t("selectDebtorManualOption");
+  const selectDebtorDescription = t("selectDebtorDescription");
+  const paymentBehaviorLabel = t("paymentBehaviorLabel");
+  const paymentBehaviorPlaceholder = t("paymentBehaviorPlaceholder");
+  const debtAmountLabel = t("debtAmountLabel");
+  const creditLimitLabel = t("creditLimitLabel");
+  const creditScoreLabel = t("creditScoreLabel");
+  const creditScorePlaceholder = t("creditScorePlaceholder");
+  const assessRiskButtonText = t("assessRiskButtonText");
+  const assessingRiskButtonText = t("assessingRiskButtonText");
+  const resultTitle = t("resultTitle");
+  const riskLevelLabel = t("riskLevelLabel");
+  const riskFactorsLabel = t("riskFactorsLabel");
+  const suggestedActionsLabel = t("suggestedActionsLabel");
+  const toastAssessmentCompleteTitle = tToast("riskAssessmentCompleteTitle");
+  const toastAssessmentCompleteDescription = tToast("riskAssessmentCompleteDescription");
+  const toastAssessmentFailedTitle = tToast("riskAssessmentFailedTitle");
 
   const form = useForm<RiskAssessmentFormValues>({
     resolver: zodResolver(riskAssessmentFormSchema),

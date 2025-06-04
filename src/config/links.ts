@@ -2,29 +2,26 @@
 import type { LucideIcon } from "lucide-react";
 import { LayoutDashboard, Users, Sparkles, Settings } from "lucide-react";
 
+// NavLink label property is removed as labels will come from translation files via labelKey.
 export interface NavLink {
   href: string;
-  label: string; 
-  labelKey: string; 
+  labelKey: keyof IntlMessages["Sidebar"]; // Use keyof to ensure labelKey exists in Sidebar translations
   icon: LucideIcon;
 }
 
 export const mainNavLinks: NavLink[] = [
   {
     href: "/dashboard", 
-    label: "Dashboard", 
     labelKey: "dashboard",
     icon: LayoutDashboard,
   },
   {
     href: "/debt-management", 
-    label: "Debt Management", 
     labelKey: "debtManagement",
     icon: Users,
   },
   {
     href: "/ai-assistant", 
-    label: "AI Assistant", 
     labelKey: "aiAssistant",
     icon: Sparkles,
   },
@@ -33,7 +30,6 @@ export const mainNavLinks: NavLink[] = [
 export const secondaryNavLinks: NavLink[] = [
  /* {
     href: "/settings", 
-    label: "Settings", 
     labelKey: "settings",
     icon: Settings,
   }, */

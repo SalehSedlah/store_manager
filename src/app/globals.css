@@ -1,5 +1,8 @@
+
 /* Inter font is primary */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Cairo font for Arabic */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -42,6 +45,9 @@
     --sidebar-accent-foreground: 197 71.1% 42.7%; /* Primary color for text on hover */
     --sidebar-border: 198 30% 88%;
     --sidebar-ring: 197 71.1% 52.7%;
+
+    --font-inter: 'Inter', sans-serif;
+    --font-cairo: 'Cairo', sans-serif;
   }
 
   .dark {
@@ -90,6 +96,13 @@
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: var(--font-inter), sans-serif;
+  }
+  /* Default font for body */
+  body.font-body {
+    font-family: var(--font-inter);
+  }
+  /* Font for Arabic */
+  body.font-arabic {
+    font-family: var(--font-cairo);
   }
 }

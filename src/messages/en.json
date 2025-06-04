@@ -73,6 +73,8 @@
     "editDescription": "Update the details for this debtor.",
     "nameLabel": "Name",
     "namePlaceholder": "John Doe",
+    "phoneNumberLabel": "Phone Number (Optional)",
+    "phoneNumberPlaceholder": "+1234567890",
     "amountOwedLabel": "Amount Owed ($)",
     "creditLimitLabel": "Credit Limit ($)",
     "paymentHistoryLabel": "Payment History",
@@ -85,6 +87,7 @@
   "DebtorList": {
     "noDebtors": "No debtors found. Add a new debtor to get started.",
     "nameHeader": "Name",
+    "phoneNumberHeader": "Phone Number",
     "amountOwedHeader": "Amount Owed",
     "creditLimitHeader": "Credit Limit",
     "statusHeader": "Status",
@@ -94,14 +97,16 @@
     "statusWithinLimit": "Within Limit",
     "editAction": "Edit",
     "deleteAction": "Delete",
+    "sendSmsAction": "Send SMS",
+    "sendWhatsAppAction": "Send WhatsApp",
     "deleteDialogTitle": "Are you sure?",
     "deleteDialogDescription": "This action cannot be undone. This will permanently delete {name}'s record.",
     "deleteDialogCancel": "Cancel",
     "deleteDialogConfirm": "Delete"
   },
   "RiskAssessmentForm": {
-    "title": "Debtor Risk Assessment",
-    "description": "Analyze a debtor's risk profile using AI.",
+    "cardTitle": "Debtor Risk Assessment",
+    "cardDescription": "Analyze a debtor's risk profile using AI.",
     "selectDebtorLabel": "Select Debtor (Optional)",
     "selectDebtorPlaceholder": "Select a debtor or enter manually",
     "selectDebtorManualOption": "Enter Manually",
@@ -112,19 +117,19 @@
     "creditLimitLabel": "Credit Limit ($) (Optional)",
     "creditScoreLabel": "Credit Score (Optional)",
     "creditScorePlaceholder": "300-850",
-    "assessRiskButton": "Assess Risk",
-    "assessingRiskButton": "Assessing Risk...",
+    "assessRiskButtonText": "Assess Risk",
+    "assessingRiskButtonText": "Assessing Risk...",
     "resultTitle": "Assessment Result:",
     "riskLevelLabel": "Risk Level:",
     "riskFactorsLabel": "Risk Factors:",
     "suggestedActionsLabel": "Suggested Actions:"
   },
   "CreditSuggestionTool": {
-    "title": "Credit Limit Suggestions",
-    "description": "Let AI suggest optimal credit limits for your debtors based on their data.",
-    "generateButton": "Generate Suggestions for All Debtors",
-    "generatingButton": "Generating Suggestions...",
-    "loadingDebtorsButton": "Loading Debtors...",
+    "cardTitle": "Credit Limit Suggestions",
+    "cardDescription": "Let AI suggest optimal credit limits for your debtors based on their data.",
+    "generateButtonText": "Generate Suggestions for All Debtors",
+    "generatingButtonText": "Generating Suggestions...",
+    "loadingDebtorsButtonText": "Loading Debtors...",
     "suggestedLimitsTitle": "Suggested Limits:",
     "debtorNameHeader": "Debtor Name",
     "suggestedLimitHeader": "Suggested Limit",
@@ -163,6 +168,7 @@
   },
   "AppHeader": {
     "userAvatarHint": "user avatar",
-    "userInitialsFallback": "DV"
+    "userInitialsFallback": "DV",
+    "logoutMenuItemText": "Logout"
   }
 }

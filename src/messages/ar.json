@@ -105,8 +105,8 @@
     "deleteDialogConfirm": "حذف"
   },
   "RiskAssessmentForm": {
-    "title": "تقييم مخاطر المدين",
-    "description": "حلل ملف مخاطر المدين باستخدام الذكاء الاصطناعي.",
+    "cardTitle": "تقييم مخاطر المدين",
+    "cardDescription": "حلل ملف مخاطر المدين باستخدام الذكاء الاصطناعي.",
     "selectDebtorLabel": "اختر المدين (اختياري)",
     "selectDebtorPlaceholder": "اختر مدينًا أو أدخل يدويًا",
     "selectDebtorManualOption": "إدخال يدوي",
@@ -117,19 +117,19 @@
     "creditLimitLabel": "حد الائتمان ($) (اختياري)",
     "creditScoreLabel": "درجة الائتمان (اختياري)",
     "creditScorePlaceholder": "300-850",
-    "assessRiskButton": "تقييم المخاطر",
-    "assessingRiskButton": "جاري تقييم المخاطر...",
+    "assessRiskButtonText": "تقييم المخاطر",
+    "assessingRiskButtonText": "جاري تقييم المخاطر...",
     "resultTitle": "نتيجة التقييم:",
     "riskLevelLabel": "مستوى المخاطرة:",
     "riskFactorsLabel": "عوامل المخاطرة:",
     "suggestedActionsLabel": "الإجراءات المقترحة:"
   },
   "CreditSuggestionTool": {
-    "title": "اقتراحات حد الائتمان",
-    "description": "دع الذكاء الاصطناعي يقترح حدود ائتمان مثالية للمدينين بناءً على بياناتهم.",
-    "generateButton": "إنشاء اقتراحات لجميع المدينين",
-    "generatingButton": "جاري إنشاء الاقتراحات...",
-    "loadingDebtorsButton": "جاري تحميل المدينين...",
+    "cardTitle": "اقتراحات حد الائتمان",
+    "cardDescription": "دع الذكاء الاصطناعي يقترح حدود ائتمان مثالية للمدينين بناءً على بياناتهم.",
+    "generateButtonText": "إنشاء اقتراحات لجميع المدينين",
+    "generatingButtonText": "جاري إنشاء الاقتراحات...",
+    "loadingDebtorsButtonText": "جاري تحميل المدينين...",
     "suggestedLimitsTitle": "الحدود المقترحة:",
     "debtorNameHeader": "اسم المدين",
     "suggestedLimitHeader": "الحد المقترح",
@@ -168,6 +168,7 @@
   },
   "AppHeader": {
     "userAvatarHint": "الصورة الرمزية للمستخدم",
-    "userInitialsFallback": "DV"
+    "userInitialsFallback": "DV",
+    "logoutMenuItemText": "تسجيل الخروج"
   }
 }

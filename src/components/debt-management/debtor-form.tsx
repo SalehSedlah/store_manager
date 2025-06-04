@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-// import { useTranslations } from "next-intl"; // Removed
+import { useTranslations } from "next-intl";
 
 const debtorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50),
@@ -51,32 +51,31 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
   const { addDebtor, updateDebtor } = useDebtors();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  // const t = useTranslations("DebtorForm"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
+  const t = useTranslations("DebtorForm");
+  const tToast = useTranslations("Toast");
 
-  // Hardcoded strings
-  const addTitle = "Add New Debtor";
-  const addDescription = "Enter the details for the new debtor.";
-  const editTitle = "Edit Debtor";
-  const editDescription = "Update the details for this debtor.";
-  const nameLabel = "Name";
-  const namePlaceholder = "John Doe";
-  const phoneNumberLabel = "Phone Number (Optional)";
-  const phoneNumberPlaceholder = "+1234567890";
-  const amountOwedLabel = "Amount Owed ($)";
-  const creditLimitLabel = "Credit Limit ($)";
-  const paymentHistoryLabel = "Payment History";
-  const paymentHistoryPlaceholder = "e.g., Consistently pays on time.";
-  const cancelButton = "Cancel";
-  const addButtonText = "Add Debtor";
-  const saveButtonText = "Save Changes";
-  const savingButtonText = "Saving...";
+  const addTitle = t("addTitle");
+  const addDescription = t("addDescription");
+  const editTitle = t("editTitle");
+  const editDescription = t("editDescription");
+  const nameLabel = t("nameLabel");
+  const namePlaceholder = t("namePlaceholder");
+  const phoneNumberLabel = t("phoneNumberLabel");
+  const phoneNumberPlaceholder = t("phoneNumberPlaceholder");
+  const amountOwedLabel = t("amountOwedLabel");
+  const creditLimitLabel = t("creditLimitLabel");
+  const paymentHistoryLabel = t("paymentHistoryLabel");
+  const paymentHistoryPlaceholder = t("paymentHistoryPlaceholder");
+  const cancelButton = t("cancelButton");
+  const addButtonText = t("addButton");
+  const saveButtonText = t("saveButton");
+  const savingButtonText = t("savingButton");
 
-  const toastDebtorUpdatedTitle = "Debtor Updated";
-  const toastDebtorUpdatedDescription = (name: string) => `${name} has been updated.`;
-  const toastDebtorAddedTitle = "Debtor Added";
-  const toastDebtorAddedDescription = (name: string) => `${name} has been added.`;
-  const toastErrorTitle = "Error";
+  const toastDebtorUpdatedTitle = tToast("debtorUpdatedTitle");
+  const toastDebtorUpdatedDescription = (name: string) => tToast("debtorUpdatedDescription", { name });
+  const toastDebtorAddedTitle = tToast("debtorAddedTitle");
+  const toastDebtorAddedDescription = (name: string) => tToast("debtorAddedDescription", { name });
+  const toastErrorTitle = tToast("errorTitle");
 
   const form = useForm<DebtorFormValues>({
     resolver: zodResolver(debtorFormSchema),
