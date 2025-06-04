@@ -22,20 +22,20 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const appName = "DebtVision";
-  const pageTitle = "Create Account";
-  const pageDescription = "Join DebtVision today";
-  const emailLabel = "Email";
+  const appName = "DebtVision | رؤية الديون";
+  const pageTitle = "إنشاء حساب";
+  const pageDescription = "انضم إلى DebtVision اليوم";
+  const emailLabel = "البريد الإلكتروني";
   const emailPlaceholder = "you@example.com";
-  const passwordLabel = "Password";
-  const confirmPasswordLabel = "Confirm Password";
-  const signupButtonText = "Sign Up";
-  const loadingSignupButtonText = "Creating account...";
-  const loginPromptText = "Already have an account?";
-  const loginLinkText = "Login";
-  const toastSignupSuccessTitle = "Signup Successful";
-  const toastSignupSuccessDescription = "Redirecting to dashboard...";
-  const toastSignupFailedTitle = "Signup Failed";
+  const passwordLabel = "كلمة المرور";
+  const confirmPasswordLabel = "تأكيد كلمة المرور";
+  const signupButtonText = "إنشاء حساب";
+  const loadingSignupButtonText = "جاري إنشاء الحساب...";
+  const loginPromptText = "هل لديك حساب بالفعل؟";
+  const loginLinkText = "تسجيل الدخول";
+  const toastSignupSuccessTitle = "تم إنشاء الحساب بنجاح";
+  const toastSignupSuccessDescription = "جاري التوجيه إلى لوحة التحكم...";
+  const toastSignupFailedTitle = "فشل إنشاء الحساب";
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +43,7 @@ export default function SignupPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      const specificError = "Passwords do not match.";
+      const specificError = "كلمتا المرور غير متطابقتين.";
       setError(specificError);
       toast({ title: toastSignupFailedTitle, description: specificError, variant: "destructive" });
       setLoading(false);
@@ -57,11 +57,11 @@ export default function SignupPage() {
     } catch (err: any) {
       let errorMessage = err.message;
        if (err.code === "auth/email-already-in-use") {
-        errorMessage = "This email address is already in use.";
+        errorMessage = "عنوان البريد الإلكتروني هذا مستخدم بالفعل.";
       } else if (err.code === "auth/weak-password") {
-        errorMessage = "The password is too weak. Please use a stronger password.";
+        errorMessage = "كلمة المرور ضعيفة جدًا. يرجى استخدام كلمة مرور أقوى.";
       } else if (err.code === "auth/invalid-email") {
-        errorMessage = "The email address is not valid.";
+        errorMessage = "عنوان البريد الإلكتروني غير صالح.";
       }
       setError(errorMessage);
       toast({ title: toastSignupFailedTitle, description: errorMessage, variant: "destructive" });
@@ -73,7 +73,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="flex items-center mb-8 text-primary">
-        <TrendingUp className="h-10 w-10 mr-3 rtl:ml-3 rtl:mr-0" />
+        <TrendingUp className="h-10 w-10 ml-3 rtl:mr-0 rtl:ml-3" />
         <h1 className="text-4xl font-headline font-bold">{appName}</h1>
       </div>
       <Card className="w-full max-w-md shadow-xl">

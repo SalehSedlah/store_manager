@@ -19,12 +19,12 @@ export function AppHeader() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const toastLogoutSuccessTitle = "Logged Out";
-  const toastLogoutSuccessDescription = "You have been successfully logged out.";
-  const toastLogoutFailedTitle = "Logout Failed";
-  const userAvatarHintText = "user avatar";
-  const userInitialsFallbackText = "DV";
-  const logoutMenuItemText = "Logout";
+  const toastLogoutSuccessTitle = "تم تسجيل الخروج";
+  const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح.";
+  const toastLogoutFailedTitle = "فشل تسجيل الخروج";
+  const userAvatarHintText = "الصورة الرمزية للمستخدم";
+  const userInitialsFallbackText = "DV"; //  "ر د" for "رؤية ديون" if preferred
+  const logoutMenuItemText = "تسجيل الخروج";
 
   const handleLogout = async () => {
     try {
@@ -54,16 +54,16 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || "User"} data-ai-hint={userAvatarHintText} />
+                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || "مستخدم"} data-ai-hint={userAvatarHintText} />
                 <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="font-normal">
+            <DropdownMenuLabel className="font-normal text-right">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user.displayName || "User"}
+                  {user.displayName || "مستخدم"}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user.email}
@@ -71,9 +71,9 @@ export function AppHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
+            <DropdownMenuItem onClick={handleLogout} className="flex justify-end">
               <span>{logoutMenuItemText}</span>
+              <LogOut className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

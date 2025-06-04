@@ -15,28 +15,29 @@ export default function DashboardPage() {
   const [aiSummary, setAiSummary] = useState<DebtSummaryOutput | null>(null);
   const [loadingAiSummary, setLoadingAiSummary] = useState(false);
 
-  const pageTitle = "Dashboard"; 
-  const totalDebtTitle = "Total Debt";
-  const totalDebtDesc = (utilization: string) => `${utilization}% of credit limits utilized`;
-  const totalDebtorsTitle = "Total Debtors";
-  const totalDebtorsDesc = "Active debtors being tracked";
-  const avgDebtTitle = "Avg. Debt per Debtor";
-  const avgDebtDesc = "Average amount owed";
-  const debtorsOverLimitTitle = "Debtors Over Limit";
-  const debtorsOverLimitDesc = "Exceeding credit limits";
-  const aiOverviewTitle = "AI Debt Overview";
-  const aiOverviewDesc = "Insights and recommendations based on your current debt portfolio.";
-  const refreshButtonText = "Refresh Summary";
-  const refreshingButtonText = "Refreshing...";
-  const aiSummaryTitle = "Summary";
-  const aiRiskTitle = "Risk Assessment";
-  const aiRecsTitle = "Recommendations";
-  const aiNoDataSummary = "No debtor data available to generate a summary.";
-  const aiNoDataRisk = "N/A";
-  const aiNoDataRecs = "Add debtor information to get an AI-powered summary and recommendations.";
-  const aiErrorSummary = "Error generating AI summary.";
-  const aiErrorRisk = "Could not assess risk.";
-  const aiErrorRecs = "Please try again later.";
+  const pageTitle = "لوحة التحكم"; 
+  const totalDebtTitle = "إجمالي الديون";
+  const totalDebtDesc = (utilization: string) => `تم استخدام ${utilization}% من الحدود الائتمانية`;
+  const totalDebtorsTitle = "إجمالي المدينين";
+  const totalDebtorsDesc = "المدينون النشطون قيد التتبع";
+  const avgDebtTitle = "متوسط الدين لكل مدين";
+  const avgDebtDesc = "متوسط المبلغ المستحق";
+  const debtorsOverLimitTitle = "المدينون المتجاوزون للحد";
+  const debtorsOverLimitDesc = "تجاوزوا الحدود الائتمانية";
+  const aiOverviewTitle = "نظرة عامة على الديون بالذكاء الاصطناعي";
+  const aiOverviewDesc = "رؤى وتوصيات بناءً على محفظة ديونك الحالية.";
+  const refreshButtonText = "تحديث الملخص";
+  const refreshingButtonText = "جاري التحديث...";
+  const aiSummaryTitle = "الملخص";
+  const aiRiskTitle = "تقييم المخاطر";
+  const aiRecsTitle = "التوصيات";
+  const aiNoDataSummary = "لا توجد بيانات مدينين متاحة لإنشاء ملخص.";
+  const aiNoDataRisk = "غير متاح";
+  const aiNoDataRecs = "أضف معلومات المدينين للحصول على ملخص وتوصيات مدعومة بالذكاء الاصطناعي.";
+  const aiErrorSummary = "خطأ في إنشاء ملخص الذكاء الاصطناعي.";
+  const aiErrorRisk = "تعذر تقييم المخاطر.";
+  const aiErrorRecs = "يرجى المحاولة مرة أخرى لاحقًا.";
+
 
   const stats = useMemo(() => {
     const totalDebt = debtors.reduce((sum, d) => sum + d.amountOwed, 0);
@@ -78,7 +79,7 @@ export default function DashboardPage() {
       const summary = await getDebtSummary(input);
       setAiSummary(summary);
     } catch (error) {
-      console.error("Error fetching AI summary:", error);
+      console.error("خطأ في جلب ملخص الذكاء الاصطناعي:", error);
       setAiSummary({
         summary: aiErrorSummary,
         riskAssessment: aiErrorRisk,
@@ -103,28 +104,28 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <SummaryCard
           title={totalDebtTitle}
-          value={`$${stats.totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${stats.totalDebt.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={DollarSign}
           isLoading={loadingDebtors}
           description={totalDebtDesc(stats.creditLimitUtilization.toFixed(1))}
         />
         <SummaryCard
           title={totalDebtorsTitle}
-          value={stats.numberOfDebtors}
+          value={stats.numberOfDebtors.toLocaleString('ar-EG')}
           icon={Users}
           isLoading={loadingDebtors}
           description={totalDebtorsDesc}
         />
         <SummaryCard
           title={avgDebtTitle}
-          value={`$${stats.averageDebtPerDebtor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`$${stats.averageDebtPerDebtor.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={BarChartBig}
           isLoading={loadingDebtors}
           description={avgDebtDesc}
         />
         <SummaryCard
           title={debtorsOverLimitTitle}
-          value={stats.debtorsOverLimit}
+          value={stats.debtorsOverLimit.toLocaleString('ar-EG')}
           icon={AlertTriangle}
           isLoading={loadingDebtors}
           description={debtorsOverLimitDesc}
@@ -135,7 +136,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-xl font-headline flex items-center">
-              <Sparkles className="h-6 w-6 mr-2 rtl:ml-2 rtl:mr-0 text-primary" />
+              <Sparkles className="h-6 w-6 ml-2 rtl:mr-2 rtl:ml-0 text-primary" />
               {aiOverviewTitle}
             </CardTitle>
             <CardDescription>{aiOverviewDesc}</CardDescription>
@@ -170,7 +171,7 @@ export default function DashboardPage() {
               </div>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">Click "{refreshButtonText}" to generate insights.</p>
+            <p className="text-sm text-muted-foreground">انقر فوق "{refreshButtonText}" لإنشاء رؤى.</p>
           )}
         </CardContent>
       </Card>

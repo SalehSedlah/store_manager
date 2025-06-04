@@ -1,11 +1,9 @@
 
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, Users, Sparkles, Settings, ShoppingCart } from "lucide-react"; // Added ShoppingCart icon
+import { LayoutDashboard, Users, Sparkles, Settings, ShoppingCart } from "lucide-react";
 
-// NavLink label property is removed as labels will come from translation files via labelKey.
 export interface NavLink {
   href: string;
-  // labelKey refers to a key in a hardcoded map in AppSidebar for now
   labelKey: "dashboard" | "debtManagement" | "aiAssistant" | "products" | "settings"; 
   icon: LucideIcon;
 }
@@ -22,7 +20,7 @@ export const mainNavLinks: NavLink[] = [
     icon: Users,
   },
   {
-    href: "/products", // New link for Products
+    href: "/products",
     labelKey: "products",
     icon: ShoppingCart,
   },

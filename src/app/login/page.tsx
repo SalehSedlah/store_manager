@@ -21,19 +21,19 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const appName = "DebtVision";
-  const pageTitle = "Login";
-  const pageDescription = "Access your DebtVision account";
-  const emailLabel = "Email";
+  const appName = "DebtVision | رؤية الديون";
+  const pageTitle = "تسجيل الدخول";
+  const pageDescription = "قم بالوصول إلى حساب DebtVision الخاص بك";
+  const emailLabel = "البريد الإلكتروني";
   const emailPlaceholder = "you@example.com";
-  const passwordLabel = "Password";
-  const loginButtonText = "Login";
-  const loadingLoginButtonText = "Logging in...";
-  const signupPromptText = "Don't have an account?";
-  const signupLinkText = "Sign up";
-  const toastLoginSuccessTitle = "Login Successful";
-  const toastLoginSuccessDescription = "Redirecting to dashboard...";
-  const toastLoginFailedTitle = "Login Failed";
+  const passwordLabel = "كلمة المرور";
+  const loginButtonText = "تسجيل الدخول";
+  const loadingLoginButtonText = "جاري تسجيل الدخول...";
+  const signupPromptText = "ليس لديك حساب؟";
+  const signupLinkText = "إنشاء حساب";
+  const toastLoginSuccessTitle = "تم تسجيل الدخول بنجاح";
+  const toastLoginSuccessDescription = "جاري التوجيه إلى لوحة التحكم...";
+  const toastLoginFailedTitle = "فشل تسجيل الدخول";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,9 +46,9 @@ export default function LoginPage() {
     } catch (err: any) {
       let errorMessage = err.message;
       if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        errorMessage = "Invalid email or password.";
+        errorMessage = "البريد الإلكتروني أو كلمة المرور غير صالحة.";
       } else if (err.code === "auth/invalid-email") {
-        errorMessage = "The email address is not valid.";
+        errorMessage = "عنوان البريد الإلكتروني غير صالح.";
       }
       setError(errorMessage);
       toast({ title: toastLoginFailedTitle, description: errorMessage, variant: "destructive" });
@@ -60,7 +60,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="flex items-center mb-8 text-primary">
-        <TrendingUp className="h-10 w-10 mr-3 rtl:ml-3 rtl:mr-0" />
+        <TrendingUp className="h-10 w-10 ml-3 rtl:mr-0 rtl:ml-3" />
         <h1 className="text-4xl font-headline font-bold">{appName}</h1>
       </div>
       <Card className="w-full max-w-md shadow-xl">

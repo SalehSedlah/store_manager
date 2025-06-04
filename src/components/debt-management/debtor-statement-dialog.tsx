@@ -25,15 +25,12 @@ interface DebtorStatementDialogProps {
 }
 
 export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenChange }: DebtorStatementDialogProps) {
-  const { getDebtorById, calculateAmountOwed } = useDebtors();
+  const { getDebtorById } = useDebtors();
   const [showAddTransactionForm, setShowAddTransactionForm] = useState(false);
-
-  // Use internal state for debtor to reflect updates from transactions
   const [currentDebtor, setCurrentDebtor] = useState<Debtor | null>(initialDebtor);
 
   useEffect(() => {
     if (initialDebtor?.id) {
-      // Re-fetch debtor from context if ID changes or dialog opens, to get latest transactions
       const updatedDebtorFromContext = getDebtorById(initialDebtor.id);
       setCurrentDebtor(updatedDebtorFromContext || null);
     } else {
@@ -42,33 +39,33 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
   }, [initialDebtor, getDebtorById, isOpen]);
 
 
-  const dialogTitle = "Debtor Account Statement";
-  const debtorNameLabel = "Debtor:";
-  const currentBalanceLabel = "Current Balance:";
-  const transactionsHeader = "Transactions";
-  const dateHeader = "Date";
-  const typeHeader = "Type";
-  const descriptionHeader = "Description";
-  const amountHeader = "Amount";
-  const runningBalanceHeader = "Balance";
-  const noTransactionsText = "No transactions recorded for this debtor yet.";
-  const addTransactionButtonText = "Add New Transaction";
-  const closeButtonText = "Close";
+  const dialogTitle = "كشف حساب المدين";
+  const debtorNameLabel = "المدين:";
+  const currentBalanceLabel = "الرصيد الحالي:";
+  const transactionsHeader = "المعاملات";
+  const dateHeader = "التاريخ";
+  const typeHeader = "النوع";
+  const descriptionHeader = "الوصف";
+  const amountHeader = "المبلغ";
+  const runningBalanceHeader = "الرصيد";
+  const noTransactionsText = "لا توجد معاملات مسجلة لهذا المدين حتى الآن.";
+  const addTransactionButtonText = "إضافة معاملة جديدة";
+  const closeButtonText = "إغلاق";
 
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+    return amount.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' }); // Assuming SAR for Arabic
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString('ar-EG');
   };
 
   const transactionTypeLabels: Record<Transaction['type'], string> = {
-    initial_balance: "Initial Balance",
-    payment: "Payment",
-    new_credit: "New Credit",
-    adjustment_increase: "Adjustment (Inc.)",
-    adjustment_decrease: "Adjustment (Dec.)",
+    initial_balance: "رصيد افتتاحي",
+    payment: "دفعة",
+    new_credit: "دين جديد",
+    adjustment_increase: "تسوية (زيادة)",
+    adjustment_decrease: "تسوية (نقصان)",
   };
   
   const sortedTransactions = useMemo(() => {
@@ -95,8 +92,7 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
   }, [sortedTransactions]);
 
   const handleTransactionAdded = () => {
-    setShowAddTransactionForm(false); // Hide form after adding
-    // Re-fetch/update currentDebtor to reflect new transaction and balance
+    setShowAddTransactionForm(false);
     if (currentDebtor?.id) {
       setCurrentDebtor(getDebtorById(currentDebtor.id) || null);
     }
@@ -116,7 +112,7 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
         
         <div className="my-4">
           <Button onClick={() => setShowAddTransactionForm(!showAddTransactionForm)} variant="outline">
-            {showAddTransactionForm ? "Cancel Adding Transaction" : addTransactionButtonText}
+            {showAddTransactionForm ? "إلغاء إضافة معاملة" : addTransactionButtonText}
           </Button>
           {showAddTransactionForm && (
             <AddTransactionForm debtorId={currentDebtor.id} onTransactionAdded={handleTransactionAdded} />
@@ -132,8 +128,8 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
                   <TableHead>{dateHeader}</TableHead>
                   <TableHead>{typeHeader}</TableHead>
                   <TableHead>{descriptionHeader}</TableHead>
-                  <TableHead className="text-right rtl:text-left">{amountHeader}</TableHead>
-                  <TableHead className="text-right rtl:text-left">{runningBalanceHeader}</TableHead>
+                  <TableHead className="text-left rtl:text-right">{amountHeader}</TableHead>
+                  <TableHead className="text-left rtl:text-right">{runningBalanceHeader}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -147,12 +143,12 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
                          {transactionTypeLabels[tx.type] || tx.type}
                        </Badge>
                     </TableCell>
-                    <TableCell className="text-sm">{tx.description || "N/A"}</TableCell>
-                    <TableCell className={`text-right rtl:text-left font-medium ${tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'text-green-600' : 'text-red-600'}`}>
+                    <TableCell className="text-sm">{tx.description || "غير متاح"}</TableCell>
+                    <TableCell className={`text-left rtl:text-right font-medium ${tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'text-green-600' : 'text-red-600'}`}>
                       {tx.type === 'payment' || tx.type === 'adjustment_decrease' ? '-' : '+'}
                       {formatCurrency(tx.amount)}
                     </TableCell>
-                    <TableCell className="text-right rtl:text-left font-semibold">{formatCurrency(tx.runningBalance)}</TableCell>
+                    <TableCell className="text-left rtl:text-right font-semibold">{formatCurrency(tx.runningBalance)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

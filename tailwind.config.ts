@@ -12,8 +12,8 @@ export default {
     extend: {
       fontFamily: {
         body: ['var(--font-inter)', 'sans-serif'], 
-        headline: ['var(--font-inter)', 'sans-serif'],
-        // arabic font removed
+        headline: ['var(--font-inter)', 'sans-serif'], // Can be changed to Cairo for headlines too if desired
+        arabic: ['var(--font-cairo)', 'sans-serif'],
         code: ['monospace', 'monospace'],
       },
       colors: {

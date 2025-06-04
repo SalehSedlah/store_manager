@@ -31,21 +31,19 @@ import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
-// Schema for adding a new debtor, 'initialAmount' is for the first transaction.
 const addDebtorFormSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50),
-  phoneNumber: z.string().max(25, {message: "Phone number is too long."}).optional().or(z.literal('')),
-  initialAmount: z.coerce.number().min(0, { message: "Initial amount owed must be positive." }),
-  creditLimit: z.coerce.number().min(0, { message: "Credit limit must be positive." }),
-  paymentHistory: z.string().min(3, {message: "Payment history description is too short."}).max(200, {message: "Payment history is too long."}),
+  name: z.string().min(2, { message: "يجب أن يتكون الاسم من حرفين على الأقل." }).max(50),
+  phoneNumber: z.string().max(25, {message: "رقم الهاتف طويل جدًا."}).optional().or(z.literal('')),
+  initialAmount: z.coerce.number().min(0, { message: "يجب أن يكون المبلغ الأولي المستحق موجبًا." }),
+  creditLimit: z.coerce.number().min(0, { message: "يجب أن يكون الحد الائتماني موجبًا." }),
+  paymentHistory: z.string().min(3, {message: "وصف سجل الدفع قصير جدًا."}).max(200, {message: "وصف سجل الدفع طويل جدًا."}),
 });
 
-// Schema for editing debtor's core info (excluding financial transactions which are handled separately)
 const editDebtorInfoFormSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50),
-  phoneNumber: z.string().max(25, {message: "Phone number is too long."}).optional().or(z.literal('')),
-  creditLimit: z.coerce.number().min(0, { message: "Credit limit must be positive." }),
-  paymentHistory: z.string().min(3, {message: "Payment history description is too short."}).max(200, {message: "Payment history is too long."}),
+  name: z.string().min(2, { message: "يجب أن يتكون الاسم من حرفين على الأقل." }).max(50),
+  phoneNumber: z.string().max(25, {message: "رقم الهاتف طويل جدًا."}).optional().or(z.literal('')),
+  creditLimit: z.coerce.number().min(0, { message: "يجب أن يكون الحد الائتماني موجبًا." }),
+  paymentHistory: z.string().min(3, {message: "وصف سجل الدفع قصير جدًا."}).max(200, {message: "وصف سجل الدفع طويل جدًا."}),
 });
 
 
@@ -54,7 +52,7 @@ type EditDebtorInfoFormValues = z.infer<typeof editDebtorInfoFormSchema>;
 
 
 interface DebtorFormProps {
-  debtor?: Debtor; // If provided, it's an edit operation for info. Otherwise, add.
+  debtor?: Debtor;
   onFormSubmit?: () => void;
   triggerButton?: React.ReactNode;
 }
@@ -68,28 +66,28 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
 
   const formSchema = isEditing ? editDebtorInfoFormSchema : addDebtorFormSchema;
 
-  const addTitle = "Add New Debtor";
-  const addDescription = "Enter the details for the new debtor and their initial balance.";
-  const editTitle = "Edit Debtor Information";
-  const editDescription = "Update the contact and credit limit details for this debtor. Financial transactions are managed in the statement view.";
-  const nameLabel = "Name";
-  const namePlaceholder = "John Doe";
-  const phoneNumberLabel = "Phone Number (Optional)";
-  const phoneNumberPlaceholder = "+1234567890";
-  const initialAmountLabel = "Initial Amount Owed ($)"; // For new debtors
-  const creditLimitLabel = "Credit Limit ($)";
-  const paymentHistoryLabel = "Payment History Summary";
-  const paymentHistoryPlaceholder = "e.g., Consistently pays on time.";
-  const cancelButton = "Cancel";
-  const addButtonText = "Add Debtor";
-  const saveButtonText = "Save Changes";
-  const savingButtonText = "Saving...";
+  const addTitle = "إضافة مدين جديد";
+  const addDescription = "أدخل تفاصيل المدين الجديد ورصيده الأولي.";
+  const editTitle = "تعديل معلومات المدين";
+  const editDescription = "قم بتحديث تفاصيل الاتصال والحد الائتماني لهذا المدين. تتم إدارة المعاملات المالية في عرض كشف الحساب.";
+  const nameLabel = "الاسم";
+  const namePlaceholder = "فلان الفلاني";
+  const phoneNumberLabel = "رقم الهاتف (اختياري)";
+  const phoneNumberPlaceholder = "05xxxxxxxx";
+  const initialAmountLabel = "المبلغ الأولي المستحق (بالعملة المحلية)";
+  const creditLimitLabel = "الحد الائتماني (بالعملة المحلية)";
+  const paymentHistoryLabel = "ملخص سجل الدفع";
+  const paymentHistoryPlaceholder = "مثال: يدفع بانتظام في الوقت المحدد.";
+  const cancelButton = "إلغاء";
+  const addButtonText = "إضافة مدين";
+  const saveButtonText = "حفظ التغييرات";
+  const savingButtonText = "جاري الحفظ...";
 
-  const toastDebtorUpdatedTitle = "Debtor Info Updated";
-  const toastDebtorUpdatedDescription = (name: string) => `${name}'s information has been updated.`;
-  const toastDebtorAddedTitle = "Debtor Added";
-  const toastDebtorAddedDescription = (name: string) => `${name} has been added with an initial balance.`;
-  const toastErrorTitle = "Error";
+  const toastDebtorUpdatedTitle = "تم تحديث معلومات المدين";
+  const toastDebtorUpdatedDescription = (name: string) => `تم تحديث معلومات ${name}.`;
+  const toastDebtorAddedTitle = "تمت إضافة المدين";
+  const toastDebtorAddedDescription = (name: string) => `تمت إضافة ${name} برصيد أولي.`;
+  const toastErrorTitle = "خطأ";
 
   const form = useForm<AddDebtorFormValues | EditDebtorInfoFormValues>({
     resolver: zodResolver(formSchema),
@@ -121,7 +119,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debtor, isEditing, isOpen]); // form removed from deps to prevent reset loop
+  }, [debtor, isEditing, isOpen]);
 
   function onSubmit(data: AddDebtorFormValues | EditDebtorInfoFormValues) {
     try {
@@ -136,7 +134,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
       }
       setIsOpen(false);
       if (onFormSubmit) onFormSubmit();
-      form.reset(); // Reset form after successful submission
+      form.reset();
     } catch (error: any) {
       toast({ title: toastErrorTitle, description: error.message, variant: "destructive" });
     }
@@ -214,9 +212,9 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
             </div>
              {isEditing && (
                  <FormItem>
-                    <FormLabel>Current Amount Owed</FormLabel>
-                    <Input type="text" value={`$${debtor?.amountOwed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} readOnly disabled className="bg-muted/50"/>
-                    <FormDescription>This amount is calculated from transactions. Add payments or new credit via "View Statement".</FormDescription>
+                    <FormLabel>المبلغ الحالي المستحق</FormLabel>
+                    <Input type="text" value={`$${debtor?.amountOwed.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} readOnly disabled className="bg-muted/50"/>
+                    <FormDescription>يتم احتساب هذا المبلغ من المعاملات. أضف الدفعات أو الائتمان الجديد عبر "عرض كشف الحساب".</FormDescription>
                  </FormItem>
              )}
             <FormField
@@ -228,7 +226,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
                   <FormControl>
                     <Textarea placeholder={paymentHistoryPlaceholder} {...field} />
                   </FormControl>
-                  <FormDescription>A general summary of payment behavior for quick reference or AI analysis.</FormDescription>
+                  <FormDescription>ملخص عام لسلوك الدفع للرجوع السريع أو تحليل الذكاء الاصطناعي.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

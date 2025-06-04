@@ -26,37 +26,36 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast"; // Toast is handled by context now
 import { Skeleton } from "../ui/skeleton";
 
 export function ProductList() {
   const { products, deleteProduct, loadingProducts } = useProducts();
-  const { toast } = useToast();
+  // const { toast } = useToast(); // Toast is handled by context
 
-  const noProductsText = "No products found. Add a new product to get started.";
-  const nameHeader = "Name";
-  const categoryHeader = "Category";
-  const unitHeader = "Unit";
-  const currentStockHeader = "Current Stock";
-  const lowStockThresholdHeader = "Low Stock Threshold";
-  const statusHeader = "Status";
-  const lastUpdatedHeader = "Last Updated";
-  const actionsHeader = "Actions";
+  const noProductsText = "لم يتم العثور على منتجات. قم بإضافة منتج جديد للبدء.";
+  const nameHeader = "الاسم";
+  const categoryHeader = "الفئة";
+  const unitHeader = "الوحدة";
+  const currentStockHeader = "المخزون الحالي";
+  const lowStockThresholdHeader = "حد المخزون المنخفض";
+  const statusHeader = "الحالة";
+  const lastUpdatedHeader = "آخر تحديث";
+  const actionsHeader = "الإجراءات";
   
-  const statusLowStock = "Low Stock";
-  const statusInStock = "In Stock";
-  const statusOutOfStock = "Out of Stock";
+  const statusLowStock = "مخزون منخفض";
+  const statusInStock = "متوفر";
+  const statusOutOfStock = "نفد المخزون";
 
-  const editActionText = "Edit Product";
-  const deleteActionText = "Delete Product";
-  const deleteDialogTitle = "Are you sure?";
-  const deleteDialogDescription = (name: string) => `This action cannot be undone. This will permanently delete the product: ${name}.`;
-  const deleteDialogCancel = "Cancel";
-  const deleteDialogConfirm = "Delete";
+  const editActionText = "تعديل المنتج";
+  const deleteActionText = "حذف المنتج";
+  const deleteDialogTitle = "هل أنت متأكد؟";
+  const deleteDialogDescription = (name: string) => `لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف المنتج: ${name} بشكل دائم.`;
+  const deleteDialogCancel = "إلغاء";
+  const deleteDialogConfirm = "حذف";
 
   const handleDelete = (id: string, name: string) => {
     deleteProduct(id);
-    // Toast is handled by context
   };
 
   if (loadingProducts) {
@@ -81,18 +80,18 @@ export function ProductList() {
             <TableHead>{nameHeader}</TableHead>
             <TableHead>{categoryHeader}</TableHead>
             <TableHead>{unitHeader}</TableHead>
-            <TableHead className="text-right rtl:text-left">{currentStockHeader}</TableHead>
-            <TableHead className="text-right rtl:text-left">{lowStockThresholdHeader}</TableHead>
+            <TableHead className="text-left rtl:text-right">{currentStockHeader}</TableHead>
+            <TableHead className="text-left rtl:text-right">{lowStockThresholdHeader}</TableHead>
             <TableHead>{statusHeader}</TableHead>
-            <TableHead className="text-right rtl:text-left">{lastUpdatedHeader}</TableHead>
-            <TableHead className="text-right rtl:text-left">{actionsHeader}</TableHead>
+            <TableHead className="text-left rtl:text-right">{lastUpdatedHeader}</TableHead>
+            <TableHead className="text-left rtl:text-right">{actionsHeader}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.map((product) => {
             const isLowStock = product.currentStock <= product.lowStockThreshold && product.currentStock > 0;
             const isOutOfStock = product.currentStock === 0;
-            const lastUpdatedFormatted = new Date(product.lastUpdated).toLocaleDateString();
+            const lastUpdatedFormatted = new Date(product.lastUpdated).toLocaleDateString('ar-EG');
             
             let statusBadge;
             if (isOutOfStock) {
@@ -108,24 +107,24 @@ export function ProductList() {
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{product.category}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{product.unit}</TableCell>
-                <TableCell className="text-right rtl:text-left font-semibold">{product.currentStock}</TableCell>
-                <TableCell className="text-right rtl:text-left">{product.lowStockThreshold}</TableCell>
+                <TableCell className="text-left rtl:text-right font-semibold">{product.currentStock.toLocaleString('ar-EG')}</TableCell>
+                <TableCell className="text-left rtl:text-right">{product.lowStockThreshold.toLocaleString('ar-EG')}</TableCell>
                 <TableCell>{statusBadge}</TableCell>
-                <TableCell className="text-right rtl:text-left text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
-                <TableCell className="text-right rtl:text-left">
+                <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
+                <TableCell className="text-left rtl:text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu for {product.name}</span>
+                        <span className="sr-only">فتح القائمة لـ {product.name}</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="start"> {/* Changed to start for RTL */}
                       <ProductForm
                         product={product}
                         triggerButton={
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Edit className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {editActionText}
+                            <Edit className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {editActionText}
                           </DropdownMenuItem>
                         }
                       />
@@ -133,7 +132,7 @@ export function ProductList() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {deleteActionText}
+                            <Trash2 className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {deleteActionText}
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

@@ -20,17 +20,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useDebtors } from "@/contexts/debtors-context";
 
 const transactionTypes: { value: TransactionType; label: string }[] = [
-  { value: "payment", label: "Payment Received" },
-  { value: "new_credit", label: "New Credit Issued" },
-  { value: "adjustment_increase", label: "Adjustment (Increase Debt)" },
-  { value: "adjustment_decrease", label: "Adjustment (Decrease Debt)" },
+  { value: "payment", label: "دفعة مستلمة" },
+  { value: "new_credit", label: "دين جديد صادر" },
+  { value: "adjustment_increase", label: "تسوية (زيادة الدين)" },
+  { value: "adjustment_decrease", label: "تسوية (تخفيض الدين)" },
 ];
 
 const addTransactionFormSchema = z.object({
   type: z.custom<TransactionType>((val) => transactionTypes.map(t => t.value).includes(val as TransactionType), {
-    message: "Invalid transaction type",
+    message: "نوع معاملة غير صالح",
   }),
-  amount: z.coerce.number().min(0.01, { message: "Amount must be greater than 0." }),
+  amount: z.coerce.number().min(0.01, { message: "يجب أن يكون المبلغ أكبر من 0." }),
   description: z.string().optional(),
 });
 
@@ -38,7 +38,7 @@ type AddTransactionFormValues = z.infer<typeof addTransactionFormSchema>;
 
 interface AddTransactionFormProps {
   debtorId: string;
-  onTransactionAdded: () => void; // Callback to close dialog or refresh
+  onTransactionAdded: () => void;
 }
 
 export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransactionFormProps) {
@@ -59,13 +59,12 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
     onTransactionAdded();
   }
   
-  const typeLabel = "Transaction Type";
-  const amountLabel = "Amount ($)";
-  const descriptionLabel = "Description (Optional)";
-  const descriptionPlaceholder = "e.g., Monthly payment, Goods purchased";
-  const addButtonText = "Add Transaction";
-  const addingButtonText = "Adding...";
-
+  const typeLabel = "نوع المعاملة";
+  const amountLabel = "المبلغ (بالعملة المحلية)";
+  const descriptionLabel = "الوصف (اختياري)";
+  const descriptionPlaceholder = "مثال: دفعة شهرية، بضاعة مشتراة";
+  const addButtonText = "إضافة معاملة";
+  const addingButtonText = "جاري الإضافة...";
 
   return (
     <Form {...form}>
@@ -79,7 +78,7 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select transaction type" />
+                    <SelectValue placeholder="اختر نوع المعاملة" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

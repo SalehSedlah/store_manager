@@ -1,8 +1,8 @@
 
 "use client";
 
-import Link from "next/link"; // Using next/link
-import { useRouter, usePathname } from "next/navigation"; // Using next/navigation
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -30,18 +30,18 @@ export function AppSidebar() {
   const router = useRouter(); 
   const { state: sidebarState } = useSidebar();
   
-  const appName = "DebtVision";
-  const tSidebarLabels: Record<string, string> = { // Hardcoded English labels
-    dashboard: "Dashboard",
-    debtManagement: "Debt Management",
-    aiAssistant: "AI Assistant",
-    products: "Products", // Added label for Products
-    // settings: "Settings" // if you add settings back
+  const appName = "رؤية الديون";
+  const tSidebarLabels: Record<string, string> = {
+    dashboard: "لوحة التحكم",
+    debtManagement: "إدارة الديون",
+    aiAssistant: "المساعد الذكي",
+    products: "المنتجات",
+    // settings: "الإعدادات"
   };
-  const toastLogoutSuccessTitle = "Logged Out";
-  const toastLogoutSuccessDescription = "You have been successfully logged out.";
-  const toastLogoutFailedTitle = "Logout Failed";
-  const logoutButtonText = "Logout";
+  const toastLogoutSuccessTitle = "تم تسجيل الخروج";
+  const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح.";
+  const toastLogoutFailedTitle = "فشل تسجيل الخروج";
+  const logoutButtonText = "تسجيل الخروج";
 
   const handleLogout = async () => {
     try {
@@ -71,7 +71,7 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" side="right"> {/* Changed side to right for RTL */}
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary"> 
             <TrendingUp className="h-8 w-8" />
@@ -86,7 +86,7 @@ export function AppSidebar() {
               <SidebarMenuSkeleton showIcon />
               <SidebarMenuSkeleton showIcon />
               <SidebarMenuSkeleton showIcon />
-              <SidebarMenuSkeleton showIcon /> {/* Added one for Products */}
+              <SidebarMenuSkeleton showIcon />
             </>
           )}
           {!loading && mainNavLinks.map(renderNavLink)}

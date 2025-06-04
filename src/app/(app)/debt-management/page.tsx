@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
 export default function DebtManagementPage() {
-  const pageTitle = "Debt Management"; 
-  const addNewDebtorButtonText = "Add New Debtor"; 
+  const pageTitle = "إدارة الديون"; 
+  const addNewDebtorButtonText = "إضافة مدين جديد"; 
 
   return (
     <div className="space-y-6">
@@ -17,7 +17,7 @@ export default function DebtManagementPage() {
         <DebtorForm 
           triggerButton={
             <Button>
-              <PlusCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {addNewDebtorButtonText}
+              <PlusCircle className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {addNewDebtorButtonText}
             </Button>
           }
         />

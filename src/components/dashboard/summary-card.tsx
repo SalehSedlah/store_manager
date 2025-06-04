@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,8 +26,8 @@ export function SummaryCard({ title, value, icon: Icon, isLoading, description }
           </>
         ) : (
           <>
-            <div className="text-3xl font-bold text-foreground">{value}</div>
-            {description && <p className="text-xs text-muted-foreground pt-1">{description}</p>}
+            <div className="text-3xl font-bold text-foreground text-right rtl:text-right">{value}</div>
+            {description && <p className="text-xs text-muted-foreground pt-1 text-right rtl:text-right">{description}</p>}
           </>
         )}
       </CardContent>

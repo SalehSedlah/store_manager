@@ -13,7 +13,7 @@ interface ProductsContextType {
   deleteProduct: (id: string) => void;
   loadingProducts: boolean;
   getProductById: (id: string) => Product | undefined;
-  updateStock: (productId: string, newStock: number) => void; // For direct stock updates initially
+  updateStock: (productId: string, newStock: number) => void;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
@@ -25,11 +25,11 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  const toastProductAdded = "Product Added";
-  const toastProductUpdated = "Product Updated";
-  const toastProductDeleted = "Product Deleted";
-  const toastStockUpdated = "Stock Updated";
-  const toastError = "Error";
+  const toastProductAdded = "تمت إضافة المنتج";
+  const toastProductUpdated = "تم تحديث المنتج";
+  const toastProductDeleted = "تم حذف المنتج";
+  const toastStockUpdated = "تم تحديث المخزون";
+  // const toastError = "خطأ"; // Not currently used with specific message
 
   const getStorageKey = useCallback(() => user ? `${LOCAL_STORAGE_KEY_PREFIX}${user.uid}` : null, [user]);
 
@@ -45,7 +45,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           setProducts([]);
         }
       } catch (error) {
-        console.error("Failed to load products from localStorage:", error);
+        console.error("فشل تحميل المنتجات من localStorage:", error);
         setProducts([]);
       }
     } else if (!user) {
@@ -60,7 +60,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(products));
       } catch (error) {
-        console.error("Failed to save products to localStorage:", error);
+        console.error("فشل حفظ المنتجات في localStorage:", error);
       }
     }
   }, [products, user, loadingProducts, getStorageKey]);
@@ -73,7 +73,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       lastUpdated: new Date().toISOString(),
     };
     setProducts((prevProducts) => [...prevProducts, newProduct]);
-    toast({ title: toastProductAdded, description: `${newProduct.name} has been added.` });
+    toast({ title: toastProductAdded, description: `تمت إضافة ${newProduct.name}.` });
   };
 
   const updateProduct = (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId">) => {
@@ -84,13 +84,13 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           : p
       )
     );
-    toast({ title: toastProductUpdated, description: `${productData.name} has been updated.` });
+    toast({ title: toastProductUpdated, description: `تم تحديث ${productData.name}.` });
   };
 
   const deleteProduct = (id: string) => {
-    const productName = products.find(p => p.id === id)?.name || "Product";
+    const productName = products.find(p => p.id === id)?.name || "المنتج";
     setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
-    toast({ title: toastProductDeleted, description: `${productName} has been deleted.` });
+    toast({ title: toastProductDeleted, description: `تم حذف ${productName}.` });
   };
 
   const getProductById = (id: string): Product | undefined => {
@@ -105,8 +105,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           : p
       )
     );
-    const productName = products.find(p => p.id === productId)?.name || "Product";
-    toast({ title: toastStockUpdated, description: `Stock for ${productName} updated to ${newStock}.` });
+    const productName = products.find(p => p.id === productId)?.name || "المنتج";
+    toast({ title: toastStockUpdated, description: `تم تحديث مخزون ${productName} إلى ${newStock}.` });
   };
 
   return (
@@ -127,7 +127,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 export function useProducts() {
   const context = useContext(ProductsContext);
   if (context === undefined) {
-    throw new Error("useProducts must be used within a ProductsProvider");
+    throw new Error("يجب استخدام useProducts ضمن ProductsProvider");
   }
   return context;
 }

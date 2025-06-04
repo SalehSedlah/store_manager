@@ -29,14 +29,14 @@ import {
 import { useProducts } from "@/contexts/products-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-import { Textarea } from "../ui/textarea"; // Assuming you might need textarea for category or description later
+// import { Textarea } from "../ui/textarea"; // Assuming you might need textarea for category or description later
 
 const productFormSchema = z.object({
-  name: z.string().min(2, { message: "Product name must be at least 2 characters." }).max(100),
-  category: z.string().min(2, { message: "Category must be at least 2 characters." }).max(50),
-  unit: z.string().min(1, { message: "Unit is required."}).max(20), // e.g., piece, kg, liter, pack
-  currentStock: z.coerce.number().min(0, { message: "Stock cannot be negative." }),
-  lowStockThreshold: z.coerce.number().min(0, { message: "Low stock threshold cannot be negative." }),
+  name: z.string().min(2, { message: "يجب أن يتكون اسم المنتج من حرفين على الأقل." }).max(100),
+  category: z.string().min(2, { message: "يجب أن تتكون الفئة من حرفين على الأقل." }).max(50),
+  unit: z.string().min(1, { message: "وحدة القياس مطلوبة."}).max(20),
+  currentStock: z.coerce.number().min(0, { message: "لا يمكن أن يكون المخزون سالبًا." }),
+  lowStockThreshold: z.coerce.number().min(0, { message: "لا يمكن أن يكون حد المخزون المنخفض سالبًا." }),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -54,26 +54,26 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
 
   const isEditing = !!product;
 
-  const addTitle = "Add New Product";
-  const addDescription = "Enter the details for the new product.";
-  const editTitle = "Edit Product";
-  const editDescription = "Update the product details.";
+  const addTitle = "إضافة منتج جديد";
+  const addDescription = "أدخل تفاصيل المنتج الجديد.";
+  const editTitle = "تعديل المنتج";
+  const editDescription = "قم بتحديث تفاصيل المنتج.";
   
-  const nameLabel = "Product Name";
-  const namePlaceholder = "e.g., Apples, Rice";
-  const categoryLabel = "Category";
-  const categoryPlaceholder = "e.g., Fruits, Grains, Dairy";
-  const unitLabel = "Unit of Measurement";
-  const unitPlaceholder = "e.g., piece, kg, liter, pack";
-  const currentStockLabel = "Current Stock";
-  const lowStockThresholdLabel = "Low Stock Threshold";
+  const nameLabel = "اسم المنتج";
+  const namePlaceholder = "مثال: تفاح، أرز";
+  const categoryLabel = "الفئة";
+  const categoryPlaceholder = "مثال: فواكه، حبوب، ألبان";
+  const unitLabel = "وحدة القياس";
+  const unitPlaceholder = "مثال: قطعة، كجم، لتر، علبة";
+  const currentStockLabel = "المخزون الحالي";
+  const lowStockThresholdLabel = "حد المخزون المنخفض";
   
-  const cancelButton = "Cancel";
-  const addButtonText = "Add Product";
-  const saveButtonText = "Save Changes";
-  const savingButtonText = "Saving...";
+  const cancelButton = "إلغاء";
+  const addButtonText = "إضافة منتج";
+  const saveButtonText = "حفظ التغييرات";
+  const savingButtonText = "جاري الحفظ...";
 
-  const toastErrorTitle = "Error";
+  const toastErrorTitle = "خطأ";
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -173,7 +173,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
                   <FormControl>
                     <Input placeholder={unitPlaceholder} {...field} />
                   </FormControl>
-                  <FormDescription>e.g., piece, kg, liter, pack, box</FormDescription>
+                  <FormDescription>مثال: قطعة، كجم، لتر، علبة، صندوق</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -1,5 +1,5 @@
 
-/* Inter font is primary */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -45,6 +45,7 @@
     --sidebar-ring: 197 71.1% 52.7%;
 
     --font-inter: 'Inter', sans-serif;
+    --font-cairo: 'Cairo', sans-serif;
   }
 
   .dark {
@@ -93,11 +94,12 @@
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: var(--font-inter); /* Apply Inter font globally */
   }
   
-  /* Default font for body, if needed for specificity, but html tag now has .font-body */
   .font-body {
-    font-family: var(--font-inter);
+    font-family: var(--font-inter); /* Default to Inter if not overridden */
+  }
+  .font-arabic {
+    font-family: var(--font-cairo);
   }
 }

@@ -17,23 +17,23 @@ export function CreditSuggestionTool() {
   const [suggestions, setSuggestions] = useState<SuggestCreditLimitsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const cardTitle = "Credit Limit Suggestions";
-  const cardDescription = "Let AI suggest optimal credit limits for your debtors based on their data.";
-  const generateButtonText = "Generate Suggestions for All Debtors";
-  const generatingButtonText = "Generating Suggestions...";
-  const loadingDebtorsButtonText = "Loading Debtors...";
-  const suggestedLimitsTitle = "Suggested Limits:";
-  const debtorNameHeader = "Debtor Name";
-  const suggestedLimitHeader = "Suggested Limit";
-  const reasoningHeader = "Reasoning";
-  const noSuggestionsPlaceholder = "Click the button above to generate credit limit suggestions.";
-  const noDebtorsPlaceholder = "Please add debtors in the Debt Management section to get suggestions.";
+  const cardTitle = "اقتراحات الحد الائتماني";
+  const cardDescription = "دع الذكاء الاصطناعي يقترح الحدود الائتمانية المثلى للمدينين بناءً على بياناتهم.";
+  const generateButtonText = "إنشاء اقتراحات لجميع المدينين";
+  const generatingButtonText = "جاري إنشاء الاقتراحات...";
+  const loadingDebtorsButtonText = "جاري تحميل المدينين...";
+  const suggestedLimitsTitle = "الحدود المقترحة:";
+  const debtorNameHeader = "اسم المدين";
+  const suggestedLimitHeader = "الحد المقترح";
+  const reasoningHeader = "السبب";
+  const noSuggestionsPlaceholder = "انقر فوق الزر أعلاه لإنشاء اقتراحات للحد الائتماني.";
+  const noDebtorsPlaceholder = "يرجى إضافة مدينين في قسم إدارة الديون للحصول على اقتراحات.";
 
-  const toastNoDebtorsTitle = "No Debtors";
-  const toastNoDebtorsDescription = "Add debtors to get credit limit suggestions.";
-  const toastSuggestionsReadyTitle = "Suggestions Ready";
-  const toastSuggestionsReadyDescription = "AI has generated credit limit suggestions.";
-  const toastSuggestionFailedTitle = "Suggestion Failed";
+  const toastNoDebtorsTitle = "لا يوجد مدينون";
+  const toastNoDebtorsDescription = "أضف مدينين للحصول على اقتراحات للحد الائتماني.";
+  const toastSuggestionsReadyTitle = "الاقتراحات جاهزة";
+  const toastSuggestionsReadyDescription = "قام الذكاء الاصطناعي بإنشاء اقتراحات للحد الائتماني.";
+  const toastSuggestionFailedTitle = "فشل الاقتراح";
 
   const handleSuggestLimits = async () => {
     if (debtors.length === 0) {
@@ -67,7 +67,7 @@ export function CreditSuggestionTool() {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
-          <Sparkles className="mr-2 rtl:ml-2 rtl:mr-0 h-5 w-5 text-primary" />
+          <Sparkles className="ml-2 rtl:mr-0 rtl:ml-2 h-5 w-5 text-primary" />
           {cardTitle}
         </CardTitle>
         <CardDescription>{cardDescription}</CardDescription>
@@ -93,7 +93,7 @@ export function CreditSuggestionTool() {
               <TableHeader>
                 <TableRow>
                   <TableHead>{debtorNameHeader}</TableHead>
-                  <TableHead className="text-right rtl:text-left">{suggestedLimitHeader}</TableHead>
+                  <TableHead className="text-left rtl:text-right">{suggestedLimitHeader}</TableHead>
                   <TableHead>{reasoningHeader}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -101,7 +101,7 @@ export function CreditSuggestionTool() {
                 {suggestions.map((suggestion, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{suggestion.debtorName}</TableCell>
-                    <TableCell className="text-right rtl:text-left">${suggestion.suggestedCreditLimit.toLocaleString()}</TableCell>
+                    <TableCell className="text-left rtl:text-right">${suggestion.suggestedCreditLimit.toLocaleString('ar-EG')}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{suggestion.reasoning}</TableCell>
                   </TableRow>
                 ))}

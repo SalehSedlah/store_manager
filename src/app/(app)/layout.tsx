@@ -5,17 +5,16 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter, usePathname } from "next/navigation"; // Using next/navigation
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// AuthGuard Component
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   
-  const loadingSessionText = "Loading user session..."; // Hardcoded English
+  const loadingSessionText = "جاري تحميل جلسة المستخدم...";
 
   useEffect(() => {
     if (!loading && !user) {

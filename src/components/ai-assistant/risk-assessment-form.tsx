@@ -28,7 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const riskAssessmentFormSchema = z.object({
   debtorId: z.string().optional(), 
-  paymentBehavior: z.string().min(10, { message: "Payment behavior description is too short." }).max(500),
+  paymentBehavior: z.string().min(10, { message: "وصف سلوك الدفع قصير جدًا." }).max(500),
   creditScore: z.coerce.number().min(300).max(850).optional(),
   debtAmount: z.coerce.number().min(0),
   creditLimit: z.coerce.number().min(0).optional(),
@@ -43,27 +43,27 @@ export function RiskAssessmentForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
 
-  const cardTitle = "Debtor Risk Assessment";
-  const cardDescription = "Analyze a debtor's risk profile using AI.";
-  const selectDebtorLabel = "Select Debtor (Optional)";
-  const selectDebtorPlaceholder = "Select a debtor or enter manually";
-  const selectDebtorManualOption = "Enter Manually";
-  const selectDebtorDescription = "Select an existing debtor to pre-fill some fields, or choose \"Enter Manually\".";
-  const paymentBehaviorLabel = "Payment Behavior";
-  const paymentBehaviorPlaceholder = "e.g., Consistently pays on time, occasional late payments...";
-  const debtAmountLabel = "Debt Amount ($)";
-  const creditLimitLabel = "Credit Limit ($) (Optional)";
-  const creditScoreLabel = "Credit Score (Optional)";
+  const cardTitle = "تقييم مخاطر المدين";
+  const cardDescription = "حلل ملف مخاطر المدين باستخدام الذكاء الاصطناعي.";
+  const selectDebtorLabel = "اختر مدين (اختياري)";
+  const selectDebtorPlaceholder = "اختر مدينًا أو أدخل يدويًا";
+  const selectDebtorManualOption = "إدخال يدوي";
+  const selectDebtorDescription = "اختر مدينًا موجودًا لملء بعض الحقول مسبقًا، أو اختر \"إدخال يدوي\".";
+  const paymentBehaviorLabel = "سلوك الدفع";
+  const paymentBehaviorPlaceholder = "مثال: يدفع باستمرار في الوقت المحدد، مدفوعات متأخرة عرضية...";
+  const debtAmountLabel = "مبلغ الدين (بالعملة المحلية)";
+  const creditLimitLabel = "الحد الائتماني (بالعملة المحلية) (اختياري)";
+  const creditScoreLabel = "درجة الائتمان (اختياري)";
   const creditScorePlaceholder = "300-850";
-  const assessRiskButtonText = "Assess Risk";
-  const assessingRiskButtonText = "Assessing Risk...";
-  const resultTitle = "Assessment Result:";
-  const riskLevelLabel = "Risk Level:";
-  const riskFactorsLabel = "Risk Factors:";
-  const suggestedActionsLabel = "Suggested Actions:";
-  const toastAssessmentCompleteTitle = "Risk Assessment Complete";
-  const toastAssessmentCompleteDescription = "AI analysis finished.";
-  const toastAssessmentFailedTitle = "Assessment Failed";
+  const assessRiskButtonText = "تقييم المخاطر";
+  const assessingRiskButtonText = "جاري تقييم المخاطر...";
+  const resultTitle = "نتيجة التقييم:";
+  const riskLevelLabel = "مستوى المخاطرة:";
+  const riskFactorsLabel = "عوامل المخاطرة:";
+  const suggestedActionsLabel = "الإجراءات المقترحة:";
+  const toastAssessmentCompleteTitle = "اكتمل تقييم المخاطر";
+  const toastAssessmentCompleteDescription = "انتهى تحليل الذكاء الاصطناعي.";
+  const toastAssessmentFailedTitle = "فشل التقييم";
 
   const form = useForm<RiskAssessmentFormValues>({
     resolver: zodResolver(riskAssessmentFormSchema),
@@ -120,7 +120,7 @@ export function RiskAssessmentForm() {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
-          <Sparkles className="mr-2 rtl:ml-2 rtl:mr-0 h-5 w-5 text-primary" />{cardTitle}
+          <Sparkles className="ml-2 rtl:mr-0 rtl:ml-2 h-5 w-5 text-primary" />{cardTitle}
         </CardTitle>
         <CardDescription>{cardDescription}</CardDescription>
       </CardHeader>
@@ -231,12 +231,12 @@ export function RiskAssessmentForm() {
             <div>
               <p className="font-medium text-foreground flex items-center">
                 {riskLevelLabel}
-                <span className={`ml-2 rtl:mr-2 rtl:ml-0 font-bold ${
+                <span className={`mr-2 rtl:ml-0 rtl:mr-2 font-bold ${
                   assessmentResult.riskLevel.toLowerCase() === 'high' ? 'text-destructive' :
                   assessmentResult.riskLevel.toLowerCase() === 'medium' ? 'text-yellow-500' :
                   'text-green-600'
                 }`}>
-                  {assessmentResult.riskLevel.toLowerCase() === 'high' && <AlertTriangle className="inline h-4 w-4 mr-1 rtl:ml-1 rtl:mr-0"/>}
+                  {assessmentResult.riskLevel.toLowerCase() === 'high' && <AlertTriangle className="inline h-4 w-4 ml-1 rtl:mr-0 rtl:ml-1"/>}
                   {assessmentResult.riskLevel}
                 </span>
               </p>

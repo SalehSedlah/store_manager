@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Debtor, Transaction, TransactionType } from "@/types/debt";
+import type { Debtor, Transaction } from "@/types/debt";
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { useAuth } from "./auth-context";
 import { toast } from "@/hooks/use-toast";
@@ -21,7 +21,6 @@ const DebtorsContext = createContext<DebtorsContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY_PREFIX = "debtvision_debtors_";
 
-// Helper function to calculate amount owed from transactions
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
   return transactions.reduce((balance, tx) => {
     switch (tx.type) {
@@ -44,14 +43,14 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loadingDebtors, setLoadingDebtors] = useState(true);
 
-  const toastAutoAlertTitle = "Automatic Alert Triggered";
+  const toastAutoAlertTitle = "تم تفعيل التنبيه التلقائي";
   const toastDebtorAddedOverLimit = (name: string, phone?: string) => 
-    `${name} was added exceeding the credit limit. ${phone ? `A notification to ${phone} has been simulated.` : 'A notification has been simulated (phone number missing).'}`;
+    `تمت إضافة ${name} وتجاوز الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
   const toastDebtorExceededLimit = (name: string, phone?: string) =>
-    `${name} has now exceeded the credit limit. ${phone ? `A notification to ${phone} has been simulated.` : 'A notification has been simulated (phone number missing).'}`;
-  const toastTransactionAdded = "Transaction Added";
-  const toastTransactionFailed = "Failed to Add Transaction";
-  const toastDebtorInfoUpdated = "Debtor Info Updated";
+    `${name} تجاوز الآن الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
+  const toastTransactionAdded = "تمت إضافة المعاملة";
+  // const toastTransactionFailed = "فشل في إضافة المعاملة"; // Not currently used with specific message
+  const toastDebtorInfoUpdated = "تم تحديث معلومات المدين";
 
 
   const getStorageKey = useCallback(() => user ? `${LOCAL_STORAGE_KEY_PREFIX}${user.uid}` : null, [user]);
@@ -64,18 +63,17 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
         const storedDebtorsString = localStorage.getItem(storageKey);
         if (storedDebtorsString) {
           const storedDebtors: Debtor[] = JSON.parse(storedDebtorsString);
-          // Recalculate amountOwed for each debtor upon loading
           const debtorsWithCalculatedAmounts = storedDebtors.map(d => ({
             ...d,
             amountOwed: calculateAmountOwedInternal(d.transactions || []),
-            transactions: d.transactions || [] // Ensure transactions array exists
+            transactions: d.transactions || []
           }));
           setDebtors(debtorsWithCalculatedAmounts);
         } else {
           setDebtors([]);
         }
       } catch (error) {
-        console.error("Failed to load debtors from localStorage:", error);
+        console.error("فشل تحميل المدينين من localStorage:", error);
         setDebtors([]);
       }
     } else if (!user) {
@@ -90,7 +88,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(debtors));
       } catch (error) {
-        console.error("Failed to save debtors to localStorage:", error);
+        console.error("فشل حفظ المدينين في localStorage:", error);
       }
     }
   }, [debtors, user, loadingDebtors, getStorageKey]);
@@ -101,7 +99,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       date: new Date().toISOString(),
       type: 'initial_balance',
       amount: initialAmount,
-      description: 'Initial balance',
+      description: 'رصيد افتتاحي',
     };
 
     const newDebtor: Debtor = {
@@ -110,7 +108,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
       transactions: [initialTransaction],
-      amountOwed: calculateAmountOwedInternal([initialTransaction]), // Calculated from the initial transaction
+      amountOwed: calculateAmountOwedInternal([initialTransaction]),
     };
     setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
 
@@ -127,23 +125,20 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
     setDebtors(prevDebtors => 
       prevDebtors.map(d => {
         if (d.id === debtorId) {
+          const wasOverLimit = d.amountOwed > d.creditLimit;
           const updatedDebtor = {
             ...d,
             ...debtorInfo,
             lastUpdated: new Date().toISOString(),
           };
-          // Check for credit limit alert only if creditLimit or related info changes
-          // AmountOwed doesn't change here, so alert logic is based on new creditLimit
-          const wasOverLimit = d.amountOwed > d.creditLimit;
           const isNowOverLimit = updatedDebtor.amountOwed > updatedDebtor.creditLimit;
+
           if (!wasOverLimit && isNowOverLimit) {
              toast({
                 title: toastAutoAlertTitle,
                 description: toastDebtorExceededLimit(updatedDebtor.name, updatedDebtor.phoneNumber),
                 variant: updatedDebtor.phoneNumber ? "default" : "destructive",
              });
-          } else if (wasOverLimit && !isNowOverLimit) {
-            // Optional: Notify if debtor is no longer over limit due to credit limit increase
           }
           return updatedDebtor;
         }
@@ -173,7 +168,6 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
             lastUpdated: new Date().toISOString(),
           };
 
-          // Credit limit alert logic
           const wasOverLimit = calculateAmountOwedInternal(debtor.transactions) > debtor.creditLimit;
           const isNowOverLimit = newAmountOwed > debtor.creditLimit;
 
@@ -184,7 +178,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
               variant: updatedDebtor.phoneNumber ? "default" : "destructive",
             });
           }
-          toast({ title: toastTransactionAdded, description: `${transactionData.type} of $${transactionData.amount} for ${debtor.name}.` });
+          toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionData.type}) بمبلغ ${transactionData.amount} لـ ${debtor.name}.` });
           return updatedDebtor;
         }
         return debtor;
@@ -209,7 +203,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
         addTransaction, 
         loadingDebtors, 
         getDebtorById,
-        calculateAmountOwed: calculateAmountOwedInternal // Expose the internal calculation function
+        calculateAmountOwed: calculateAmountOwedInternal
     }}>
       {children}
     </DebtorsContext.Provider>
@@ -219,7 +213,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
 export function useDebtors() {
   const context = useContext(DebtorsContext);
   if (context === undefined) {
-    throw new Error("useDebtors must be used within a DebtorsProvider");
+    throw new Error("يجب استخدام useDebtors ضمن DebtorsProvider");
   }
   return context;
 }

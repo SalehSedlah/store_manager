@@ -36,27 +36,27 @@ export function DebtorList() {
   const { toast } = useToast();
   const [statementDebtor, setStatementDebtor] = useState<Debtor | null>(null);
 
-  const noDebtorsText = "No debtors found. Add a new debtor to get started.";
-  const nameHeader = "Name";
-  const phoneNumberHeader = "Phone Number";
-  const amountOwedHeader = "Amount Owed";
-  const creditLimitHeader = "Credit Limit";
-  const statusHeader = "Status";
-  const lastUpdatedHeader = "Last Updated";
-  const actionsHeader = "Actions";
-  const statusOverLimit = "Over Limit";
-  const statusWithinLimit = "Within Limit";
-  const editActionText = "Edit Info";
-  const viewStatementActionText = "View Statement";
-  const deleteActionText = "Delete";
-  const sendSmsActionText = "Send SMS";
-  const sendWhatsAppActionText = "Send WhatsApp";
-  const deleteDialogTitle = "Are you sure?";
-  const deleteDialogDescription = (name: string) => `This action cannot be undone. This will permanently delete ${name}'s record and all associated transactions.`;
-  const deleteDialogCancel = "Cancel";
-  const deleteDialogConfirm = "Delete";
-  const toastDebtorDeletedTitle = "Debtor Deleted";
-  const toastDebtorDeletedDescription = (name: string) => `${name} has been deleted.`;
+  const noDebtorsText = "لم يتم العثور على مدينين. قم بإضافة مدين جديد للبدء.";
+  const nameHeader = "الاسم";
+  const phoneNumberHeader = "رقم الهاتف";
+  const amountOwedHeader = "المبلغ المستحق";
+  const creditLimitHeader = "الحد الائتماني";
+  const statusHeader = "الحالة";
+  const lastUpdatedHeader = "آخر تحديث";
+  const actionsHeader = "الإجراءات";
+  const statusOverLimit = "تجاوز الحد";
+  const statusWithinLimit = "ضمن الحد";
+  const editActionText = "تعديل المعلومات";
+  const viewStatementActionText = "عرض كشف الحساب";
+  const deleteActionText = "حذف";
+  const sendSmsActionText = "إرسال SMS";
+  const sendWhatsAppActionText = "إرسال WhatsApp";
+  const deleteDialogTitle = "هل أنت متأكد؟";
+  const deleteDialogDescription = (name: string) => `لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف سجل ${name} وجميع المعاملات المرتبطة به بشكل دائم.`;
+  const deleteDialogCancel = "إلغاء";
+  const deleteDialogConfirm = "حذف";
+  const toastDebtorDeletedTitle = "تم حذف المدين";
+  const toastDebtorDeletedDescription = (name: string) => `تم حذف ${name}.`;
 
   const handleDelete = (id: string, name: string) => {
     deleteDebtor(id);
@@ -85,26 +85,26 @@ export function DebtorList() {
             <TableRow>
               <TableHead>{nameHeader}</TableHead>
               <TableHead>{phoneNumberHeader}</TableHead>
-              <TableHead className="text-right rtl:text-left">{amountOwedHeader}</TableHead>
-              <TableHead className="text-right rtl:text-left">{creditLimitHeader}</TableHead>
+              <TableHead className="text-left rtl:text-right">{amountOwedHeader}</TableHead>
+              <TableHead className="text-left rtl:text-right">{creditLimitHeader}</TableHead>
               <TableHead>{statusHeader}</TableHead>
-              <TableHead className="text-right rtl:text-left">{lastUpdatedHeader}</TableHead>
-              <TableHead className="text-right rtl:text-left">{actionsHeader}</TableHead>
+              <TableHead className="text-left rtl:text-right">{lastUpdatedHeader}</TableHead>
+              <TableHead className="text-left rtl:text-right">{actionsHeader}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {debtors.map((debtor) => {
               const isOverLimit = debtor.amountOwed > debtor.creditLimit;
-              const amountOwedFormatted = debtor.amountOwed.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
-              const creditLimitFormatted = debtor.creditLimit.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
-              const lastUpdatedFormatted = new Date(debtor.lastUpdated).toLocaleDateString();
+              const amountOwedFormatted = debtor.amountOwed.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' }); // Assuming SAR for Arabic
+              const creditLimitFormatted = debtor.creditLimit.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' });
+              const lastUpdatedFormatted = new Date(debtor.lastUpdated).toLocaleDateString('ar-EG');
               
               return (
                 <TableRow key={debtor.id} className={isOverLimit ? "bg-destructive/10 hover:bg-destructive/20" : ""}>
                   <TableCell className="font-medium">{debtor.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{debtor.phoneNumber || "N/A"}</TableCell>
-                  <TableCell className="text-right rtl:text-left">{amountOwedFormatted}</TableCell>
-                  <TableCell className="text-right rtl:text-left">{creditLimitFormatted}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{debtor.phoneNumber || "غير متاح"}</TableCell>
+                  <TableCell className="text-left rtl:text-right">{amountOwedFormatted}</TableCell>
+                  <TableCell className="text-left rtl:text-right">{creditLimitFormatted}</TableCell>
                   <TableCell>
                     {isOverLimit ? (
                       <Badge variant="destructive" className="flex items-center gap-1 w-fit">
@@ -115,25 +115,25 @@ export function DebtorList() {
                       <Badge variant="secondary">{statusWithinLimit}</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right rtl:text-left text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
-                  <TableCell className="text-right rtl:text-left">
+                  <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
+                  <TableCell className="text-left rtl:text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
+                          <span className="sr-only">فتح القائمة</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="start"> {/* Changed align to start for RTL */}
                         <DropdownMenuItem onSelect={() => setStatementDebtor(debtor)}>
-                          <FileText className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {viewStatementActionText}
+                          <FileText className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {viewStatementActionText}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DebtorForm
                           debtor={debtor}
                           triggerButton={
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Edit className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {editActionText}
+                              <Edit className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {editActionText}
                             </DropdownMenuItem>
                           }
                         />
@@ -142,12 +142,12 @@ export function DebtorList() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                               <a href={`sms:${debtor.phoneNumber}`}>
-                                <MessageSquare className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {sendSmsActionText}
+                                <MessageSquare className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {sendSmsActionText}
                               </a>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <a href={`https://wa.me/${debtor.phoneNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                                <MessageCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {sendWhatsAppActionText}
+                                <MessageCircle className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {sendWhatsAppActionText}
                               </a>
                             </DropdownMenuItem>
                           </>
@@ -156,7 +156,7 @@ export function DebtorList() {
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                              <Trash2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {deleteActionText}
+                              <Trash2 className="ml-2 rtl:mr-0 rtl:ml-2 h-4 w-4" /> {deleteActionText}
                             </DropdownMenuItem>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

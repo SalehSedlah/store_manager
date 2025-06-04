@@ -5,8 +5,8 @@ import { RiskAssessmentForm } from "@/components/ai-assistant/risk-assessment-fo
 import { CreditSuggestionTool } from "@/components/ai-assistant/credit-suggestion-tool";
 
 export default function AiAssistantPage() {
-  const pageTitle = "AI Assistant"; 
-  const pageDescription = "Leverage AI to gain insights and make better financial decisions."; 
+  const pageTitle = "المساعد الذكي"; 
+  const pageDescription = "استفد من الذكاء الاصطناعي للحصول على رؤى واتخاذ قرارات مالية أفضل."; 
 
   return (
     <div className="space-y-8">
