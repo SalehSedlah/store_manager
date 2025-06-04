@@ -119,17 +119,24 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         return;
     }
     
-    const newProductDataForFirestore = {
+    const newProductDataForFirestore: Record<string, any> = { // Use Record<string, any> for easier manipulation before sending
       ...productData,
       pricePerUnit: Number(productData.pricePerUnit) || 0,
       purchasePricePerUnit: productData.purchasePricePerUnit !== undefined ? (Number(productData.purchasePricePerUnit) || 0) : undefined,
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
-      piecesInUnit: productData.piecesInUnit !== undefined ? (Number(productData.piecesInUnit) || 0) : undefined,
+      piecesInUnit: (productData.piecesInUnit !== undefined && productData.piecesInUnit !== null) ? (Number(productData.piecesInUnit) || 0) : undefined,
       quantitySold: 0, 
       userId: user.uid,
       lastUpdated: serverTimestamp(),
     };
+
+    // Remove undefined fields before sending to Firestore
+    Object.keys(newProductDataForFirestore).forEach(key => {
+      if (newProductDataForFirestore[key] === undefined) {
+        delete newProductDataForFirestore[key];
+      }
+    });
 
     try {
       const productsColRef = collection(db, `users/${user.uid}/products`);
@@ -150,21 +157,20 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
     const productDocRef = doc(db, `users/${user.uid}/products`, productId);
     
-    const updatedProductDataForFirestore = {
+    const updatedProductDataForFirestore: Record<string, any> = { // Use Record<string, any> for easier manipulation
       ...productData,
       pricePerUnit: Number(productData.pricePerUnit) || 0,
       purchasePricePerUnit: productData.purchasePricePerUnit !== undefined ? (Number(productData.purchasePricePerUnit) || 0) : undefined,
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
-      piecesInUnit: productData.piecesInUnit !== undefined ? (Number(productData.piecesInUnit) || 0) : undefined,
+      piecesInUnit: (productData.piecesInUnit !== undefined && productData.piecesInUnit !== null) ? (Number(productData.piecesInUnit) || 0) : undefined,
       quantitySold: productData.quantitySold !== undefined ? (Number(productData.quantitySold) || 0) : 0, 
       lastUpdated: serverTimestamp(),
     };
 
     Object.keys(updatedProductDataForFirestore).forEach(key => {
-      const K = key as keyof typeof updatedProductDataForFirestore;
-      if (updatedProductDataForFirestore[K] === undefined) {
-        delete updatedProductDataForFirestore[K];
+      if (updatedProductDataForFirestore[key] === undefined) {
+        delete updatedProductDataForFirestore[key];
       }
     });
 
@@ -244,3 +250,4 @@ export function useProducts() {
   }
   return context;
 }
+
