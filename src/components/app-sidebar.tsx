@@ -1,7 +1,8 @@
 
 "use client";
 
-import { Link, useRouter, usePathname } from "next/navigation"; 
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation"; 
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";

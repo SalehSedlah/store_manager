@@ -2,7 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, Link } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+import Link from "next/link"; 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
