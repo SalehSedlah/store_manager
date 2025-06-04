@@ -41,13 +41,39 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         if (storedProductsString) {
           const parsedProducts: Product[] = JSON.parse(storedProductsString);
           // Ensure numeric types are correct after parsing
-          const validatedProducts = parsedProducts.map(p => ({
-            ...p,
-            pricePerUnit: Number(p.pricePerUnit) || 0,
-            currentStock: Number(p.currentStock) || 0,
-            lowStockThreshold: Number(p.lowStockThreshold) || 0,
-            piecesInUnit: p.piecesInUnit !== undefined ? Number(p.piecesInUnit) : undefined,
-          }));
+          const validatedProducts = parsedProducts.map(p => {
+            const pricePerUnitVal = Number(p.pricePerUnit);
+            const currentStockVal = Number(p.currentStock);
+            const lowStockThresholdVal = Number(p.lowStockThreshold);
+            
+            let piecesInUnitVal: number | undefined = undefined;
+            if (p.piecesInUnit !== undefined && p.piecesInUnit !== null) { // Check for null as well
+                const numPieces = Number(p.piecesInUnit);
+                if (!isNaN(numPieces)) {
+                    piecesInUnitVal = numPieces;
+                } else {
+                    console.warn(`Product ID ${p.id} ('${p.name}') has invalid piecesInUnit: '${p.piecesInUnit}'. Treating as no pieces info.`);
+                }
+            }
+
+            if (isNaN(pricePerUnitVal)) {
+              console.warn(`Product ID ${p.id} ('${p.name}') has invalid pricePerUnit: '${p.pricePerUnit}'. Defaulting to 0.`);
+            }
+            if (isNaN(currentStockVal)) {
+              console.warn(`Product ID ${p.id} ('${p.name}') has invalid currentStock: '${p.currentStock}'. Defaulting to 0.`);
+            }
+            if (isNaN(lowStockThresholdVal)) { // Added check for lowStockThreshold
+              console.warn(`Product ID ${p.id} ('${p.name}') has invalid lowStockThreshold: '${p.lowStockThreshold}'. Defaulting to 0.`);
+            }
+
+            return {
+              ...p,
+              pricePerUnit: isNaN(pricePerUnitVal) ? 0 : pricePerUnitVal,
+              currentStock: isNaN(currentStockVal) ? 0 : currentStockVal,
+              lowStockThreshold: isNaN(lowStockThresholdVal) ? 0 : lowStockThresholdVal, // Use validated value
+              piecesInUnit: piecesInUnitVal,
+            };
+          });
           setProducts(validatedProducts);
         } else {
           setProducts([]);
@@ -79,7 +105,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       pricePerUnit: Number(productData.pricePerUnit) || 0,
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
-      piecesInUnit: productData.piecesInUnit !== undefined ? Number(productData.piecesInUnit) : undefined,
+      piecesInUnit: productData.piecesInUnit !== undefined ? (Number(productData.piecesInUnit) || 0) : undefined, // Ensure piecesInUnit is number or undefined
       id: Date.now().toString(),
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
@@ -99,7 +125,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
               pricePerUnit: Number(productData.pricePerUnit) || 0,
               currentStock: Number(productData.currentStock) || 0,
               lowStockThreshold: Number(productData.lowStockThreshold) || 0,
-              piecesInUnit: productData.piecesInUnit !== undefined ? Number(productData.piecesInUnit) : undefined,
+              piecesInUnit: productData.piecesInUnit !== undefined ? (Number(productData.piecesInUnit) || 0) : undefined, // Ensure piecesInUnit is number or undefined
               lastUpdated: new Date().toISOString() 
             }
           : p
