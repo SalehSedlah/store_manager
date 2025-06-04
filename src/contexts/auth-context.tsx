@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // Correct import
 
 interface AuthContextType {
   user: User | null;
@@ -18,9 +18,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // State for router and pathname, to be set on client-side
-  const [router, setRouter] = useState<ReturnType<typeof useRouter> | null>(null);
-  const [pathname, setPathname] = useState<ReturnType<typeof usePathname> | null>(null);
+  // Call hooks at the top level of the client component
+  const router = useRouter(); 
+  const pathname = usePathname();
   
   // Effect to initialize Firebase auth listener
   useEffect(() => {
@@ -31,15 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Effect to initialize router and pathname strictly on the client-side after mount
-  useEffect(() => {
-    setRouter(useRouter());
-    setPathname(usePathname());
-  }, []); 
-
   // Effect for redirection logic, depends on auth state and navigation tools
   useEffect(() => {
-    if (loading || !router || !pathname) {
+    // Now router and pathname are directly from the hooks
+    if (loading) { 
       return;
     }
     
@@ -50,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else if (user && isAuthPage) {
       router.push("/dashboard");
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname]); // router and pathname from hooks are dependencies
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
