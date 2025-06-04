@@ -81,7 +81,7 @@ const whatsappReminderFlow = ai.defineFlow(
 // Helper function to select relevant transactions (e.g., last 5 debt-increasing ones)
 // This can be used in the context before calling the flow if needed,
 // but for now, we pass all transactions and let the prompt guide the AI.
-export function prepareTransactionsForReminder(transactions: Transaction[]): WhatsappReminderInput['transactions'] {
+export async function prepareTransactionsForReminder(transactions: Transaction[]): Promise<WhatsappReminderInput['transactions']> {
   return transactions
     .filter(tx => tx.type === 'initial_balance' || tx.type === 'new_credit' || tx.type === 'adjustment_increase')
     .slice(-5) // Take last 5, for example
@@ -92,3 +92,4 @@ export function prepareTransactionsForReminder(transactions: Transaction[]): Wha
       description: tx.description,
     }));
 }
+
