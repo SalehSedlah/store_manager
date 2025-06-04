@@ -1,10 +1,13 @@
 
 "use client";
 
-import type { Debtor, Transaction } from "@/types/debt";
+import type { Debtor, Transaction, TransactionType } from "@/types/debt";
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { useAuth } from "./auth-context";
 import { toast } from "@/hooks/use-toast";
+import { generateWhatsappReminder, type WhatsappReminderInput } from "@/ai/flows/whatsapp-reminder-flow";
+import { WhatsappReminderToastAction } from "@/components/debt-management/whatsapp-reminder-toast-action";
+
 
 interface DebtorsContextType {
   debtors: Debtor[];
@@ -20,6 +23,14 @@ interface DebtorsContextType {
 const DebtorsContext = createContext<DebtorsContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY_PREFIX = "debtvision_debtors_";
+
+const transactionTypeArabic: Record<TransactionType, string> = {
+  initial_balance: "رصيد افتتاحي",
+  payment: "دفعة",
+  new_credit: "دين جديد",
+  adjustment_increase: "تسوية (زيادة)",
+  adjustment_decrease: "تسوية (نقصان)",
+};
 
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
   return transactions.reduce((balance, tx) => {
@@ -44,13 +55,14 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
   const [loadingDebtors, setLoadingDebtors] = useState(true);
 
   const toastAutoAlertTitle = "تم تفعيل التنبيه التلقائي";
-  const toastDebtorAddedOverLimit = (name: string, phone?: string) => 
-    `تمت إضافة ${name} وتجاوز الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
-  const toastDebtorExceededLimit = (name: string, phone?: string) =>
-    `${name} تجاوز الآن الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
+  // const toastDebtorAddedOverLimit = (name: string, phone?: string) => 
+  //   `تمت إضافة ${name} وتجاوز الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
+  // const toastDebtorExceededLimit = (name: string, phone?: string) =>
+  //   `${name} تجاوز الآن الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
   const toastTransactionAdded = "تمت إضافة المعاملة";
-  // const toastTransactionFailed = "فشل في إضافة المعاملة"; // Not currently used with specific message
   const toastDebtorInfoUpdated = "تم تحديث معلومات المدين";
+  const whatsAppReminderPreparedTitle = (name: string) => `تذكير واتساب جاهز لـ ${name}`;
+  const whatsAppReminderFailedTitle = "فشل إنشاء تذكير واتساب";
 
 
   const getStorageKey = useCallback(() => user ? `${LOCAL_STORAGE_KEY_PREFIX}${user.uid}` : null, [user]);
@@ -93,9 +105,51 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
     }
   }, [debtors, user, loadingDebtors, getStorageKey]);
 
+  const triggerWhatsappReminderIfNeeded = async (debtor: Debtor, wasOverLimitBefore?: boolean) => {
+    const isCurrentlyOverLimit = debtor.amountOwed > debtor.creditLimit;
+    const justExceededLimit = wasOverLimitBefore === false && isCurrentlyOverLimit;
+    const newDebtorOverLimit = wasOverLimitBefore === undefined && isCurrentlyOverLimit; // For addDebtor case
+
+    if (justExceededLimit || newDebtorOverLimit) {
+      try {
+        const relevantTransactions = (debtor.transactions || [])
+          // .filter(tx => tx.type === 'initial_balance' || tx.type === 'new_credit' || tx.type === 'adjustment_increase')
+          // .slice(-5) // Example: last 5 debt-increasing, or let AI handle full list
+          .map(tx => ({
+            date: new Date(tx.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }),
+            type: transactionTypeArabic[tx.type] || tx.type,
+            amount: tx.amount,
+            description: tx.description,
+          }));
+
+        const input: WhatsappReminderInput = {
+          debtorName: debtor.name,
+          amountOwed: debtor.amountOwed,
+          creditLimit: debtor.creditLimit,
+          transactions: relevantTransactions,
+          debtorPhoneNumber: debtor.phoneNumber,
+        };
+        const result = await generateWhatsappReminder(input);
+        toast({
+          title: whatsAppReminderPreparedTitle(debtor.name),
+          description: result.whatsappMessage,
+          duration: 20000, // Longer duration for important messages
+          action: <WhatsappReminderToastAction message={result.whatsappMessage} phoneNumber={debtor.phoneNumber} debtorName={debtor.name} />,
+        });
+      } catch (error: any) {
+        console.error("خطأ في إنشاء تذكير واتساب:", error);
+        toast({
+          title: whatsAppReminderFailedTitle,
+          description: error.message || "حدث خطأ غير متوقع.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const addDebtor = (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed">, initialAmount: number) => {
     const initialTransaction: Transaction = {
-      id: Date.now().toString() + "_tx",
+      id: Date.now().toString() + "_tx_init",
       date: new Date().toISOString(),
       type: 'initial_balance',
       amount: initialAmount,
@@ -111,14 +165,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       amountOwed: calculateAmountOwedInternal([initialTransaction]),
     };
     setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
-
-    if (newDebtor.amountOwed > newDebtor.creditLimit) {
-      toast({
-        title: toastAutoAlertTitle,
-        description: toastDebtorAddedOverLimit(newDebtor.name, newDebtor.phoneNumber),
-        variant: newDebtor.phoneNumber ? "default" : "destructive",
-      });
-    }
+    triggerWhatsappReminderIfNeeded(newDebtor); // wasOverLimitBefore is undefined for new debtors
   };
 
   const updateDebtorInfo = (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => {
@@ -131,15 +178,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
             ...debtorInfo,
             lastUpdated: new Date().toISOString(),
           };
-          const isNowOverLimit = updatedDebtor.amountOwed > updatedDebtor.creditLimit;
-
-          if (!wasOverLimit && isNowOverLimit) {
-             toast({
-                title: toastAutoAlertTitle,
-                description: toastDebtorExceededLimit(updatedDebtor.name, updatedDebtor.phoneNumber),
-                variant: updatedDebtor.phoneNumber ? "default" : "destructive",
-             });
-          }
+          triggerWhatsappReminderIfNeeded(updatedDebtor, wasOverLimit);
           return updatedDebtor;
         }
         return d;
@@ -153,6 +192,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
     setDebtors(prevDebtors => 
       prevDebtors.map(debtor => {
         if (debtor.id === debtorId) {
+          const wasOverLimit = debtor.amountOwed > debtor.creditLimit;
           const newTransaction: Transaction = {
             ...transactionData,
             id: Date.now().toString() + "_tx",
@@ -168,17 +208,13 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
             lastUpdated: new Date().toISOString(),
           };
 
-          const wasOverLimit = calculateAmountOwedInternal(debtor.transactions) > debtor.creditLimit;
-          const isNowOverLimit = newAmountOwed > debtor.creditLimit;
-
-          if (!wasOverLimit && isNowOverLimit && (newTransaction.type === 'new_credit' || newTransaction.type === 'adjustment_increase' || newTransaction.type === 'initial_balance')) {
-            toast({
-              title: toastAutoAlertTitle,
-              description: toastDebtorExceededLimit(updatedDebtor.name, updatedDebtor.phoneNumber),
-              variant: updatedDebtor.phoneNumber ? "default" : "destructive",
-            });
+          toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${transactionData.amount} لـ ${debtor.name}.` });
+          
+          // Trigger reminder only if this transaction pushes them over the limit
+          // and the transaction increases debt.
+          if (transactionData.type === 'new_credit' || transactionData.type === 'adjustment_increase' || transactionData.type === 'initial_balance') {
+            triggerWhatsappReminderIfNeeded(updatedDebtor, wasOverLimit);
           }
-          toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionData.type}) بمبلغ ${transactionData.amount} لـ ${debtor.name}.` });
           return updatedDebtor;
         }
         return debtor;
