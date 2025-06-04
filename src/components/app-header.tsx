@@ -11,18 +11,14 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation"; // Changed
-// import { useTranslations } from "next-intl"; // Removed
+import { useRouter } from "next/navigation"; 
 
 export function AppHeader() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const router = useRouter();
-  // const tToast = useTranslations("Toast"); // Removed
-  // const tAppHeader = useTranslations("AppHeader"); // Removed
 
-  // Hardcoded strings
   const toastLogoutSuccessTitle = "Logged Out";
   const toastLogoutSuccessDescription = "You have been successfully logged out.";
   const toastLogoutFailedTitle = "Logout Failed";
@@ -35,7 +31,7 @@ export function AppHeader() {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push(`/login`); // No locale prefix
+      router.push("/login"); 
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }

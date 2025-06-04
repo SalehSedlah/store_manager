@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname, useParams } from "next/navigation"; // Changed to next/navigation
+import { useRouter, usePathname } from "next/navigation"; 
 
 interface AuthContextType {
   user: User | null;
@@ -20,9 +20,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const router = useRouter(); 
   const pathname = usePathname();
-  // useParams can still be used from next/navigation if needed, but locale is not primary anymore
-  // const params = useParams(); 
-  // const locale = params && typeof params.locale === 'string' ? params.locale : 'en';
   
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -37,13 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Adjusted paths for single-language app (no locale prefix)
     const isAuthPage = pathname === "/login" || pathname === "/signup";
     
     if (!user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico') { 
-      router.push("/login"); // No locale prefix
+      router.push("/login"); 
     } else if (user && isAuthPage) {
-      router.push("/dashboard"); // No locale prefix
+      router.push("/dashboard"); 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, router, pathname]);

@@ -1,8 +1,8 @@
 
 "use client";
 
-import Link from "next/link"; // Changed
-import { useRouter, usePathname } from "next/navigation"; // Changed
+import Link from "next/link"; 
+import { usePathname, useRouter } from "next/navigation"; 
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -22,7 +22,6 @@ import {
 import type { NavLink as NavLinkTypeDefinition } from "@/config/links"; 
 import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
-// import { useTranslations } from "next-intl"; // Removed
 
 export function AppSidebar() {
   const pathname = usePathname(); 
@@ -30,32 +29,21 @@ export function AppSidebar() {
   const { toast } = useToast();
   const router = useRouter(); 
   const { state: sidebarState } = useSidebar();
-  // const t = useTranslations("Sidebar"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
 
-  // Hardcoded strings
   const toastLogoutSuccessTitle = "Logged Out";
   const toastLogoutSuccessDescription = "You have been successfully logged out.";
   const toastLogoutFailedTitle = "Logout Failed";
   const logoutButtonText = "Logout";
 
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push(`/login`); // No locale prefix
+      router.push("/login"); 
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }
   };
-
-   // NavLink labels are now directly from config/links.ts (already hardcoded there)
-   const navLinksToRender = (links: NavLinkTypeDefinition[]): NavLinkTypeDefinition[] => links.map(link => ({
-    ...link,
-    href: link.href, // Ensure href does not have locale prefix
-  }));
-
 
   const renderNavLink = (link: NavLinkTypeDefinition, index: number) => (
     <SidebarMenuItem key={`${link.labelKey}-${index}`}>
@@ -63,11 +51,11 @@ export function AppSidebar() {
         <SidebarMenuButton
           asChild
           isActive={pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))}
-          tooltip={sidebarState === "collapsed" ? link.label : undefined} // Use direct label
+          tooltip={sidebarState === "collapsed" ? link.label : undefined} 
         >
           <a>
             <link.icon />
-            <span>{link.label}</span> {/* Use direct label */}
+            <span>{link.label}</span> 
           </a>
         </SidebarMenuButton>
       </Link>
@@ -77,7 +65,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
-        <Link href={`/dashboard`} className="flex items-center gap-2 text-primary"> {/* No locale prefix */}
+        <Link href="/dashboard" className="flex items-center gap-2 text-primary"> 
             <TrendingUp className="h-8 w-8" />
             {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
         </Link>
@@ -92,7 +80,7 @@ export function AppSidebar() {
               <SidebarMenuSkeleton showIcon />
             </>
           )}
-          {!loading && navLinksToRender(mainNavLinks).map(renderNavLink)}
+          {!loading && mainNavLinks.map(renderNavLink)}
         </SidebarMenu>
       </SidebarContent>
 
@@ -100,7 +88,7 @@ export function AppSidebar() {
 
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {!loading && navLinksToRender(secondaryNavLinks).map((link, index) => renderNavLink(link, index))}
+          {!loading && secondaryNavLinks.map((link, index) => renderNavLink(link, index))}
         </SidebarMenu>
       </SidebarContent>
 
