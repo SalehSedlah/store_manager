@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next-intl/navigation"; // Changed import
+import { useRouter, usePathname } from "next-intl/navigation"; // Reverted to direct import
 import { useLocale } from "next-intl";
 
 interface AuthContextType {
@@ -33,22 +33,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
-    // For next-intl, public paths are generally those not prefixed by a locale
-    // or specific locale-prefixed auth pages.
-    // The middleware handles redirecting to a locale for `/`
-    // So, `pathname` here will already be locale-prefixed if not an asset.
     const isAuthPage = pathname === `/login` || pathname === `/signup`;
-    // If the path is just `/${locale}`, it's effectively a public landing before redirect
-    const isLocaleRoot = pathname === `/${locale}`;
-
-
-    if (!user && !isAuthPage && !isLocaleRoot) {
-      // Redirect to locale-specific login
+    
+    if (!user && !isAuthPage) {
       router.push("/login");
-    } else if (user && (isAuthPage || isLocaleRoot)) {
-      // Redirect to locale-specific dashboard
+    } else if (user && isAuthPage) {
+      // If user is authenticated and on an auth page, redirect to dashboard
       router.push("/dashboard");
     }
+    // No specific handling for isLocaleRoot needed here if auth pages redirect correctly
   }, [user, loading, router, pathname, locale]);
 
   return (

@@ -1,18 +1,16 @@
 import type { Metadata, Viewport } from 'next';
-import '../globals.css'; // Adjusted path assuming globals.css is in src/app
+import '../globals.css'; 
 import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from "@/components/ui/toaster";
 import { DebtorsProvider } from '@/contexts/debtors-context';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
-import { getTranslations } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl'; // Keep this for the provider component
+import { getMessages, getTranslations } from 'next-intl/server'; // Import getMessages
 
-// It's good practice to define params type
 interface RootLayoutProps {
   children: React.ReactNode;
   params: { locale: string };
 }
 
-// Asynchronously generate metadata
 export async function generateMetadata({ params: { locale } }: Pick<RootLayoutProps, 'params'>): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'RootLayout' });
  
@@ -23,17 +21,17 @@ export async function generateMetadata({ params: { locale } }: Pick<RootLayoutPr
 }
 
 export const viewport: Viewport = {
-  themeColor: [ // Example theme color for light and dark mode
-    { media: '(prefers-color-scheme: light)', color: 'hsl(198 88% 94.1%)' }, // --background HSL
-    { media: '(prefers-color-scheme: dark)', color: 'hsl(210 20% 12%)' }, // dark --background HSL
+  themeColor: [ 
+    { media: '(prefers-color-scheme: light)', color: 'hsl(198 88% 94.1%)' }, 
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(210 20% 12%)' }, 
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({ // Make the component async
   children,
   params: { locale }
 }: Readonly<RootLayoutProps>) {
-  const messages = useMessages();
+  const messages = await getMessages(); // Load messages on the server
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -47,7 +45,7 @@ export default function RootLayout({
         )}
       </head>
       <body className={locale === 'ar' ? 'font-arabic antialiased' : 'font-body antialiased'}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}> {/* Pass server-loaded messages */}
           <AuthProvider>
             <DebtorsProvider>
               {children}

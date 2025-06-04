@@ -11,7 +11,18 @@ export default async function middleware(request: NextRequest) {
   const handleI18nRouting = createMiddleware({
     locales: ['en', 'ar'],
     defaultLocale: 'en',
-    localePrefix: 'as-needed' 
+    localePrefix: 'as-needed',
+    // Make sure this path is correct
+    // If i18n.ts is in src/internationalization/i18n.ts, then:
+    // Next-intl expects i18n.ts to be in the src directory by default
+    // If you've moved it, you need to tell next-intl where to find it.
+    // However, the error "Couldn't find next-intl config file" usually means
+    // it's looking in the default location and not finding it.
+    // Let's assume for now i18n.ts will be moved to src/i18n.ts
+    // pathnames: {
+    //   '/': '/',
+    //   '/login': '/login'
+    // }
   });
 
   const response = handleI18nRouting(request);
