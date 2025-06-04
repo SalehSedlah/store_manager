@@ -37,6 +37,7 @@ const productFormSchema = z.object({
   pricePerUnit: z.coerce.number().min(0, { message: "يجب أن يكون سعر الوحدة موجبًا أو صفرًا." }),
   currentStock: z.coerce.number().min(0, { message: "لا يمكن أن يكون المخزون سالبًا." }),
   lowStockThreshold: z.coerce.number().min(0, { message: "لا يمكن أن يكون حد المخزون المنخفض سالبًا." }),
+  piecesInUnit: z.coerce.number().min(0, {message: "عدد القطع يجب أن يكون موجباً أو صفراً."}).optional().nullable(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -64,11 +65,14 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
   const categoryLabel = "الفئة";
   const categoryPlaceholder = "مثال: فواكه، حبوب، ألبان";
   const unitLabel = "وحدة القياس";
-  const unitPlaceholder = "مثال: قطعة، كجم، لتر، علبة";
+  const unitPlaceholder = "مثال: قطعة، كجم، لتر، علبة، كرتون";
   const pricePerUnitLabel = "سعر الوحدة الواحدة (بالعملة المحلية)";
   const pricePerUnitPlaceholder = "مثال: 100";
-  const currentStockLabel = "الكمية المتوفرة في المخزون";
-  const lowStockThresholdLabel = "حد المخزون المنخفض للتنبيه";
+  const currentStockLabel = "الكمية المتوفرة في المخزون (بالوحدة الرئيسية)";
+  const lowStockThresholdLabel = "حد المخزون المنخفض للتنبيه (بالوحدة الرئيسية)";
+  const piecesInUnitLabel = "عدد القطع بالوحدة الرئيسية (إن وجدت)";
+  const piecesInUnitDescription = "مثال: إذا كانت الوحدة 'كرتونة شاي' وتحتوي على 12 علبة، أدخل 12. اترك فارغاً إذا كانت الوحدة هي القطعة نفسها.";
+  const piecesInUnitPlaceholder = "12";
   
   const cancelButton = "إلغاء";
   const addButtonText = "إضافة";
@@ -86,6 +90,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
       pricePerUnit: product.pricePerUnit,
       currentStock: product.currentStock,
       lowStockThreshold: product.lowStockThreshold,
+      piecesInUnit: product.piecesInUnit ?? null,
     } : {
       name: "",
       category: "",
@@ -93,6 +98,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
       pricePerUnit: 0,
       currentStock: 0,
       lowStockThreshold: 0,
+      piecesInUnit: null,
     },
   });
 
@@ -106,9 +112,10 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
           pricePerUnit: product.pricePerUnit,
           currentStock: product.currentStock,
           lowStockThreshold: product.lowStockThreshold,
+          piecesInUnit: product.piecesInUnit ?? null,
         });
       } else {
-        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, currentStock: 0, lowStockThreshold: 0 });
+        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, currentStock: 0, lowStockThreshold: 0, piecesInUnit: null });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,10 +123,15 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
 
   function onSubmit(data: ProductFormValues) {
     try {
+      const productDataToSave = {
+        ...data,
+        piecesInUnit: data.piecesInUnit === null ? undefined : data.piecesInUnit, // Convert null to undefined for storage if needed
+      };
+
       if (isEditing && product) {
-        updateProduct(product.id, data);
+        updateProduct(product.id, productDataToSave);
       } else {
-        addProduct(data);
+        addProduct(productDataToSave);
       }
       setIsOpen(false);
       if (onFormSubmit) onFormSubmit();
@@ -197,6 +209,24 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="piecesInUnit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{piecesInUnitLabel}</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder={piecesInUnitPlaceholder} 
+                           {...field} 
+                           onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
+                           value={field.value ?? ""} 
+                    />
+                  </FormControl>
+                  <FormDescription>{piecesInUnitDescription}</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -227,7 +257,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline" onClick={() => form.reset()}>{cancelButton}</Button>
+                <Button type="button" variant="outline" onClick={() => { form.reset(); setIsOpen(false); }}>{cancelButton}</Button>
               </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? savingButtonText : (isEditing ? saveButtonText : addButtonText)}

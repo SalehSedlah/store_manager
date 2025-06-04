@@ -39,7 +39,6 @@ export function ProductList() {
   const priceHeader = "سعر الوحدة";
   const currentStockHeader = "الكمية";
   const totalValueHeader = "القيمة الإجمالية";
-  // const lowStockThresholdHeader = "حد المخزون المنخفض"; // Not displayed in table, but used for status
   const statusHeader = "الحالة";
   const lastUpdatedHeader = "آخر تحديث";
   const actionsHeader = "الإجراءات";
@@ -60,12 +59,15 @@ export function ProductList() {
     deleteProduct(id);
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (typeof amount !== 'number' || !isFinite(amount)) {
+      return (0).toLocaleString('ar-EG', { style: 'currency', currency: 'SAR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
     return amount.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const totalStockValue = useMemo(() => {
-    return products.reduce((sum, p) => sum + (p.pricePerUnit * p.currentStock), 0);
+    return products.reduce((sum, p) => sum + ((Number(p.pricePerUnit) || 0) * (Number(p.currentStock) || 0)), 0);
   }, [products]);
 
   if (loadingProducts) {
@@ -92,7 +94,7 @@ export function ProductList() {
               <TableHead>{categoryHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{priceHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{currentStockHeader}</TableHead>
-              <TableHead className="text-left rtl:text-right">{unitHeader}</TableHead>
+              {/* <TableHead className="text-left rtl:text-right">{unitHeader}</TableHead> // Combined with الكمية */}
               <TableHead className="text-left rtl:text-right">{totalValueHeader}</TableHead>
               <TableHead>{statusHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{lastUpdatedHeader}</TableHead>
@@ -101,10 +103,14 @@ export function ProductList() {
           </TableHeader>
           <TableBody>
             {products.map((product) => {
-              const isLowStock = product.currentStock > 0 && product.currentStock <= product.lowStockThreshold;
-              const isOutOfStock = product.currentStock === 0;
+              const currentStockNum = Number(product.currentStock) || 0;
+              const lowStockThresholdNum = Number(product.lowStockThreshold) || 0;
+              const piecesInUnitNum = product.piecesInUnit !== undefined ? Number(product.piecesInUnit) : 0;
+
+              const isLowStock = currentStockNum > 0 && currentStockNum <= lowStockThresholdNum;
+              const isOutOfStock = currentStockNum === 0;
               const lastUpdatedFormatted = new Date(product.lastUpdated).toLocaleDateString('ar-EG');
-              const productTotalValue = product.pricePerUnit * product.currentStock;
+              const productTotalValue = (Number(product.pricePerUnit) || 0) * currentStockNum;
               
               let statusBadge;
               if (isOutOfStock) {
@@ -114,14 +120,23 @@ export function ProductList() {
               } else {
                   statusBadge = <Badge variant="default" className="bg-green-600 hover:bg-green-700">{statusInStock}</Badge>;
               }
+
+              const displayQuantity = () => {
+                const stockStr = currentStockNum.toLocaleString('ar-EG');
+                if (piecesInUnitNum && piecesInUnitNum > 0) {
+                  const totalPiecesStr = (currentStockNum * piecesInUnitNum).toLocaleString('ar-EG');
+                  return `${stockStr} ${product.unit} (${totalPiecesStr} قطعة)`;
+                }
+                return `${stockStr} ${product.unit}`;
+              };
               
               return (
                 <TableRow key={product.id} className={isOutOfStock ? "bg-destructive/10" : (isLowStock ? "bg-yellow-500/10" : "")}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{product.category}</TableCell>
                   <TableCell className="text-left rtl:text-right">{formatCurrency(product.pricePerUnit)}</TableCell>
-                  <TableCell className="text-left rtl:text-right font-semibold">{product.currentStock.toLocaleString('ar-EG')}</TableCell>
-                  <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{product.unit}</TableCell>
+                  <TableCell className="text-left rtl:text-right font-semibold">{displayQuantity()}</TableCell>
+                  {/* <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{product.unit}</TableCell> // Combined with الكمية */}
                   <TableCell className="text-left rtl:text-right font-semibold">{formatCurrency(productTotalValue)}</TableCell>
                   <TableCell>{statusBadge}</TableCell>
                   <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>

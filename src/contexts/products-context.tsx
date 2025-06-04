@@ -39,7 +39,16 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       try {
         const storedProductsString = localStorage.getItem(storageKey);
         if (storedProductsString) {
-          setProducts(JSON.parse(storedProductsString));
+          const parsedProducts: Product[] = JSON.parse(storedProductsString);
+          // Ensure numeric types are correct after parsing
+          const validatedProducts = parsedProducts.map(p => ({
+            ...p,
+            pricePerUnit: Number(p.pricePerUnit) || 0,
+            currentStock: Number(p.currentStock) || 0,
+            lowStockThreshold: Number(p.lowStockThreshold) || 0,
+            piecesInUnit: p.piecesInUnit !== undefined ? Number(p.piecesInUnit) : undefined,
+          }));
+          setProducts(validatedProducts);
         } else {
           setProducts([]);
         }
@@ -70,6 +79,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       pricePerUnit: Number(productData.pricePerUnit) || 0,
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
+      piecesInUnit: productData.piecesInUnit !== undefined ? Number(productData.piecesInUnit) : undefined,
       id: Date.now().toString(),
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
@@ -89,6 +99,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
               pricePerUnit: Number(productData.pricePerUnit) || 0,
               currentStock: Number(productData.currentStock) || 0,
               lowStockThreshold: Number(productData.lowStockThreshold) || 0,
+              piecesInUnit: productData.piecesInUnit !== undefined ? Number(productData.piecesInUnit) : undefined,
               lastUpdated: new Date().toISOString() 
             }
           : p
