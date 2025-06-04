@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next-intl/navigation"; // Reverted to direct import
+import * as NextIntlNavigation from "next-intl/navigation";
 import { useLocale } from "next-intl";
 
 interface AuthContextType {
@@ -18,9 +18,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
+  // Initialize router and pathname as null
+  const [router, setRouter] = useState<ReturnType<typeof NextIntlNavigation.useRouter> | null>(null);
+  const [pathname, setPathname] = useState<ReturnType<typeof NextIntlNavigation.usePathname> | null>(null);
+  
   const locale = useLocale();
+
+  // Effect to set router and pathname on client side
+  useEffect(() => {
+    // These hooks should only be called on the client side.
+    setRouter(NextIntlNavigation.useRouter());
+    setPathname(NextIntlNavigation.usePathname());
+  }, []); // Empty dependency array ensures this runs once on mount (client-side)
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -31,17 +41,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
+    // Guard against running this effect if router or pathname are not yet initialized
+    if (loading || !router || !pathname) return;
 
     const isAuthPage = pathname === `/login` || pathname === `/signup`;
     
+    // Ensure router.push is only called with valid, initialized router
     if (!user && !isAuthPage) {
       router.push("/login");
     } else if (user && isAuthPage) {
-      // If user is authenticated and on an auth page, redirect to dashboard
       router.push("/dashboard");
     }
-    // No specific handling for isLocaleRoot needed here if auth pages redirect correctly
   }, [user, loading, router, pathname, locale]);
 
   return (
