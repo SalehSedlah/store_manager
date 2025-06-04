@@ -1,0 +1,170 @@
+
+"use client";
+
+import type { Debtor, Transaction } from "@/types/debt";
+import { useDebtors } from "@/contexts/debtors-context";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AddTransactionForm } from "./add-transaction-form";
+import { Badge } from "@/components/ui/badge";
+import { useState, useMemo, useEffect } from "react";
+
+interface DebtorStatementDialogProps {
+  debtor: Debtor | null;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenChange }: DebtorStatementDialogProps) {
+  const { getDebtorById, calculateAmountOwed } = useDebtors();
+  const [showAddTransactionForm, setShowAddTransactionForm] = useState(false);
+
+  // Use internal state for debtor to reflect updates from transactions
+  const [currentDebtor, setCurrentDebtor] = useState<Debtor | null>(initialDebtor);
+
+  useEffect(() => {
+    if (initialDebtor?.id) {
+      // Re-fetch debtor from context if ID changes or dialog opens, to get latest transactions
+      const updatedDebtorFromContext = getDebtorById(initialDebtor.id);
+      setCurrentDebtor(updatedDebtorFromContext || null);
+    } else {
+      setCurrentDebtor(null);
+    }
+  }, [initialDebtor, getDebtorById, isOpen]);
+
+
+  const dialogTitle = "Debtor Account Statement";
+  const debtorNameLabel = "Debtor:";
+  const currentBalanceLabel = "Current Balance:";
+  const transactionsHeader = "Transactions";
+  const dateHeader = "Date";
+  const typeHeader = "Type";
+  const descriptionHeader = "Description";
+  const amountHeader = "Amount";
+  const runningBalanceHeader = "Balance";
+  const noTransactionsText = "No transactions recorded for this debtor yet.";
+  const addTransactionButtonText = "Add New Transaction";
+  const closeButtonText = "Close";
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const transactionTypeLabels: Record<Transaction['type'], string> = {
+    initial_balance: "Initial Balance",
+    payment: "Payment",
+    new_credit: "New Credit",
+    adjustment_increase: "Adjustment (Inc.)",
+    adjustment_decrease: "Adjustment (Dec.)",
+  };
+  
+  const sortedTransactions = useMemo(() => {
+    if (!currentDebtor || !currentDebtor.transactions) return [];
+    return [...currentDebtor.transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [currentDebtor]);
+
+  const transactionsWithRunningBalance = useMemo(() => {
+    let runningBalance = 0;
+    return sortedTransactions.map(tx => {
+      switch (tx.type) {
+        case 'initial_balance':
+        case 'new_credit':
+        case 'adjustment_increase':
+          runningBalance += tx.amount;
+          break;
+        case 'payment':
+        case 'adjustment_decrease':
+          runningBalance -= tx.amount;
+          break;
+      }
+      return { ...tx, runningBalance };
+    });
+  }, [sortedTransactions]);
+
+  const handleTransactionAdded = () => {
+    setShowAddTransactionForm(false); // Hide form after adding
+    // Re-fetch/update currentDebtor to reflect new transaction and balance
+    if (currentDebtor?.id) {
+      setCurrentDebtor(getDebtorById(currentDebtor.id) || null);
+    }
+  };
+
+  if (!currentDebtor) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl bg-card">
+        <DialogHeader>
+          <DialogTitle className="font-headline text-2xl">{dialogTitle}</DialogTitle>
+          <DialogDescription>
+            {debtorNameLabel} <span className="font-semibold">{currentDebtor.name}</span> | {currentBalanceLabel} <span className="font-semibold text-lg">{formatCurrency(currentDebtor.amountOwed)}</span>
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="my-4">
+          <Button onClick={() => setShowAddTransactionForm(!showAddTransactionForm)} variant="outline">
+            {showAddTransactionForm ? "Cancel Adding Transaction" : addTransactionButtonText}
+          </Button>
+          {showAddTransactionForm && (
+            <AddTransactionForm debtorId={currentDebtor.id} onTransactionAdded={handleTransactionAdded} />
+          )}
+        </div>
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">{transactionsHeader}</h3>
+        {transactionsWithRunningBalance.length > 0 ? (
+          <ScrollArea className="h-[300px] border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{dateHeader}</TableHead>
+                  <TableHead>{typeHeader}</TableHead>
+                  <TableHead>{descriptionHeader}</TableHead>
+                  <TableHead className="text-right rtl:text-left">{amountHeader}</TableHead>
+                  <TableHead className="text-right rtl:text-left">{runningBalanceHeader}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactionsWithRunningBalance.map((tx) => (
+                  <TableRow key={tx.id}>
+                    <TableCell className="text-sm text-muted-foreground">{formatDate(tx.date)}</TableCell>
+                    <TableCell>
+                       <Badge variant={tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'secondary' : 'outline'}
+                              className={tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'text-green-700 dark:text-green-400 border-green-500' : (tx.type === 'new_credit' || tx.type === 'adjustment_increase' || tx.type === 'initial_balance' ? 'text-red-700 dark:text-red-400 border-red-500' : '')}
+                       >
+                         {transactionTypeLabels[tx.type] || tx.type}
+                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{tx.description || "N/A"}</TableCell>
+                    <TableCell className={`text-right rtl:text-left font-medium ${tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'text-green-600' : 'text-red-600'}`}>
+                      {tx.type === 'payment' || tx.type === 'adjustment_decrease' ? '-' : '+'}
+                      {formatCurrency(tx.amount)}
+                    </TableCell>
+                    <TableCell className="text-right rtl:text-left font-semibold">{formatCurrency(tx.runningBalance)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        ) : (
+          <p className="text-muted-foreground text-center py-4">{noTransactionsText}</p>
+        )}
+        <DialogClose asChild className="mt-6">
+          <Button type="button" variant="outline">{closeButtonText}</Button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
+}
