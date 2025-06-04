@@ -4,6 +4,8 @@
 import type { Debtor } from "@/types/debt";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useAuth } from "./auth-context";
+import { toast } from "@/hooks/use-toast"; // Import the toast function
+
 // For a real app, you'd use Firebase Firestore here
 // For this example, we'll use localStorage for persistence to simulate a backend
 // and make data available across sessions and pages.
@@ -25,6 +27,14 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loadingDebtors, setLoadingDebtors] = useState(true);
+
+  // Hardcoded toast messages in English
+  const toastAutoAlertTitle = "Automatic Alert Triggered";
+  const toastDebtorAddedOverLimit = (name: string, phone?: string) => 
+    `${name} was added exceeding the credit limit. ${phone ? `A notification to ${phone} has been simulated.` : 'A notification has been simulated (phone number missing).'}`;
+  const toastDebtorExceededLimit = (name: string, phone?: string) =>
+    `${name} has now exceeded the credit limit. ${phone ? `A notification to ${phone} has been simulated.` : 'A notification has been simulated (phone number missing).'}`;
+
 
   const getStorageKey = () => user ? `${LOCAL_STORAGE_KEY_PREFIX}${user.uid}` : null;
 
@@ -68,14 +78,42 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       lastUpdated: new Date().toISOString(),
     };
     setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
+
+    if (newDebtor.amountOwed > newDebtor.creditLimit) {
+      toast({
+        title: toastAutoAlertTitle,
+        description: toastDebtorAddedOverLimit(newDebtor.name, newDebtor.phoneNumber),
+        variant: newDebtor.phoneNumber ? "default" : "destructive", // Destructive if no phone for alert
+      });
+    }
   };
 
-  const updateDebtor = (updatedDebtor: Debtor) => {
+  const updateDebtor = (updatedDebtorData: Debtor) => {
+    const existingDebtor = debtors.find(d => d.id === updatedDebtorData.id);
+    const newDebtorState: Debtor = {
+        ...updatedDebtorData,
+        lastUpdated: new Date().toISOString(),
+        userId: user?.uid
+    };
+
     setDebtors((prevDebtors) =>
       prevDebtors.map((debtor) =>
-        debtor.id === updatedDebtor.id ? { ...updatedDebtor, lastUpdated: new Date().toISOString(), userId: user?.uid } : debtor
+        debtor.id === newDebtorState.id ? newDebtorState : debtor
       )
     );
+
+    if (existingDebtor) {
+      const wasOverLimit = existingDebtor.amountOwed > existingDebtor.creditLimit;
+      const isNowOverLimit = newDebtorState.amountOwed > newDebtorState.creditLimit;
+
+      if (!wasOverLimit && isNowOverLimit) {
+        toast({
+          title: toastAutoAlertTitle,
+          description: toastDebtorExceededLimit(newDebtorState.name, newDebtorState.phoneNumber),
+          variant: newDebtorState.phoneNumber ? "default" : "destructive",
+        });
+      }
+    }
   };
 
   const deleteDebtor = (id: string) => {
