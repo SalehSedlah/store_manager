@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { DebtorsProvider } from '@/contexts/debtors-context';
+import { ProductsProvider } from '@/contexts/products-context'; // Added ProductsProvider
 import { Toaster } from "@/components/ui/toaster";
 import { Inter } from 'next/font/google';
 
@@ -31,8 +32,10 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <DebtorsProvider>
-            {children}
-            <Toaster />
+            <ProductsProvider> {/* ProductsProvider wraps children */}
+              {children}
+              <Toaster />
+            </ProductsProvider>
           </DebtorsProvider>
         </AuthProvider>
       </body>

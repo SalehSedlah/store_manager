@@ -35,6 +35,7 @@ export function AppSidebar() {
     dashboard: "Dashboard",
     debtManagement: "Debt Management",
     aiAssistant: "AI Assistant",
+    products: "Products", // Added label for Products
     // settings: "Settings" // if you add settings back
   };
   const toastLogoutSuccessTitle = "Logged Out";
@@ -85,6 +86,7 @@ export function AppSidebar() {
               <SidebarMenuSkeleton showIcon />
               <SidebarMenuSkeleton showIcon />
               <SidebarMenuSkeleton showIcon />
+              <SidebarMenuSkeleton showIcon /> {/* Added one for Products */}
             </>
           )}
           {!loading && mainNavLinks.map(renderNavLink)}
