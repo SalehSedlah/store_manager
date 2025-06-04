@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next/navigation"; // Changed import
+import { useRouter, usePathname } from "next/navigation"; // Ensure using next/navigation
 
 interface AuthContextType {
   user: User | null;
@@ -34,13 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    const isAuthPage = pathname.endsWith("/login") || pathname.endsWith("/signup");
+    // Simplified routing logic as [locale] might become just 'en' or be removed later
+    const isAuthPage = pathname.endsWith("/login") || pathname.endsWith("/signup"); 
     
-    if (!user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico') { // Added more checks to avoid redirect loops
-      router.push("/login");
+    if (!user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico') { 
+      const targetPath = pathname.includes("login") || pathname.includes("signup") ? pathname : "/login";
+      router.push(targetPath.startsWith("/en/") ? targetPath : `/en${targetPath}`);
     } else if (user && isAuthPage) {
-      router.push("/dashboard");
+      router.push("/en/dashboard"); // Assuming 'en' will be the locale segment for now
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, router, pathname]);
 
   return (

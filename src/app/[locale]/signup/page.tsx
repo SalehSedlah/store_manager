@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, Link } from "next/navigation"; // Changed import
+import { useRouter, Link } from "next/navigation"; 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { TrendingUp } from "lucide-react";
-// import { useTranslations } from "next-intl"; // Removed
 
-export default function SignupPage() {
-  // const t = useTranslations("SignupPage"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
-  // const tApp = useTranslations("App"); // Removed
-
+export default function SignupPage({ params }: { params: { locale: string }}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,6 +20,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const locale = params.locale || 'en';
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +38,7 @@ export default function SignupPage() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       toast({ title: "Signup Successful", description: "Redirecting to dashboard..." });
-      router.push("/dashboard"); 
+      router.push(`/${locale}/dashboard`); 
     } catch (err: any) {
       let errorMessage = err.message;
        if (err.code === "auth/email-already-in-use") {
@@ -115,7 +111,7 @@ export default function SignupPage() {
           </form>
           <p className="mt-6 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link href={`/${locale}/login`} className="font-medium text-primary hover:underline">
               Login
             </Link>
           </p>

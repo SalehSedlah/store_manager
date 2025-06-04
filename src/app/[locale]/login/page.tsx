@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, Link } from "next/navigation"; // Changed import
+import { useRouter, Link } from "next/navigation"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -11,19 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { TrendingUp } from "lucide-react";
-// import { useTranslations } from "next-intl"; // Removed
 
-export default function LoginPage() {
-  // const t = useTranslations("LoginPage"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
-  // const tApp = useTranslations("App"); // Removed
-
+export default function LoginPage({ params }: { params: { locale: string }}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const locale = params.locale || 'en';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +28,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
-      router.push("/dashboard"); 
+      router.push(`/${locale}/dashboard`); 
     } catch (err: any) {
       let errorMessage = err.message;
       if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
@@ -91,7 +87,7 @@ export default function LoginPage() {
           </form>
           <p className="mt-6 text-center text-sm">
             Don't have an account?{" "}
-            <Link href="/signup" className="font-medium text-primary hover:underline">
+            <Link href={`/${locale}/signup`} className="font-medium text-primary hover:underline">
               Sign up
             </Link>
           </p>

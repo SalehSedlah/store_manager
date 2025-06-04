@@ -5,20 +5,17 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation"; // Changed import
+import { useRouter } from "next/navigation"; 
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { useTranslations } from "next-intl"; // Removed
-
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  // const t = useTranslations("AuthGuard"); // Removed
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/login"); 
+      router.replace("/en/login"); // Assuming 'en' will be the locale segment
     }
   }, [user, loading, router]);
 

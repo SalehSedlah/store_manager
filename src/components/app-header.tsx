@@ -11,30 +11,32 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation"; // Changed import
-// import { useTranslations } from "next-intl"; // Removed
+import { useRouter, usePathname } from "next/navigation"; 
 
 export function AppHeader() {
-  // const t = useTranslations("AppHeader"); // Removed
-  // const tSidebar = useTranslations("Sidebar"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+  
+  // Determine current locale from pathname, default to 'en'
+  const pathSegments = pathname.split('/');
+  const locale = pathSegments[1] && pathSegments[1].length === 2 ? pathSegments[1] : 'en';
+
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push("/login");
+      router.push(`/${locale}/login`);
     } catch (error: any) {
       toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
     }
   };
   
   const getInitials = (email?: string | null) => {
-    if (!email) return "DV"; // Hardcoded fallback
+    if (!email) return "DV"; 
     const parts = email.split("@")[0].split(/[\s._-]+/); 
     if (parts.length > 1 && parts[0] && parts[1]) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();

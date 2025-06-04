@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Link, useRouter, usePathname } from "next/navigation"; // Changed import
+import { Link, useRouter, usePathname } from "next/navigation"; 
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -18,35 +18,36 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { NavLink as NavLinkType } from "@/config/links"; // Assuming NavLink interface is updated
-import { mainNavLinks, secondaryNavLinks } from "@/config/links"; // Assuming links are updated
+import type { NavLink as NavLinkType } from "@/config/links"; 
+import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
-// import { useTranslations } from "next-intl"; // Removed
 
 export function AppSidebar() {
-  // const t = useTranslations("Sidebar"); // Removed
-  // const tApp = useTranslations("App"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const { state: sidebarState } = useSidebar();
 
+  // Determine current locale from pathname, default to 'en'
+  const pathSegments = pathname.split('/');
+  const locale = pathSegments[1] && pathSegments[1].length === 2 ? pathSegments[1] : 'en';
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push("/login"); 
+      router.push(`/${locale}/login`); 
     } catch (error: any) {
       toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
     }
   };
 
-  // Assuming NavLink labels in config/links.ts are now direct strings or handled differently
    const navLinksToRender = (links: NavLinkType[]): NavLinkType[] => links.map(link => ({
     ...link,
-    label: link.label // Assuming label is now a direct string
+    // Prepend locale to href if it's not an external link
+    href: link.href.startsWith('http') ? link.href : `/${locale}${link.href}`,
+    label: link.label 
   }));
 
 
@@ -55,7 +56,8 @@ export function AppSidebar() {
       <Link href={link.href} passHref legacyBehavior>
         <SidebarMenuButton
           asChild
-          isActive={link.isActive ? link.isActive(pathname) : pathname.startsWith(link.href)}
+          // isActive for prefixed links needs to check the path *after* the locale
+          isActive={pathname.startsWith(link.href)}
           tooltip={sidebarState === "collapsed" ? link.label : undefined}
         >
           <a>
@@ -70,7 +72,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
-        <Link href="/dashboard" className="flex items-center gap-2 text-primary">
+        <Link href={`/${locale}/dashboard`} className="flex items-center gap-2 text-primary">
             <TrendingUp className="h-8 w-8" />
             {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
         </Link>

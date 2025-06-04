@@ -5,8 +5,8 @@ export function middleware(request: NextRequest): NextResponse {
   // THIS IS A CRITICAL LOG TO CHECK IF MIDDLEWARE IS RUNNING
   console.log(`[MIDDLEWARE_DEBUG] Middleware is running for request: ${request.nextUrl.pathname}`);
 
-  // For now, just apply security headers without next-intl
-  const response = NextResponse.next(); // Create a basic response
+  // Apply security headers
+  const response = NextResponse.next(); 
 
   response.headers.set('x-content-type-options', 'nosniff');
   response.headers.set('x-dns-prefetch-control', 'off');
