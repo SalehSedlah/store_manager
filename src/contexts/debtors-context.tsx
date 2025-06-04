@@ -5,7 +5,7 @@ import type { Debtor, Transaction, TransactionType } from "@/types/debt";
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { useAuth } from "./auth-context";
 import { toast } from "@/hooks/use-toast";
-import { generateWhatsappReminder, type WhatsappReminderInput } from "@/ai/flows/whatsapp-reminder-flow";
+import { generateWhatsappReminder, type WhatsappReminderInput, prepareTransactionsForReminder } from "@/ai/flows/whatsapp-reminder-flow";
 import { WhatsappReminderToastAction } from "@/components/debt-management/whatsapp-reminder-toast-action";
 
 
@@ -35,18 +35,31 @@ const transactionTypeArabic: Record<TransactionType, string> = {
 
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
   return transactions.reduce((balance, tx) => {
+    let newBalance = balance;
+    const amount = Number(tx.amount); // Ensure tx.amount is treated as a number
+
+    if (isNaN(amount) || !isFinite(amount)) {
+      console.error(`Invalid or non-finite amount in transaction, skipping:`, tx);
+      return balance; // Skip transaction with invalid amount
+    }
+
     switch (tx.type) {
       case 'initial_balance':
       case 'new_credit':
       case 'adjustment_increase':
-        return balance + tx.amount;
+        newBalance += amount;
+        break;
       case 'payment':
       case 'adjustment_decrease':
       case 'full_settlement':
-        return balance - tx.amount;
+        newBalance -= amount;
+        break;
       default:
-        return balance;
+        console.warn(`Unknown transaction type: ${tx.type}`);
+        return balance; 
     }
+    // Round to 2 decimal places at each step to avoid floating point issues
+    return parseFloat(newBalance.toFixed(2));
   }, 0);
 };
 
@@ -75,8 +88,8 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
           const storedDebtors: Debtor[] = JSON.parse(storedDebtorsString);
           const debtorsWithCalculatedAmounts = storedDebtors.map(d => ({
             ...d,
+            transactions: (d.transactions || []).map(tx => ({...tx, amount: Number(tx.amount) || 0})), // Ensure amounts are numbers
             amountOwed: calculateAmountOwedInternal(d.transactions || []),
-            transactions: d.transactions || []
           }));
           setDebtors(debtorsWithCalculatedAmounts);
         } else {
@@ -114,19 +127,13 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
 
     if (justExceededLimit || newDebtorOverLimit) {
       try {
-        const relevantTransactions = (debtor.transactions || [])
-          .map(tx => ({
-            date: new Date(tx.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }),
-            type: transactionTypeArabic[tx.type] || tx.type,
-            amount: tx.amount,
-            description: tx.description,
-          }));
+        const transactionsForReminder = await prepareTransactionsForReminder(debtor.transactions || []);
 
         const input: WhatsappReminderInput = {
           debtorName: debtor.name,
           amountOwed: debtor.amountOwed,
           creditLimit: debtor.creditLimit,
-          transactions: relevantTransactions,
+          transactions: transactionsForReminder,
           debtorPhoneNumber: debtor.phoneNumber,
         };
         const result = await generateWhatsappReminder(input);
@@ -152,11 +159,12 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
   };
 
   const addDebtor = (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed">, initialAmount: number) => {
+    const initialTransactionAmount = Number(initialAmount) || 0;
     const initialTransaction: Transaction = {
       id: Date.now().toString() + "_tx_init",
       date: new Date().toISOString(),
       type: 'initial_balance',
-      amount: initialAmount,
+      amount: initialTransactionAmount,
       description: 'رصيد افتتاحي',
     };
 
@@ -165,14 +173,14 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       id: Date.now().toString(),
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
-      transactions: initialAmount > 0 ? [initialTransaction] : [], // Only add initial balance if > 0
-      amountOwed: initialAmount > 0 ? calculateAmountOwedInternal([initialTransaction]) : 0,
+      transactions: initialTransactionAmount > 0 ? [initialTransaction] : [],
+      amountOwed: initialTransactionAmount > 0 ? calculateAmountOwedInternal([initialTransaction]) : 0,
     };
     setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
     setTimeout(() => {
         toast({ title: toastDebtorAddedTitle, description: `تمت إضافة ${newDebtor.name}.` });
     }, 0);
-    if (initialAmount > 0) { // Only trigger reminder if there's an initial debt
+    if (initialTransactionAmount > 0) { 
         triggerWhatsappReminderIfNeeded(newDebtor); 
     }
   };
@@ -217,6 +225,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
             ...transactionData,
             id: Date.now().toString() + "_tx_" + Math.random().toString(36).substring(2, 7),
             date: new Date().toISOString(),
+            amount: Number(transactionData.amount) || 0, // Ensure amount is a number
           };
           const updatedTransactions = [...(debtor.transactions || []), newTransaction];
           const newAmountOwed = calculateAmountOwedInternal(updatedTransactions);
@@ -229,7 +238,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
           };
           
           setTimeout(() => {
-            toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${transactionData.amount} لـ ${debtor.name}.` });
+            toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${newTransaction.amount} لـ ${debtor.name}.` });
           }, 0);
           
           debtorForReminder = updatedDebtor;
@@ -246,12 +255,11 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
 
   const deleteDebtor = (id: string) => {
     setDebtors((prevDebtors) => prevDebtors.filter((debtor) => debtor.id !== id));
-    // No toast here, as it's handled in DebtorList for user confirmation
   };
 
-  const getDebtorById = (id: string): Debtor | undefined => {
+  const getDebtorById = useCallback((id: string): Debtor | undefined => {
     return debtors.find(debtor => debtor.id === id);
-  };
+  }, [debtors]);
 
   return (
     <DebtorsContext.Provider value={{ 

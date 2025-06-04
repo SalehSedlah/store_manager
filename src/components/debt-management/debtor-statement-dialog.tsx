@@ -53,7 +53,11 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
   const closeButtonText = "إغلاق";
 
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' }); // Assuming SAR for Arabic
+    if (typeof amount !== 'number' || !isFinite(amount)) {
+      console.error(`Invalid amount passed to formatCurrency: ${amount}`);
+      amount = 0; // Default to 0 if amount is not a valid finite number
+    }
+    return amount.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' });
   };
 
   const formatDate = (dateString: string) => {
@@ -71,15 +75,12 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
   
   const sortedTransactions = useMemo(() => {
     if (!currentDebtor || !currentDebtor.transactions) return [];
-    // Sort by date, then by ID (timestamp based) for tie-breaking to ensure consistent order for same-day transactions
     return [...currentDebtor.transactions].sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
         if (dateA !== dateB) {
             return dateA - dateB;
         }
-        // If dates are the same, sort by ID (assuming IDs are time-based or sequential)
-        // This part might need adjustment if IDs are not inherently sortable this way
         return a.id.localeCompare(b.id);
     });
   }, [currentDebtor]);
@@ -87,28 +88,35 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
   const transactionsWithRunningBalance = useMemo(() => {
     let runningBalance = 0;
     return sortedTransactions.map(tx => {
-      switch (tx.type) {
-        case 'initial_balance':
-        case 'new_credit':
-        case 'adjustment_increase':
-          runningBalance += tx.amount;
-          break;
-        case 'payment':
-        case 'adjustment_decrease':
-        case 'full_settlement':
-          runningBalance -= tx.amount;
-          break;
+      let newRunningBalance = runningBalance;
+      const currentTxAmount = Number(tx.amount); // Ensure tx.amount is treated as a number
+
+      if (isNaN(currentTxAmount) || !isFinite(currentTxAmount)) {
+        console.error('Invalid or non-finite amount in transaction for running balance calculation:', tx);
+        // Keep runningBalance as is for this erroneous transaction
+        // The 'amount' field in the returned object will reflect the (potentially NaN) original tx.amount
+      } else {
+        switch (tx.type) {
+          case 'initial_balance':
+          case 'new_credit':
+          case 'adjustment_increase':
+            newRunningBalance += currentTxAmount;
+            break;
+          case 'payment':
+          case 'adjustment_decrease':
+          case 'full_settlement':
+            newRunningBalance -= currentTxAmount;
+            break;
+        }
       }
-      // Round to 2 decimal places to avoid floating point issues
-      runningBalance = parseFloat(runningBalance.toFixed(2));
-      return { ...tx, runningBalance };
+      runningBalance = parseFloat(newRunningBalance.toFixed(2));
+      return { ...tx, runningBalance, amount: currentTxAmount }; // Pass numeric amount
     });
   }, [sortedTransactions]);
 
   const handleTransactionAdded = () => {
     setShowAddTransactionForm(false);
     if (currentDebtor?.id) {
-      // Re-fetch the debtor to get the latest transactions and amountOwed
       const updatedDebtor = getDebtorById(currentDebtor.id);
       setCurrentDebtor(updatedDebtor || null);
     }
@@ -164,8 +172,8 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
                        </Badge>
                     </TableCell>
                     <TableCell className="text-sm">{tx.description || "غير متاح"}</TableCell>
-                    <TableCell className={`text-left rtl:text-right font-medium ${tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? 'text-green-600' : 'text-red-600'}`}>
-                      {tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? '-' : '+'}
+                    <TableCell className={`text-left rtl:text-right font-medium ${ (typeof tx.amount === 'number' && !isNaN(tx.amount)) ? (tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? 'text-green-600' : 'text-red-600') : 'text-muted-foreground'}`}>
+                      { (typeof tx.amount === 'number' && !isNaN(tx.amount)) ? (tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? '-' : '+') : ''}
                       {formatCurrency(tx.amount)}
                     </TableCell>
                     <TableCell className="text-left rtl:text-right font-semibold">{formatCurrency(tx.runningBalance)}</TableCell>
