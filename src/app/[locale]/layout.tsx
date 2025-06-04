@@ -1,8 +1,7 @@
 
 import type { ReactNode } from 'react';
-import { Inter } from 'next/font/google'; 
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+// Removed Inter font import from here, it will be in RootLayout
 
 type Props = {
   children: ReactNode;
@@ -11,19 +10,18 @@ type Props = {
 
 export async function generateMetadata({ params: { locale } }: Props) {
   console.log(`[LocaleLayout-DEBUG] generateMetadata called for locale: ${locale}`);
+  // Since we removed next-intl, a static title is fine.
+  // If you re-add next-intl, you'd fetch translations here.
   return {
     title: "DebtVision", 
   };
 }
 
 export default function LocaleLayout({ children, params: { locale } }: Props) {
+  // This console.log is fine for debugging if needed
   console.log(`[LocaleLayout-DEBUG] Rendering LocaleLayout for locale: ${locale}`);
 
-  return (
-    <html lang="en" dir="ltr" className={`${inter.variable}`}>
-        <body>
-            {children}
-        </body>
-    </html>
-  );
+  // This layout should NOT render <html> or <body> tags.
+  // It only provides the content for the specific locale segment.
+  return <>{children}</>;
 }

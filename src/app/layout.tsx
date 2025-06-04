@@ -4,8 +4,10 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from "@/components/ui/toaster";
 import { DebtorsProvider } from '@/contexts/debtors-context';
+import { Inter } from 'next/font/google'; // Import Inter font
 
-// Note: Metadata here is general. Locale-specific metadata might be in [locale]/layout.tsx
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' }); // Instantiate Inter font
+
 export const metadata: Metadata = {
   title: 'DebtVision',
   description: 'Manage your debts with AI-powered insights.',
@@ -24,14 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // The lang and dir attributes will be handled by the [locale]/layout.tsx
-    <html suppressHydrationWarning> 
+    <html lang="en" dir="ltr" className={`${inter.variable}`} suppressHydrationWarning> 
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Google Fonts <link> tags are handled by next/font, no need for manual <link> here if using Inter from next/font */}
       </head>
-      <body className={'font-body antialiased'}>
+      <body className={'font-body antialiased'}> {/* Applied Inter font variable to html tag, body classes are fine */}
           <AuthProvider>
             <DebtorsProvider>
               {children}
