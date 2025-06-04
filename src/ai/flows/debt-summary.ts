@@ -37,7 +37,13 @@ const DebtSummaryOutputSchema = z.object({
 export type DebtSummaryOutput = z.infer<typeof DebtSummaryOutputSchema>;
 
 export async function getDebtSummary(input: DebtSummaryInput): Promise<DebtSummaryOutput> {
-  return debtSummaryFlow(input);
+  try {
+    const result = await debtSummaryFlow(input);
+    return result;
+  } catch (error) {
+    console.error(`[Flow Error: getDebtSummary] ${error instanceof Error ? error.message : String(error)}`, {input, error});
+    throw error; // Re-throw the error to be handled by the caller or Next.js error boundaries
+  }
 }
 
 const prompt = ai.definePrompt({

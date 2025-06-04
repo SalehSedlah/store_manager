@@ -1,3 +1,4 @@
+
 // debt-suggestions.ts
 'use server';
 
@@ -32,7 +33,13 @@ const SuggestCreditLimitsOutputSchema = z.array(CreditLimitSuggestionSchema).des
 export type SuggestCreditLimitsOutput = z.infer<typeof SuggestCreditLimitsOutputSchema>;
 
 export async function suggestCreditLimits(input: SuggestCreditLimitsInput): Promise<SuggestCreditLimitsOutput> {
-  return suggestCreditLimitsFlow(input);
+  try {
+    const result = await suggestCreditLimitsFlow(input);
+    return result;
+  } catch (error) {
+    console.error(`[Flow Error: suggestCreditLimits] ${error instanceof Error ? error.message : String(error)}`, {input, error});
+    throw error;
+  }
 }
 
 const prompt = ai.definePrompt({

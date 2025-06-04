@@ -35,7 +35,13 @@ const WhatsappReminderOutputSchema = z.object({
 export type WhatsappReminderOutput = z.infer<typeof WhatsappReminderOutputSchema>;
 
 export async function generateWhatsappReminder(input: WhatsappReminderInput): Promise<WhatsappReminderOutput> {
-  return whatsappReminderFlow(input);
+  try {
+    const result = await whatsappReminderFlow(input);
+    return result;
+  } catch (error) {
+    console.error(`[Flow Error: generateWhatsappReminder] ${error instanceof Error ? error.message : String(error)}`, {input, error});
+    throw error;
+  }
 }
 
 const prompt = ai.definePrompt({

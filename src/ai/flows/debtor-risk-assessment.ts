@@ -1,3 +1,4 @@
+
 // src/ai/flows/debtor-risk-assessment.ts
 'use server';
 
@@ -49,7 +50,13 @@ const DebtorRiskAssessmentOutputSchema = z.object({
 export type DebtorRiskAssessmentOutput = z.infer<typeof DebtorRiskAssessmentOutputSchema>;
 
 export async function assessDebtorRisk(input: DebtorRiskAssessmentInput): Promise<DebtorRiskAssessmentOutput> {
-  return debtorRiskAssessmentFlow(input);
+  try {
+    const result = await debtorRiskAssessmentFlow(input);
+    return result;
+  } catch (error) {
+    console.error(`[Flow Error: assessDebtorRisk] ${error instanceof Error ? error.message : String(error)}`, {input, error});
+    throw error;
+  }
 }
 
 const prompt = ai.definePrompt({
