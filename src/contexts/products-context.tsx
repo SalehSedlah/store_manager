@@ -29,7 +29,6 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   const toastProductUpdated = "تم تحديث المنتج";
   const toastProductDeleted = "تم حذف المنتج";
   const toastStockUpdated = "تم تحديث المخزون";
-  // const toastError = "خطأ"; // Not currently used with specific message
 
   const getStorageKey = useCallback(() => user ? `${LOCAL_STORAGE_KEY_PREFIX}${user.uid}` : null, [user]);
 
@@ -73,7 +72,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       lastUpdated: new Date().toISOString(),
     };
     setProducts((prevProducts) => [...prevProducts, newProduct]);
-    toast({ title: toastProductAdded, description: `تمت إضافة ${newProduct.name}.` });
+    setTimeout(() => {
+      toast({ title: toastProductAdded, description: `تمت إضافة ${newProduct.name}.` });
+    }, 0);
   };
 
   const updateProduct = (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId">) => {
@@ -84,13 +85,17 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           : p
       )
     );
-    toast({ title: toastProductUpdated, description: `تم تحديث ${productData.name}.` });
+    setTimeout(() => {
+      toast({ title: toastProductUpdated, description: `تم تحديث ${productData.name}.` });
+    }, 0);
   };
 
   const deleteProduct = (id: string) => {
     const productName = products.find(p => p.id === id)?.name || "المنتج";
     setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
-    toast({ title: toastProductDeleted, description: `تم حذف ${productName}.` });
+    setTimeout(() => {
+      toast({ title: toastProductDeleted, description: `تم حذف ${productName}.` });
+    }, 0);
   };
 
   const getProductById = (id: string): Product | undefined => {
@@ -98,6 +103,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   };
 
   const updateStock = (productId: string, newStock: number) => {
+    const productName = products.find(p => p.id === productId)?.name || "المنتج";
     setProducts(prevProducts =>
       prevProducts.map(p =>
         p.id === productId
@@ -105,8 +111,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           : p
       )
     );
-    const productName = products.find(p => p.id === productId)?.name || "المنتج";
-    toast({ title: toastStockUpdated, description: `تم تحديث مخزون ${productName} إلى ${newStock}.` });
+    setTimeout(() => {
+      toast({ title: toastStockUpdated, description: `تم تحديث مخزون ${productName} إلى ${newStock}.` });
+    }, 0);
   };
 
   return (
@@ -131,3 +138,5 @@ export function useProducts() {
   }
   return context;
 }
+
+    

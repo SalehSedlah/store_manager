@@ -54,13 +54,9 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loadingDebtors, setLoadingDebtors] = useState(true);
 
-  const toastAutoAlertTitle = "تم تفعيل التنبيه التلقائي";
-  // const toastDebtorAddedOverLimit = (name: string, phone?: string) => 
-  //   `تمت إضافة ${name} وتجاوز الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
-  // const toastDebtorExceededLimit = (name: string, phone?: string) =>
-  //   `${name} تجاوز الآن الحد الائتماني. ${phone ? `تم محاكاة إرسال إشعار إلى ${phone}.` : 'تم محاكاة إرسال إشعار (رقم الهاتف مفقود).'}`;
-  const toastTransactionAdded = "تمت إضافة المعاملة";
+  const toastDebtorAddedTitle = "تمت إضافة المدين";
   const toastDebtorInfoUpdated = "تم تحديث معلومات المدين";
+  const toastTransactionAdded = "تمت إضافة المعاملة";
   const whatsAppReminderPreparedTitle = (name: string) => `تذكير واتساب جاهز لـ ${name}`;
   const whatsAppReminderFailedTitle = "فشل إنشاء تذكير واتساب";
 
@@ -107,14 +103,16 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
 
   const triggerWhatsappReminderIfNeeded = async (debtor: Debtor, wasOverLimitBefore?: boolean) => {
     const isCurrentlyOverLimit = debtor.amountOwed > debtor.creditLimit;
-    const justExceededLimit = wasOverLimitBefore === false && isCurrentlyOverLimit;
-    const newDebtorOverLimit = wasOverLimitBefore === undefined && isCurrentlyOverLimit; // For addDebtor case
+    
+    let justExceededLimit = false;
+    if (wasOverLimitBefore !== undefined) {
+      justExceededLimit = wasOverLimitBefore === false && isCurrentlyOverLimit;
+    }
+    const newDebtorOverLimit = wasOverLimitBefore === undefined && isCurrentlyOverLimit;
 
     if (justExceededLimit || newDebtorOverLimit) {
       try {
         const relevantTransactions = (debtor.transactions || [])
-          // .filter(tx => tx.type === 'initial_balance' || tx.type === 'new_credit' || tx.type === 'adjustment_increase')
-          // .slice(-5) // Example: last 5 debt-increasing, or let AI handle full list
           .map(tx => ({
             date: new Date(tx.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }),
             type: transactionTypeArabic[tx.type] || tx.type,
@@ -130,19 +128,23 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
           debtorPhoneNumber: debtor.phoneNumber,
         };
         const result = await generateWhatsappReminder(input);
-        toast({
-          title: whatsAppReminderPreparedTitle(debtor.name),
-          description: result.whatsappMessage,
-          duration: 20000, // Longer duration for important messages
-          action: <WhatsappReminderToastAction message={result.whatsappMessage} phoneNumber={debtor.phoneNumber} debtorName={debtor.name} />,
-        });
+        setTimeout(() => {
+          toast({
+            title: whatsAppReminderPreparedTitle(debtor.name),
+            description: result.whatsappMessage,
+            duration: 20000, 
+            action: <WhatsappReminderToastAction message={result.whatsappMessage} phoneNumber={debtor.phoneNumber} debtorName={debtor.name} />,
+          });
+        }, 0);
       } catch (error: any) {
         console.error("خطأ في إنشاء تذكير واتساب:", error);
-        toast({
-          title: whatsAppReminderFailedTitle,
-          description: error.message || "حدث خطأ غير متوقع.",
-          variant: "destructive",
-        });
+        setTimeout(() => {
+          toast({
+            title: whatsAppReminderFailedTitle,
+            description: error.message || "حدث خطأ غير متوقع.",
+            variant: "destructive",
+          });
+        }, 0);
       }
     }
   };
@@ -165,34 +167,48 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       amountOwed: calculateAmountOwedInternal([initialTransaction]),
     };
     setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
-    triggerWhatsappReminderIfNeeded(newDebtor); // wasOverLimitBefore is undefined for new debtors
+    setTimeout(() => {
+        toast({ title: toastDebtorAddedTitle, description: `تمت إضافة ${newDebtor.name}.` });
+    }, 0);
+    triggerWhatsappReminderIfNeeded(newDebtor); 
   };
 
   const updateDebtorInfo = (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => {
+    let updatedDebtorForReminder: Debtor | null = null;
+    let wasOverLimitBeforeUpdate: boolean | undefined = undefined;
+
     setDebtors(prevDebtors => 
       prevDebtors.map(d => {
         if (d.id === debtorId) {
-          const wasOverLimit = d.amountOwed > d.creditLimit;
+          wasOverLimitBeforeUpdate = d.amountOwed > d.creditLimit;
           const updatedDebtor = {
             ...d,
             ...debtorInfo,
             lastUpdated: new Date().toISOString(),
           };
-          triggerWhatsappReminderIfNeeded(updatedDebtor, wasOverLimit);
+          updatedDebtorForReminder = updatedDebtor;
           return updatedDebtor;
         }
         return d;
       })
     );
-    toast({title: toastDebtorInfoUpdated});
+    setTimeout(() => {
+        toast({title: toastDebtorInfoUpdated, description: `تم تحديث معلومات ${debtorInfo.name}.`});
+    },0);
+    if (updatedDebtorForReminder) {
+      triggerWhatsappReminderIfNeeded(updatedDebtorForReminder, wasOverLimitBeforeUpdate);
+    }
   };
 
 
   const addTransaction = (debtorId: string, transactionData: Omit<Transaction, "id" | "date">) => {
+    let debtorForReminder: Debtor | null = null;
+    let wasOverLimitBeforeTransaction: boolean | undefined = undefined;
+
     setDebtors(prevDebtors => 
       prevDebtors.map(debtor => {
         if (debtor.id === debtorId) {
-          const wasOverLimit = debtor.amountOwed > debtor.creditLimit;
+          wasOverLimitBeforeTransaction = debtor.amountOwed > debtor.creditLimit;
           const newTransaction: Transaction = {
             ...transactionData,
             id: Date.now().toString() + "_tx",
@@ -207,23 +223,26 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
             amountOwed: newAmountOwed,
             lastUpdated: new Date().toISOString(),
           };
-
-          toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${transactionData.amount} لـ ${debtor.name}.` });
           
-          // Trigger reminder only if this transaction pushes them over the limit
-          // and the transaction increases debt.
-          if (transactionData.type === 'new_credit' || transactionData.type === 'adjustment_increase' || transactionData.type === 'initial_balance') {
-            triggerWhatsappReminderIfNeeded(updatedDebtor, wasOverLimit);
-          }
+          setTimeout(() => {
+            toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${transactionData.amount} لـ ${debtor.name}.` });
+          }, 0);
+          
+          debtorForReminder = updatedDebtor;
           return updatedDebtor;
         }
         return debtor;
       })
     );
+
+    if (debtorForReminder && (transactionData.type === 'new_credit' || transactionData.type === 'adjustment_increase' || transactionData.type === 'initial_balance')) {
+        triggerWhatsappReminderIfNeeded(debtorForReminder, wasOverLimitBeforeTransaction);
+    }
   };
 
   const deleteDebtor = (id: string) => {
     setDebtors((prevDebtors) => prevDebtors.filter((debtor) => debtor.id !== id));
+    // No toast here, as it's handled in DebtorList for user confirmation
   };
 
   const getDebtorById = (id: string): Debtor | undefined => {
@@ -253,3 +272,5 @@ export function useDebtors() {
   }
   return context;
 }
+
+    
