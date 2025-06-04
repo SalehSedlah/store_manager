@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import type { Transaction, TransactionType } from "@/types/debt";
+import type { TransactionType } from "@/types/debt";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,16 +18,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebtors } from "@/contexts/debtors-context";
+import { useEffect } from "react";
 
-const transactionTypes: { value: TransactionType; label: string }[] = [
+const getTransactionTypes = (currentAmountOwed: number): { value: TransactionType; label: string, disabled?: boolean }[] => [
+  { value: "new_credit", label: "دين جديد" },
   { value: "payment", label: "دفعة مستلمة" },
-  { value: "new_credit", label: "دين جديد صادر" },
-  { value: "adjustment_increase", label: "تسوية (زيادة الدين)" },
-  { value: "adjustment_decrease", label: "تسوية (تخفيض الدين)" },
+  { value: "full_settlement", label: "دفع كامل سداد", disabled: currentAmountOwed <= 0 },
 ];
 
 const addTransactionFormSchema = z.object({
-  type: z.custom<TransactionType>((val) => transactionTypes.map(t => t.value).includes(val as TransactionType), {
+  type: z.custom<TransactionType>((val) => 
+    ["new_credit", "payment", "full_settlement"].includes(val as TransactionType), {
     message: "نوع معاملة غير صالح",
   }),
   amount: z.coerce.number().min(0.01, { message: "يجب أن يكون المبلغ أكبر من 0." }),
@@ -38,11 +39,13 @@ type AddTransactionFormValues = z.infer<typeof addTransactionFormSchema>;
 
 interface AddTransactionFormProps {
   debtorId: string;
+  currentAmountOwed: number;
   onTransactionAdded: () => void;
 }
 
-export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransactionFormProps) {
+export function AddTransactionForm({ debtorId, currentAmountOwed, onTransactionAdded }: AddTransactionFormProps) {
   const { addTransaction } = useDebtors();
+  const transactionTypes = getTransactionTypes(currentAmountOwed);
 
   const form = useForm<AddTransactionFormValues>({
     resolver: zodResolver(addTransactionFormSchema),
@@ -53,9 +56,22 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
     },
   });
 
+  const selectedType = form.watch("type");
+
+  useEffect(() => {
+    if (selectedType === "full_settlement" && currentAmountOwed > 0) {
+      form.setValue("amount", currentAmountOwed, { shouldValidate: true });
+    }
+  }, [selectedType, currentAmountOwed, form]);
+  
   function onSubmit(data: AddTransactionFormValues) {
-    addTransaction(debtorId, data);
-    form.reset();
+    const submissionData = { ...data };
+    if (data.type === "full_settlement") {
+      // Ensure the amount is exactly the currentAmountOwed if type is full_settlement
+      submissionData.amount = currentAmountOwed;
+    }
+    addTransaction(debtorId, submissionData);
+    form.reset({ type: "payment", amount: 0, description: "" });
     onTransactionAdded();
   }
   
@@ -65,6 +81,10 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
   const descriptionPlaceholder = "مثال: دفعة شهرية، بضاعة مشتراة";
   const addButtonText = "إضافة معاملة";
   const addingButtonText = "جاري الإضافة...";
+  const noDebtToSettleText = "لا يوجد دين قائم لتسويته بالكامل.";
+
+  const isFullSettlementSelected = selectedType === "full_settlement";
+  const disableSubmitForFullSettlement = isFullSettlementSelected && currentAmountOwed <= 0;
 
   return (
     <Form {...form}>
@@ -75,7 +95,16 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
           render={({ field }) => (
             <FormItem>
               <FormLabel>{typeLabel}</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  if (value !== "full_settlement") {
+                    // Reset amount if switching away from full_settlement
+                    // form.setValue("amount", 0); 
+                  }
+                }} 
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="اختر نوع المعاملة" />
@@ -83,12 +112,15 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
                 </FormControl>
                 <SelectContent>
                   {transactionTypes.map((typeOpt) => (
-                    <SelectItem key={typeOpt.value} value={typeOpt.value}>
+                    <SelectItem key={typeOpt.value} value={typeOpt.value} disabled={typeOpt.disabled}>
                       {typeOpt.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {isFullSettlementSelected && currentAmountOwed <= 0 && (
+                <p className="text-sm text-destructive pt-1">{noDebtToSettleText}</p>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -100,7 +132,14 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
             <FormItem>
               <FormLabel>{amountLabel}</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="100.00" {...field} step="0.01" />
+                <Input 
+                  type="number" 
+                  placeholder="100.00" 
+                  {...field} 
+                  step="0.01" 
+                  readOnly={isFullSettlementSelected && currentAmountOwed > 0}
+                  disabled={isFullSettlementSelected && currentAmountOwed <= 0}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -113,13 +152,21 @@ export function AddTransactionForm({ debtorId, onTransactionAdded }: AddTransact
             <FormItem>
               <FormLabel>{descriptionLabel}</FormLabel>
               <FormControl>
-                <Textarea placeholder={descriptionPlaceholder} {...field} />
+                <Textarea 
+                  placeholder={descriptionPlaceholder} 
+                  {...field} 
+                  disabled={isFullSettlementSelected && currentAmountOwed <= 0}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+        <Button 
+          type="submit" 
+          disabled={form.formState.isSubmitting || disableSubmitForFullSettlement} 
+          className="w-full"
+        >
           {form.formState.isSubmitting ? addingButtonText : addButtonText}
         </Button>
       </form>

@@ -1,9 +1,10 @@
-export type TransactionType = 
-  | 'initial_balance' 
-  | 'payment' 
-  | 'new_credit' 
-  | 'adjustment_increase' 
-  | 'adjustment_decrease';
+export type TransactionType =
+  | 'initial_balance'
+  | 'payment'
+  | 'new_credit'
+  | 'adjustment_increase'
+  | 'adjustment_decrease'
+  | 'full_settlement'; // نوع جديد لسداد الدين بالكامل
 
 export interface Transaction {
   id: string;

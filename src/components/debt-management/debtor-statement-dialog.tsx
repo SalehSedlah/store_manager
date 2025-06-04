@@ -66,11 +66,22 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
     new_credit: "دين جديد",
     adjustment_increase: "تسوية (زيادة)",
     adjustment_decrease: "تسوية (نقصان)",
+    full_settlement: "دفع كامل سداد",
   };
   
   const sortedTransactions = useMemo(() => {
     if (!currentDebtor || !currentDebtor.transactions) return [];
-    return [...currentDebtor.transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Sort by date, then by ID (timestamp based) for tie-breaking to ensure consistent order for same-day transactions
+    return [...currentDebtor.transactions].sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        if (dateA !== dateB) {
+            return dateA - dateB;
+        }
+        // If dates are the same, sort by ID (assuming IDs are time-based or sequential)
+        // This part might need adjustment if IDs are not inherently sortable this way
+        return a.id.localeCompare(b.id);
+    });
   }, [currentDebtor]);
 
   const transactionsWithRunningBalance = useMemo(() => {
@@ -84,9 +95,12 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
           break;
         case 'payment':
         case 'adjustment_decrease':
+        case 'full_settlement':
           runningBalance -= tx.amount;
           break;
       }
+      // Round to 2 decimal places to avoid floating point issues
+      runningBalance = parseFloat(runningBalance.toFixed(2));
       return { ...tx, runningBalance };
     });
   }, [sortedTransactions]);
@@ -94,7 +108,9 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
   const handleTransactionAdded = () => {
     setShowAddTransactionForm(false);
     if (currentDebtor?.id) {
-      setCurrentDebtor(getDebtorById(currentDebtor.id) || null);
+      // Re-fetch the debtor to get the latest transactions and amountOwed
+      const updatedDebtor = getDebtorById(currentDebtor.id);
+      setCurrentDebtor(updatedDebtor || null);
     }
   };
 
@@ -115,7 +131,11 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
             {showAddTransactionForm ? "إلغاء إضافة معاملة" : addTransactionButtonText}
           </Button>
           {showAddTransactionForm && (
-            <AddTransactionForm debtorId={currentDebtor.id} onTransactionAdded={handleTransactionAdded} />
+            <AddTransactionForm 
+                debtorId={currentDebtor.id} 
+                currentAmountOwed={currentDebtor.amountOwed} 
+                onTransactionAdded={handleTransactionAdded} 
+            />
           )}
         </div>
 
@@ -137,15 +157,15 @@ export function DebtorStatementDialog({ debtor: initialDebtor, isOpen, onOpenCha
                   <TableRow key={tx.id}>
                     <TableCell className="text-sm text-muted-foreground">{formatDate(tx.date)}</TableCell>
                     <TableCell>
-                       <Badge variant={tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'secondary' : 'outline'}
-                              className={tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'text-green-700 dark:text-green-400 border-green-500' : (tx.type === 'new_credit' || tx.type === 'adjustment_increase' || tx.type === 'initial_balance' ? 'text-red-700 dark:text-red-400 border-red-500' : '')}
+                       <Badge variant={tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? 'secondary' : 'outline'}
+                              className={tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? 'text-green-700 dark:text-green-400 border-green-500' : (tx.type === 'new_credit' || tx.type === 'adjustment_increase' || tx.type === 'initial_balance' ? 'text-red-700 dark:text-red-400 border-red-500' : '')}
                        >
                          {transactionTypeLabels[tx.type] || tx.type}
                        </Badge>
                     </TableCell>
                     <TableCell className="text-sm">{tx.description || "غير متاح"}</TableCell>
-                    <TableCell className={`text-left rtl:text-right font-medium ${tx.type === 'payment' || tx.type === 'adjustment_decrease' ? 'text-green-600' : 'text-red-600'}`}>
-                      {tx.type === 'payment' || tx.type === 'adjustment_decrease' ? '-' : '+'}
+                    <TableCell className={`text-left rtl:text-right font-medium ${tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? 'text-green-600' : 'text-red-600'}`}>
+                      {tx.type === 'payment' || tx.type === 'adjustment_decrease' || tx.type === 'full_settlement' ? '-' : '+'}
                       {formatCurrency(tx.amount)}
                     </TableCell>
                     <TableCell className="text-left rtl:text-right font-semibold">{formatCurrency(tx.runningBalance)}</TableCell>

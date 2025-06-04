@@ -30,6 +30,7 @@ const transactionTypeArabic: Record<TransactionType, string> = {
   new_credit: "دين جديد",
   adjustment_increase: "تسوية (زيادة)",
   adjustment_decrease: "تسوية (نقصان)",
+  full_settlement: "دفع كامل سداد",
 };
 
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
@@ -41,6 +42,7 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
         return balance + tx.amount;
       case 'payment':
       case 'adjustment_decrease':
+      case 'full_settlement':
         return balance - tx.amount;
       default:
         return balance;
@@ -163,14 +165,16 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
       id: Date.now().toString(),
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
-      transactions: [initialTransaction],
-      amountOwed: calculateAmountOwedInternal([initialTransaction]),
+      transactions: initialAmount > 0 ? [initialTransaction] : [], // Only add initial balance if > 0
+      amountOwed: initialAmount > 0 ? calculateAmountOwedInternal([initialTransaction]) : 0,
     };
     setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
     setTimeout(() => {
         toast({ title: toastDebtorAddedTitle, description: `تمت إضافة ${newDebtor.name}.` });
     }, 0);
-    triggerWhatsappReminderIfNeeded(newDebtor); 
+    if (initialAmount > 0) { // Only trigger reminder if there's an initial debt
+        triggerWhatsappReminderIfNeeded(newDebtor); 
+    }
   };
 
   const updateDebtorInfo = (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => {
@@ -211,7 +215,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
           wasOverLimitBeforeTransaction = debtor.amountOwed > debtor.creditLimit;
           const newTransaction: Transaction = {
             ...transactionData,
-            id: Date.now().toString() + "_tx",
+            id: Date.now().toString() + "_tx_" + Math.random().toString(36).substring(2, 7),
             date: new Date().toISOString(),
           };
           const updatedTransactions = [...(debtor.transactions || []), newTransaction];
@@ -272,5 +276,3 @@ export function useDebtors() {
   }
   return context;
 }
-
-    
