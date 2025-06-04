@@ -1,9 +1,12 @@
 
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-// AuthProvider and DebtorsProvider are moved to [locale]/layout.tsx
+import { AuthProvider } from '@/contexts/auth-context';
+import { DebtorsProvider } from '@/contexts/debtors-context';
 import { Toaster } from "@/components/ui/toaster";
-// Inter font is imported and applied globally via globals.css and tailwind.config.ts
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'DebtVision',
@@ -23,14 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // lang and dir will be set in [locale]/layout.tsx
-    // The Inter font variable is available globally from globals.css if set up there
-    <html>
+    <html lang="en" dir="ltr" className={`${inter.variable} font-body`}>
       <head />
       <body>
-          {/* Children will be [locale]/layout.tsx which now contains providers */}
-          {children}
-          <Toaster />
+        <AuthProvider>
+          <DebtorsProvider>
+            {children}
+            <Toaster />
+          </DebtorsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

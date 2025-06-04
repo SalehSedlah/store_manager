@@ -1,26 +1,8 @@
 
-import createMiddleware from 'next-intl/middleware';
 import {NextRequest, NextResponse} from 'next/server';
-import {locales, defaultLocale} from './src/i18n';
 
-const nextIntlMiddleware = createMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix: 'as-needed', // or 'always' or 'never'
-  // pathnames: { // Optional: for localized pathnames
-  //   '/': '/',
-  //   '/dashboard': {
-  //     en: '/dashboard',
-  //     ar: '/لوحة-التحكم'
-  //   }
-  // }
-});
-
-export default function middleware(request: NextRequest): NextResponse {
-  // For testing, log when middleware is invoked
-  console.log(`[MIDDLEWARE_DEBUG] Request to: ${request.nextUrl.pathname}`);
-
-  const response = nextIntlMiddleware(request);
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
 
   // Apply security headers
   response.headers.set('x-content-type-options', 'nosniff');
@@ -29,7 +11,6 @@ export default function middleware(request: NextRequest): NextResponse {
   response.headers.set('x-frame-options', 'SAMEORIGIN');
   response.headers.set('x-xss-protection', '1; mode=block');
   
-  console.log(`[MIDDLEWARE_DEBUG] Responding for: ${request.nextUrl.pathname}`);
   return response;
 }
 

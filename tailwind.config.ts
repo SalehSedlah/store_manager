@@ -13,7 +13,7 @@ export default {
       fontFamily: {
         body: ['var(--font-inter)', 'sans-serif'], 
         headline: ['var(--font-inter)', 'sans-serif'],
-        arabic: ['var(--font-cairo)', 'sans-serif'], // Added Arabic font family
+        // arabic font removed
         code: ['monospace', 'monospace'],
       },
       colors: {

@@ -10,33 +10,30 @@ import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
 
 export function CreditSuggestionTool() {
-  const t = useTranslations("CreditSuggestionTool");
-  const tToast = useTranslations("Toast");
   const { debtors, loadingDebtors } = useDebtors();
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<SuggestCreditLimitsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const cardTitle = t("cardTitle");
-  const cardDescription = t("cardDescription");
-  const generateButtonText = t("generateButtonText");
-  const generatingButtonText = t("generatingButtonText");
-  const loadingDebtorsButtonText = t("loadingDebtorsButtonText");
-  const suggestedLimitsTitle = t("suggestedLimitsTitle");
-  const debtorNameHeader = t("debtorNameHeader");
-  const suggestedLimitHeader = t("suggestedLimitHeader");
-  const reasoningHeader = t("reasoningHeader");
-  const noSuggestionsPlaceholder = t("noSuggestionsPlaceholder");
-  const noDebtorsPlaceholder = t("noDebtorsPlaceholder");
+  const cardTitle = "Credit Limit Suggestions";
+  const cardDescription = "Let AI suggest optimal credit limits for your debtors based on their data.";
+  const generateButtonText = "Generate Suggestions for All Debtors";
+  const generatingButtonText = "Generating Suggestions...";
+  const loadingDebtorsButtonText = "Loading Debtors...";
+  const suggestedLimitsTitle = "Suggested Limits:";
+  const debtorNameHeader = "Debtor Name";
+  const suggestedLimitHeader = "Suggested Limit";
+  const reasoningHeader = "Reasoning";
+  const noSuggestionsPlaceholder = "Click the button above to generate credit limit suggestions.";
+  const noDebtorsPlaceholder = "Please add debtors in the Debt Management section to get suggestions.";
 
-  const toastNoDebtorsTitle = tToast("noDebtorsForCreditSuggestionTitle");
-  const toastNoDebtorsDescription = tToast("noDebtorsForCreditSuggestionDescription");
-  const toastSuggestionsReadyTitle = tToast("creditSuggestionsReadyTitle");
-  const toastSuggestionsReadyDescription = tToast("creditSuggestionsReadyDescription");
-  const toastSuggestionFailedTitle = tToast("creditSuggestionFailedTitle");
+  const toastNoDebtorsTitle = "No Debtors";
+  const toastNoDebtorsDescription = "Add debtors to get credit limit suggestions.";
+  const toastSuggestionsReadyTitle = "Suggestions Ready";
+  const toastSuggestionsReadyDescription = "AI has generated credit limit suggestions.";
+  const toastSuggestionFailedTitle = "Suggestion Failed";
 
   const handleSuggestLimits = async () => {
     if (debtors.length === 0) {

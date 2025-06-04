@@ -28,34 +28,31 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { useTranslations } from "next-intl";
 
 export function DebtorList() {
   const { debtors, deleteDebtor, loadingDebtors } = useDebtors();
   const { toast } = useToast();
-  const t = useTranslations("DebtorList");
-  const tToast = useTranslations("Toast");
 
-  const noDebtorsText = t("noDebtors");
-  const nameHeader = t("nameHeader");
-  const phoneNumberHeader = t("phoneNumberHeader");
-  const amountOwedHeader = t("amountOwedHeader");
-  const creditLimitHeader = t("creditLimitHeader");
-  const statusHeader = t("statusHeader");
-  const lastUpdatedHeader = t("lastUpdatedHeader");
-  const actionsHeader = t("actionsHeader");
-  const statusOverLimit = t("statusOverLimit");
-  const statusWithinLimit = t("statusWithinLimit");
-  const editActionText = t("editAction");
-  const deleteActionText = t("deleteAction");
-  const sendSmsActionText = t("sendSmsAction");
-  const sendWhatsAppActionText = t("sendWhatsAppAction");
-  const deleteDialogTitle = t("deleteDialogTitle");
-  const deleteDialogDescription = (name: string) => t("deleteDialogDescription", { name });
-  const deleteDialogCancel = t("deleteDialogCancel");
-  const deleteDialogConfirm = t("deleteDialogConfirm");
-  const toastDebtorDeletedTitle = tToast("debtorDeletedTitle");
-  const toastDebtorDeletedDescription = (name: string) => tToast("debtorDeletedDescription", { name });
+  const noDebtorsText = "No debtors found. Add a new debtor to get started.";
+  const nameHeader = "Name";
+  const phoneNumberHeader = "Phone Number";
+  const amountOwedHeader = "Amount Owed";
+  const creditLimitHeader = "Credit Limit";
+  const statusHeader = "Status";
+  const lastUpdatedHeader = "Last Updated";
+  const actionsHeader = "Actions";
+  const statusOverLimit = "Over Limit";
+  const statusWithinLimit = "Within Limit";
+  const editActionText = "Edit";
+  const deleteActionText = "Delete";
+  const sendSmsActionText = "Send SMS";
+  const sendWhatsAppActionText = "Send WhatsApp";
+  const deleteDialogTitle = "Are you sure?";
+  const deleteDialogDescription = (name: string) => `This action cannot be undone. This will permanently delete ${name}'s record.`;
+  const deleteDialogCancel = "Cancel";
+  const deleteDialogConfirm = "Delete";
+  const toastDebtorDeletedTitle = "Debtor Deleted";
+  const toastDebtorDeletedDescription = (name: string) => `${name} has been deleted.`;
 
   const handleDelete = (id: string, name: string) => {
     deleteDebtor(id);

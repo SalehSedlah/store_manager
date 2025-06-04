@@ -5,7 +5,8 @@ import { LayoutDashboard, Users, Sparkles, Settings } from "lucide-react";
 // NavLink label property is removed as labels will come from translation files via labelKey.
 export interface NavLink {
   href: string;
-  labelKey: keyof IntlMessages["Sidebar"]; // Use keyof to ensure labelKey exists in Sidebar translations
+  // labelKey refers to a key in a hardcoded map in AppSidebar for now
+  labelKey: "dashboard" | "debtManagement" | "aiAssistant" | "settings"; 
   icon: LucideIcon;
 }
 
