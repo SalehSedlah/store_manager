@@ -21,7 +21,7 @@ import {
 
 interface ProductsContextType {
   products: Product[];
-  addProduct: (productData: Omit<Product, "id" | "lastUpdated" | "userId">) => Promise<void>;
+  addProduct: (productData: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold">) => Promise<void>;
   updateProduct: (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId">) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   loadingProducts: boolean;
@@ -48,6 +48,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     const purchasePricePerUnitVal = data.purchasePricePerUnit !== undefined ? Number(data.purchasePricePerUnit) : undefined;
     const currentStockVal = Number(data.currentStock);
     const lowStockThresholdVal = Number(data.lowStockThreshold);
+    const quantitySoldVal = Number(data.quantitySold);
     let piecesInUnitVal: number | undefined = undefined;
     if (data.piecesInUnit !== undefined && data.piecesInUnit !== null) {
         const numPieces = Number(data.piecesInUnit);
@@ -70,6 +71,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     if (isNaN(lowStockThresholdVal)) {
       console.warn(`Product ID ${docSnap.id} ('${data.name}') has invalid lowStockThreshold: '${data.lowStockThreshold}'. Defaulting to 0.`);
     }
+    if (isNaN(quantitySoldVal)) {
+      console.warn(`Product ID ${docSnap.id} ('${data.name}') has invalid quantitySold: '${data.quantitySold}'. Defaulting to 0.`);
+    }
     
     return {
       id: docSnap.id,
@@ -79,6 +83,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       currentStock: isNaN(currentStockVal) ? 0 : currentStockVal,
       lowStockThreshold: isNaN(lowStockThresholdVal) ? 0 : lowStockThresholdVal,
       piecesInUnit: piecesInUnitVal,
+      quantitySold: isNaN(quantitySoldVal) ? 0 : quantitySoldVal,
       lastUpdated: (data.lastUpdated as Timestamp)?.toDate ? (data.lastUpdated as Timestamp).toDate().toISOString() : new Date().toISOString(),
     } as Product;
   };
@@ -108,7 +113,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, [user]);
 
-  const addProduct = async (productData: Omit<Product, "id" | "lastUpdated" | "userId">) => {
+  const addProduct = async (productData: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold">) => {
     if (!user) {
         toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لإضافة منتج.", variant: "destructive"});
         return;
@@ -121,6 +126,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
       piecesInUnit: productData.piecesInUnit !== undefined ? (Number(productData.piecesInUnit) || 0) : undefined,
+      quantitySold: 0, 
       userId: user.uid,
       lastUpdated: serverTimestamp(),
     };
@@ -151,8 +157,16 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
       piecesInUnit: productData.piecesInUnit !== undefined ? (Number(productData.piecesInUnit) || 0) : undefined,
+      quantitySold: productData.quantitySold !== undefined ? (Number(productData.quantitySold) || 0) : 0, 
       lastUpdated: serverTimestamp(),
     };
+
+    Object.keys(updatedProductDataForFirestore).forEach(key => {
+      const K = key as keyof typeof updatedProductDataForFirestore;
+      if (updatedProductDataForFirestore[K] === undefined) {
+        delete updatedProductDataForFirestore[K];
+      }
+    });
 
     try {
       await updateDoc(productDocRef, updatedProductDataForFirestore);
@@ -230,4 +244,3 @@ export function useProducts() {
   }
   return context;
 }
-

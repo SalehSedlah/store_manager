@@ -35,9 +35,10 @@ export function ProductList() {
   const noProductsText = "لم تقم بإضافة أي أصناف بعد. ابدأ بإضافة صنف جديد.";
   const nameHeader = "الاسم";
   const categoryHeader = "الفئة";
-  const unitHeader = "الوحدة";
+  // const unitHeader = "الوحدة"; // Combined with الكمية
   const priceHeader = "سعر الوحدة";
-  const currentStockHeader = "الكمية";
+  const currentStockHeader = "الكمية المتوفرة";
+  const quantitySoldHeader = "الكمية المباعة";
   const totalValueHeader = "القيمة الإجمالية";
   const statusHeader = "الحالة";
   const lastUpdatedHeader = "آخر تحديث";
@@ -94,7 +95,7 @@ export function ProductList() {
               <TableHead>{categoryHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{priceHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{currentStockHeader}</TableHead>
-              {/* <TableHead className="text-left rtl:text-right">{unitHeader}</TableHead> // Combined with الكمية */}
+              <TableHead className="text-left rtl:text-right">{quantitySoldHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{totalValueHeader}</TableHead>
               <TableHead>{statusHeader}</TableHead>
               <TableHead className="text-left rtl:text-right">{lastUpdatedHeader}</TableHead>
@@ -106,6 +107,7 @@ export function ProductList() {
               const currentStockNum = Number(product.currentStock) || 0;
               const lowStockThresholdNum = Number(product.lowStockThreshold) || 0;
               const piecesInUnitNum = product.piecesInUnit !== undefined ? Number(product.piecesInUnit) : 0;
+              const quantitySoldNum = Number(product.quantitySold) || 0;
 
               const isLowStock = currentStockNum > 0 && currentStockNum <= lowStockThresholdNum;
               const isOutOfStock = currentStockNum === 0;
@@ -136,7 +138,7 @@ export function ProductList() {
                   <TableCell className="text-sm text-muted-foreground">{product.category}</TableCell>
                   <TableCell className="text-left rtl:text-right">{formatCurrency(product.pricePerUnit)}</TableCell>
                   <TableCell className="text-left rtl:text-right font-semibold">{displayQuantity()}</TableCell>
-                  {/* <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{product.unit}</TableCell> // Combined with الكمية */}
+                  <TableCell className="text-left rtl:text-right">{quantitySoldNum.toLocaleString('ar-EG')}</TableCell>
                   <TableCell className="text-left rtl:text-right font-semibold">{formatCurrency(productTotalValue)}</TableCell>
                   <TableCell>{statusBadge}</TableCell>
                   <TableCell className="text-left rtl:text-right text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
