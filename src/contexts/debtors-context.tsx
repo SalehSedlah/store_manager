@@ -7,14 +7,28 @@ import { useAuth } from "./auth-context";
 import { toast } from "@/hooks/use-toast";
 import { generateWhatsappReminder, type WhatsappReminderInput, prepareTransactionsForReminder } from "@/ai/flows/whatsapp-reminder-flow";
 import { WhatsappReminderToastAction } from "@/components/debt-management/whatsapp-reminder-toast-action";
-
+import { db } from "@/lib/firebase"; // Import Firestore instance
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  Timestamp,
+  serverTimestamp,
+  writeBatch,
+  getDoc
+} from "firebase/firestore";
 
 interface DebtorsContextType {
   debtors: Debtor[];
-  addDebtor: (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed"> & { initialAmount: number; debtReason?: string }) => void;
-  updateDebtorInfo: (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => void;
-  deleteDebtor: (id: string) => void;
-  addTransaction: (debtorId: string, transactionData: Omit<Transaction, "id" | "date">) => void;
+  addDebtor: (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed"> & { initialAmount: number; debtReason?: string }) => Promise<void>;
+  updateDebtorInfo: (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => Promise<void>;
+  deleteDebtor: (id: string) => Promise<void>;
+  addTransaction: (debtorId: string, transactionData: Omit<Transaction, "id" | "date">) => Promise<void>;
   loadingDebtors: boolean;
   getDebtorById: (id: string) => Debtor | undefined;
   calculateAmountOwed: (transactions: Transaction[]) => number;
@@ -22,29 +36,28 @@ interface DebtorsContextType {
 
 const DebtorsContext = createContext<DebtorsContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY_PREFIX = "debtvision_debtors_";
-
 const transactionTypeArabic: Record<TransactionType, string> = {
   payment: "دفعة",
   new_credit: "دين جديد",
   adjustment_increase: "تسوية (زيادة)",
   adjustment_decrease: "تسوية (نقصان)",
   full_settlement: "دفع كامل سداد",
-  // 'initial_balance' is no longer used for the first transaction.
+  initial_balance: "رصيد افتتاحي", // Kept for displaying old data if any
 };
 
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
   return transactions.reduce((balance, tx) => {
     let newBalance = balance;
-    const amount = Number(tx.amount); 
+    const amount = Number(tx.amount);
 
     if (isNaN(amount) || !isFinite(amount)) {
       console.error(`Invalid or non-finite amount in transaction, skipping:`, tx);
-      return balance; 
+      return balance;
     }
 
     switch (tx.type) {
-      case 'new_credit': 
+      case 'initial_balance': // if initial_balance is positive it adds to debt
+      case 'new_credit':
       case 'adjustment_increase':
         newBalance += amount;
         break;
@@ -53,11 +66,8 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
       case 'full_settlement':
         newBalance -= amount;
         break;
-      // Removed 'initial_balance' case as it's deprecated for this logic
       default:
-        // Avoid logging for unknown types if 'initial_balance' might still exist in old data
-        // console.warn(`Unknown transaction type: ${tx.type}`); 
-        return balance; 
+        return balance;
     }
     return parseFloat(newBalance.toFixed(2));
   }, 0);
@@ -65,7 +75,7 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
 
 
 export function DebtorsProvider({ children }: { children: ReactNode }) {
-  const { user, businessName: appBusinessName } = useAuth(); 
+  const { user, businessName: appBusinessName } = useAuth();
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loadingDebtors, setLoadingDebtors] = useState(true);
 
@@ -74,47 +84,47 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
   const toastTransactionAdded = "تمت إضافة المعاملة";
   const whatsAppReminderPreparedTitle = (name: string) => `تذكير واتساب جاهز لـ ${name}`;
   const whatsAppReminderFailedTitle = "فشل إنشاء تذكير واتساب";
+  const firestoreErrorToastTitle = "خطأ في قاعدة البيانات";
 
-
-  const getStorageKey = useCallback(() => user ? `${LOCAL_STORAGE_KEY_PREFIX}${user.uid}` : null, [user]);
 
   useEffect(() => {
+    if (!user) {
+      setDebtors([]);
+      setLoadingDebtors(false);
+      return;
+    }
+
     setLoadingDebtors(true);
-    const storageKey = getStorageKey();
-    if (typeof window !== "undefined" && storageKey) {
-      try {
-        const storedDebtorsString = localStorage.getItem(storageKey);
-        if (storedDebtorsString) {
-          const storedDebtors: Debtor[] = JSON.parse(storedDebtorsString);
-          const debtorsWithCalculatedAmounts = storedDebtors.map(d => ({
-            ...d,
-            transactions: (d.transactions || []).map(tx => ({...tx, amount: Number(tx.amount) || 0})),
-            amountOwed: calculateAmountOwedInternal(d.transactions || []),
-          }));
-          setDebtors(debtorsWithCalculatedAmounts);
-        } else {
-          setDebtors([]);
-        }
-      } catch (error) {
-        console.error("فشل تحميل المدينين من localStorage:", error);
-        setDebtors([]);
-      }
-    } else if (!user) {
-        setDebtors([]);
-    }
-    setLoadingDebtors(false);
-  }, [user, getStorageKey]);
+    const debtorsColRef = collection(db, `users/${user.uid}/debtors`);
+    const q = query(debtorsColRef, where("userId", "==", user.uid));
 
-  useEffect(() => {
-    const storageKey = getStorageKey();
-    if (typeof window !== "undefined" && storageKey && !loadingDebtors) {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(debtors));
-      } catch (error) {
-        console.error("فشل حفظ المدينين في localStorage:", error);
-      }
-    }
-  }, [debtors, user, loadingDebtors, getStorageKey]);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedDebtors: Debtor[] = snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        const transactions = (data.transactions || []).map((tx: any) => ({
+          ...tx,
+          date: (tx.date as Timestamp)?.toDate ? (tx.date as Timestamp).toDate().toISOString() : (typeof tx.date === 'string' ? tx.date : new Date().toISOString()),
+          amount: Number(tx.amount) || 0,
+        }));
+        return {
+          id: docSnap.id,
+          ...data,
+          transactions,
+          lastUpdated: (data.lastUpdated as Timestamp)?.toDate ? (data.lastUpdated as Timestamp).toDate().toISOString() : (typeof data.lastUpdated === 'string' ? data.lastUpdated : new Date().toISOString()),
+          amountOwed: calculateAmountOwedInternal(transactions),
+        } as Debtor;
+      });
+      setDebtors(fetchedDebtors);
+      setLoadingDebtors(false);
+    }, (error) => {
+      console.error("Error fetching debtors from Firestore:", error);
+      toast({ title: firestoreErrorToastTitle, description: "فشل تحميل بيانات المدينين. " + error.message, variant: "destructive"});
+      setLoadingDebtors(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
 
   const triggerWhatsappReminderIfNeeded = async (debtor: Debtor, wasOverLimitBefore?: boolean) => {
     const isCurrentlyOverLimit = debtor.amountOwed > debtor.creditLimit;
@@ -168,107 +178,191 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addDebtor = (fullDebtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed"> & { initialAmount: number; debtReason?: string }) => {
+  const addDebtor = async (fullDebtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed"> & { initialAmount: number; debtReason?: string }) => {
+    if (!user) {
+        toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لإضافة مدين.", variant: "destructive"});
+        return;
+    }
     const { initialAmount, debtReason, ...debtorBaseData } = fullDebtorData;
     const initialTransactionAmount = Number(initialAmount) || 0;
-    const newTransactions: Transaction[] = [];
+    const newTransactionsForFirestore: Omit<Transaction, 'id' | 'date'> & { date: Timestamp }[] = [];
 
     if (initialTransactionAmount > 0) {
-      newTransactions.push({
-        id: Date.now().toString() + "_tx_init_credit", 
-        date: new Date().toISOString(),
-        type: 'new_credit', 
+      newTransactionsForFirestore.push({
+        type: 'new_credit',
         amount: initialTransactionAmount,
-        description: debtReason || undefined, 
+        description: debtReason || undefined, // Use "undefined" so Firestore omits the field if empty
+        date: Timestamp.now(), // Firestore Timestamp
       });
     }
-
-    const newDebtor: Debtor = {
-      ...debtorBaseData,
-      id: Date.now().toString(),
-      userId: user?.uid,
-      lastUpdated: new Date().toISOString(),
-      transactions: newTransactions,
-      amountOwed: calculateAmountOwedInternal(newTransactions),
-    };
-    setDebtors((prevDebtors) => [...prevDebtors, newDebtor]);
-    setTimeout(() => {
-        toast({ title: toastDebtorAddedTitle, description: `تمت إضافة ${newDebtor.name}.` });
-    }, 0);
     
-    triggerWhatsappReminderIfNeeded(newDebtor); 
+    const newDebtorData = {
+      ...debtorBaseData,
+      userId: user.uid,
+      lastUpdated: serverTimestamp(), // Firestore server timestamp for creation
+      transactions: newTransactionsForFirestore.map(tx => ({ // Add temporary client-side IDs for display if needed before snapshot update
+        ...tx,
+        id: Date.now().toString() + Math.random().toString(36).substring(2,9) 
+      })),
+    };
+
+    try {
+      const debtorsColRef = collection(db, `users/${user.uid}/debtors`);
+      // Firestore will generate the ID
+      const docRef = await addDoc(debtorsColRef, newDebtorData);
+      
+      // Optimistically update UI or rely on onSnapshot
+      // For now, we rely on onSnapshot to update the debtors list.
+      // We can still show a toast.
+      setTimeout(() => {
+          toast({ title: toastDebtorAddedTitle, description: `تمت إضافة ${debtorBaseData.name}.` });
+      }, 0);
+
+      // Fetch the newly added debtor to trigger WhatsApp reminder if needed
+      // This step is important if we want to use the exact data from Firestore including the generated ID
+      const newDebtorSnapshot = await getDoc(docRef);
+      if (newDebtorSnapshot.exists()) {
+          const addedDebtor = {
+              id: newDebtorSnapshot.id,
+              ...newDebtorSnapshot.data(),
+              transactions: (newDebtorSnapshot.data().transactions || []).map((tx: any) => ({
+                  ...tx,
+                  date: (tx.date as Timestamp)?.toDate ? (tx.date as Timestamp).toDate().toISOString() : new Date().toISOString(),
+              })),
+              lastUpdated: (newDebtorSnapshot.data().lastUpdated as Timestamp)?.toDate ? (newDebtorSnapshot.data().lastUpdated as Timestamp).toDate().toISOString() : new Date().toISOString(),
+              amountOwed: calculateAmountOwedInternal(
+                (newDebtorSnapshot.data().transactions || []).map((tx: any) => ({...tx, amount: Number(tx.amount) || 0 }))
+              )
+          } as Debtor;
+          triggerWhatsappReminderIfNeeded(addedDebtor);
+      }
+
+    } catch (error: any) {
+      console.error("Error adding debtor to Firestore:", error);
+      toast({title: firestoreErrorToastTitle, description: "فشل إضافة المدين. " + error.message, variant: "destructive"});
+    }
   };
 
-  const updateDebtorInfo = (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => {
-    let updatedDebtorForReminder: Debtor | null = null;
-    let wasOverLimitBeforeUpdate: boolean | undefined = undefined;
+  const updateDebtorInfo = async (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => {
+     if (!user) {
+        toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لتحديث معلومات المدين.", variant: "destructive"});
+        return;
+    }
+    const debtorDocRef = doc(db, `users/${user.uid}/debtors`, debtorId);
+    try {
+      const currentDebtor = debtors.find(d => d.id === debtorId);
+      const wasOverLimitBeforeUpdate = currentDebtor ? currentDebtor.amountOwed > currentDebtor.creditLimit : undefined;
 
-    setDebtors(prevDebtors => 
-      prevDebtors.map(d => {
-        if (d.id === debtorId) {
-          wasOverLimitBeforeUpdate = d.amountOwed > d.creditLimit;
-          const updatedDebtor = {
-            ...d,
-            ...debtorInfo,
-            lastUpdated: new Date().toISOString(),
-          };
-          updatedDebtorForReminder = updatedDebtor;
-          return updatedDebtor;
-        }
-        return d;
-      })
-    );
-    setTimeout(() => {
-        toast({title: toastDebtorInfoUpdated, description: `تم تحديث معلومات ${debtorInfo.name}.`});
-    },0);
-    if (updatedDebtorForReminder) {
-      triggerWhatsappReminderIfNeeded(updatedDebtorForReminder, wasOverLimitBeforeUpdate);
+      await updateDoc(debtorDocRef, {
+        ...debtorInfo,
+        lastUpdated: serverTimestamp(),
+      });
+      setTimeout(() => {
+          toast({title: toastDebtorInfoUpdated, description: `تم تحديث معلومات ${debtorInfo.name}.`});
+      },0);
+
+      // For WhatsApp reminder, we need the updated debtor object
+      const updatedDebtorDoc = await getDoc(debtorDocRef);
+      if(updatedDebtorDoc.exists()){
+        const updatedData = updatedDebtorDoc.data();
+        const transactions = (updatedData.transactions || []).map((tx: any) => ({
+          ...tx,
+          date: (tx.date as Timestamp)?.toDate ? (tx.date as Timestamp).toDate().toISOString() : new Date().toISOString(),
+          amount: Number(tx.amount) || 0,
+        }));
+        const updatedDebtorForReminder = {
+            id: updatedDebtorDoc.id,
+            ...updatedData,
+            transactions,
+            amountOwed: calculateAmountOwedInternal(transactions),
+            lastUpdated: (updatedData.lastUpdated as Timestamp)?.toDate ? (updatedData.lastUpdated as Timestamp).toDate().toISOString() : new Date().toISOString(),
+        } as Debtor;
+        triggerWhatsappReminderIfNeeded(updatedDebtorForReminder, wasOverLimitBeforeUpdate);
+      }
+
+    } catch (error: any) {
+      console.error("Error updating debtor info in Firestore:", error);
+      toast({title: firestoreErrorToastTitle, description: "فشل تحديث معلومات المدين. " + error.message, variant: "destructive"});
     }
   };
 
 
-  const addTransaction = (debtorId: string, transactionData: Omit<Transaction, "id" | "date">) => {
-    let debtorForReminder: Debtor | null = null;
-    let wasOverLimitBeforeTransaction: boolean | undefined = undefined;
+  const addTransaction = async (debtorId: string, transactionData: Omit<Transaction, "id" | "date">) => {
+    if (!user) {
+        toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لإضافة معاملة.", variant: "destructive"});
+        return;
+    }
+    const debtorDocRef = doc(db, `users/${user.uid}/debtors`, debtorId);
+    try {
+        const debtorSnap = await getDoc(debtorDocRef);
+        if (!debtorSnap.exists()) {
+            throw new Error("المدين غير موجود.");
+        }
+        const debtorData = debtorSnap.data() as Omit<Debtor, 'id' | 'amountOwed'>; // Firestore data before calculation
+        const wasOverLimitBeforeTransaction = calculateAmountOwedInternal(
+          (debtorData.transactions || []).map(tx => ({...tx, date: (tx.date as any)?.toDate ? (tx.date as any).toDate().toISOString() : tx.date }))
+        ) > debtorData.creditLimit;
 
-    setDebtors(prevDebtors => 
-      prevDebtors.map(debtor => {
-        if (debtor.id === debtorId) {
-          wasOverLimitBeforeTransaction = debtor.amountOwed > debtor.creditLimit;
-          const newTransaction: Transaction = {
+
+        const newTransactionForFirestore = {
             ...transactionData,
-            id: Date.now().toString() + "_tx_" + Math.random().toString(36).substring(2, 7),
-            date: new Date().toISOString(),
-            amount: Number(transactionData.amount) || 0, 
-          };
-          const updatedTransactions = [...(debtor.transactions || []), newTransaction];
-          const newAmountOwed = calculateAmountOwedInternal(updatedTransactions);
-          
-          const updatedDebtor = {
-            ...debtor,
-            transactions: updatedTransactions,
-            amountOwed: newAmountOwed,
-            lastUpdated: new Date().toISOString(),
-          };
-          
-          setTimeout(() => {
-            toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${newTransaction.amount.toLocaleString('ar-EG')} لـ ${debtor.name}.` });
-          }, 0);
-          
-          debtorForReminder = updatedDebtor;
-          return updatedDebtor;
-        }
-        return debtor;
-      })
-    );
+            id: Date.now().toString() + "_tx_" + Math.random().toString(36).substring(2, 7), // Client-side ID for array item
+            date: Timestamp.now(), // Firestore Timestamp for transaction date
+            amount: Number(transactionData.amount) || 0,
+        };
 
-    if (debtorForReminder && (transactionData.type === 'new_credit' || transactionData.type === 'adjustment_increase')) {
-        triggerWhatsappReminderIfNeeded(debtorForReminder, wasOverLimitBeforeTransaction);
+        const updatedTransactions = [...(debtorData.transactions || []), newTransactionForFirestore];
+        
+        await updateDoc(debtorDocRef, {
+            transactions: updatedTransactions,
+            lastUpdated: serverTimestamp(),
+        });
+
+        setTimeout(() => {
+          toast({ title: toastTransactionAdded, description: `تمت إضافة معاملة (${transactionTypeArabic[transactionData.type] || transactionData.type}) بمبلغ ${newTransactionForFirestore.amount.toLocaleString('ar-EG')} لـ ${debtorData.name}.` });
+        }, 0);
+        
+        // For WhatsApp reminder, get updated debtor
+        const updatedDebtorDoc = await getDoc(debtorDocRef);
+        if(updatedDebtorDoc.exists()){
+            const updatedData = updatedDebtorDoc.data();
+             const transactionsForCalc = (updatedData.transactions || []).map((tx: any) => ({
+                ...tx,
+                date: (tx.date as Timestamp)?.toDate ? (tx.date as Timestamp).toDate().toISOString() : new Date().toISOString(),
+                amount: Number(tx.amount) || 0,
+            }));
+            const debtorForReminder = {
+                id: updatedDebtorDoc.id,
+                ...updatedData,
+                transactions: transactionsForCalc,
+                amountOwed: calculateAmountOwedInternal(transactionsForCalc),
+                lastUpdated: (updatedData.lastUpdated as Timestamp)?.toDate ? (updatedData.lastUpdated as Timestamp).toDate().toISOString() : new Date().toISOString(),
+            } as Debtor;
+            if (transactionData.type === 'new_credit' || transactionData.type === 'adjustment_increase') {
+                triggerWhatsappReminderIfNeeded(debtorForReminder, wasOverLimitBeforeTransaction);
+            }
+        }
+
+    } catch (error: any) {
+      console.error("Error adding transaction in Firestore:", error);
+      toast({title: firestoreErrorToastTitle, description: "فشل إضافة المعاملة. " + error.message, variant: "destructive"});
     }
   };
 
-  const deleteDebtor = (id: string) => {
-    setDebtors((prevDebtors) => prevDebtors.filter((debtor) => debtor.id !== id));
+  const deleteDebtor = async (id: string) => {
+    if (!user) {
+        toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لحذف مدين.", variant: "destructive"});
+        return;
+    }
+    const debtorDocRef = doc(db, `users/${user.uid}/debtors`, id);
+    try {
+      await deleteDoc(debtorDocRef);
+      // onSnapshot will update the local state
+      // toast({ title: "تم حذف المدين", description: "تم حذف المدين بنجاح." }); // Toast is handled by DebtorList
+    } catch (error: any) {
+      console.error("Error deleting debtor from Firestore:", error);
+      toast({title: firestoreErrorToastTitle, description: "فشل حذف المدين. " + error.message, variant: "destructive"});
+    }
   };
 
   const getDebtorById = useCallback((id: string): Debtor | undefined => {
