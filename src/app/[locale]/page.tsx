@@ -2,27 +2,26 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useParams } from "next-intl/client"; // Changed to next-intl/client
+import { useRouter } from "next/navigation"; // Changed to next/navigation
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function HomePage() { 
+// This page component will handle redirection from /[locale] to /dashboard or /login
+// It assumes 'en' or any value in [locale] will behave the same way since i18n is removed.
+export default function HomePage({ params }: { params: { locale: string } }) { 
   const { user, loading } = useAuth();
   const router = useRouter();
-  const params = useParams();
-  const locale = params && typeof params.locale === 'string' ? params.locale : 'en';
-
+  // const locale = params.locale || 'en'; // 'locale' from params is now less relevant
 
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // useRouter from next-intl will handle locale
-        router.replace(`/dashboard`); 
+        router.replace(`/dashboard`); // No locale prefix
       } else {
-        router.replace(`/login`); 
+        router.replace(`/login`); // No locale prefix
       }
     }
-  }, [user, loading, router, locale]); // Added locale
+  }, [user, loading, router]);
 
 
   return (

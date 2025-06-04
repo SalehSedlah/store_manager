@@ -28,18 +28,40 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 export function DebtorList() {
   const { debtors, deleteDebtor, loadingDebtors } = useDebtors();
   const { toast } = useToast();
-  const t = useTranslations("DebtorList");
-  const tToast = useTranslations("Toast");
+  // const t = useTranslations("DebtorList"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
+
+  // Hardcoded strings
+  const noDebtorsText = "No debtors found. Add a new debtor to get started.";
+  const nameHeader = "Name";
+  const phoneNumberHeader = "Phone Number";
+  const amountOwedHeader = "Amount Owed";
+  const creditLimitHeader = "Credit Limit";
+  const statusHeader = "Status";
+  const lastUpdatedHeader = "Last Updated";
+  const actionsHeader = "Actions";
+  const statusOverLimit = "Over Limit";
+  const statusWithinLimit = "Within Limit";
+  const editActionText = "Edit";
+  const deleteActionText = "Delete";
+  const sendSmsActionText = "Send SMS";
+  const sendWhatsAppActionText = "Send WhatsApp";
+  const deleteDialogTitle = "Are you sure?";
+  const deleteDialogDescription = (name: string) => `This action cannot be undone. This will permanently delete ${name}'s record.`;
+  const deleteDialogCancel = "Cancel";
+  const deleteDialogConfirm = "Delete";
+  const toastDebtorDeletedTitle = "Debtor Deleted";
+  const toastDebtorDeletedDescription = (name: string) => `${name} has been deleted.`;
 
 
   const handleDelete = (id: string, name: string) => {
     deleteDebtor(id);
-    toast({ title: tToast("debtorDeletedTitle"), description: tToast("debtorDeletedDescription", {name}) });
+    toast({ title: toastDebtorDeletedTitle, description: toastDebtorDeletedDescription(name) });
   };
 
   if (loadingDebtors) {
@@ -53,7 +75,7 @@ export function DebtorList() {
   }
 
   if (debtors.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">{t("noDebtors")}</p>;
+    return <p className="text-center text-muted-foreground py-8">{noDebtorsText}</p>;
   }
 
   return (
@@ -61,13 +83,13 @@ export function DebtorList() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("nameHeader")}</TableHead>
-            <TableHead>{t("phoneNumberHeader")}</TableHead>
-            <TableHead className="text-right">{t("amountOwedHeader")}</TableHead>
-            <TableHead className="text-right">{t("creditLimitHeader")}</TableHead>
-            <TableHead>{t("statusHeader")}</TableHead>
-            <TableHead className="text-right">{t("lastUpdatedHeader")}</TableHead>
-            <TableHead className="text-right">{t("actionsHeader")}</TableHead>
+            <TableHead>{nameHeader}</TableHead>
+            <TableHead>{phoneNumberHeader}</TableHead>
+            <TableHead className="text-right">{amountOwedHeader}</TableHead>
+            <TableHead className="text-right">{creditLimitHeader}</TableHead>
+            <TableHead>{statusHeader}</TableHead>
+            <TableHead className="text-right">{lastUpdatedHeader}</TableHead>
+            <TableHead className="text-right">{actionsHeader}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -87,10 +109,10 @@ export function DebtorList() {
                   {isOverLimit ? (
                     <Badge variant="destructive" className="flex items-center gap-1 w-fit">
                       <AlertTriangle className="h-3 w-3" />
-                      {t("statusOverLimit")}
+                      {statusOverLimit}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary">{t("statusWithinLimit")}</Badge>
+                    <Badge variant="secondary">{statusWithinLimit}</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
@@ -107,7 +129,7 @@ export function DebtorList() {
                         debtor={debtor}
                         triggerButton={
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Edit className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("editAction")}
+                            <Edit className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {editActionText}
                           </DropdownMenuItem>
                         }
                       />
@@ -116,12 +138,12 @@ export function DebtorList() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <a href={`sms:${debtor.phoneNumber}`}>
-                              <MessageSquare className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("sendSmsAction")}
+                              <MessageSquare className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {sendSmsActionText}
                             </a>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <a href={`https://wa.me/${debtor.phoneNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                              <MessageCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("sendWhatsAppAction")}
+                              <MessageCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {sendWhatsAppActionText}
                             </a>
                           </DropdownMenuItem>
                         </>
@@ -130,23 +152,23 @@ export function DebtorList() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("deleteAction")}
+                            <Trash2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {deleteActionText}
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
+                            <AlertDialogTitle>{deleteDialogTitle}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              {t("deleteDialogDescription", {name: debtor.name})}
+                              {deleteDialogDescription(debtor.name)}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>{t("deleteDialogCancel")}</AlertDialogCancel>
+                            <AlertDialogCancel>{deleteDialogCancel}</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(debtor.id, debtor.name)}
                               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                             >
-                              {t("deleteDialogConfirm")}
+                              {deleteDialogConfirm}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

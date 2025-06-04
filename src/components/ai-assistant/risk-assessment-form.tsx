@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Debtor } from "@/types/debt";
 import { Sparkles, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 const riskAssessmentFormSchema = z.object({
   debtorId: z.string().optional(), 
@@ -38,13 +38,37 @@ const riskAssessmentFormSchema = z.object({
 type RiskAssessmentFormValues = z.infer<typeof riskAssessmentFormSchema>;
 
 export function RiskAssessmentForm() {
-  const t = useTranslations("RiskAssessmentForm");
-  const tToast = useTranslations("Toast");
+  // const t = useTranslations("RiskAssessmentForm"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
   const { debtors, getDebtorById } = useDebtors();
   const { toast } = useToast();
   const [assessmentResult, setAssessmentResult] = useState<DebtorRiskAssessmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
+
+  // Hardcoded strings
+  const cardTitle = "Debtor Risk Assessment";
+  const cardDescription = "Analyze a debtor's risk profile using AI.";
+  const selectDebtorLabel = "Select Debtor (Optional)";
+  const selectDebtorPlaceholder = "Select a debtor or enter manually";
+  const selectDebtorManualOption = "Enter Manually";
+  const selectDebtorDescription = "Select an existing debtor to pre-fill some fields, or choose \"Enter Manually\".";
+  const paymentBehaviorLabel = "Payment Behavior";
+  const paymentBehaviorPlaceholder = "e.g., Consistently pays on time, occasional late payments...";
+  const debtAmountLabel = "Debt Amount ($)";
+  const creditLimitLabel = "Credit Limit ($) (Optional)";
+  const creditScoreLabel = "Credit Score (Optional)";
+  const creditScorePlaceholder = "300-850";
+  const assessRiskButtonText = "Assess Risk";
+  const assessingRiskButtonText = "Assessing Risk...";
+  const resultTitle = "Assessment Result:";
+  const riskLevelLabel = "Risk Level:";
+  const riskFactorsLabel = "Risk Factors:";
+  const suggestedActionsLabel = "Suggested Actions:";
+  const toastAssessmentCompleteTitle = "Risk Assessment Complete";
+  const toastAssessmentCompleteDescription = "AI analysis finished.";
+  const toastAssessmentFailedTitle = "Assessment Failed";
+
 
   const form = useForm<RiskAssessmentFormValues>({
     resolver: zodResolver(riskAssessmentFormSchema),
@@ -89,9 +113,9 @@ export function RiskAssessmentForm() {
       };
       const result = await assessDebtorRisk(input);
       setAssessmentResult(result);
-      toast({ title: tToast("riskAssessmentCompleteTitle"), description: tToast("riskAssessmentCompleteDescription") });
+      toast({ title: toastAssessmentCompleteTitle, description: toastAssessmentCompleteDescription });
     } catch (error: any) {
-      toast({ title: tToast("riskAssessmentFailedTitle"), description: error.message, variant: "destructive" });
+      toast({ title: toastAssessmentFailedTitle, description: error.message, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -101,9 +125,9 @@ export function RiskAssessmentForm() {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
-          <Sparkles className="mr-2 rtl:ml-2 rtl:mr-0 h-5 w-5 text-primary" />{t("title")}
+          <Sparkles className="mr-2 rtl:ml-2 rtl:mr-0 h-5 w-5 text-primary" />{cardTitle}
         </CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
+        <CardDescription>{cardDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -113,15 +137,15 @@ export function RiskAssessmentForm() {
               name="debtorId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("selectDebtorLabel")}</FormLabel>
+                  <FormLabel>{selectDebtorLabel}</FormLabel>
                   <Select onValueChange={(value) => {field.onChange(value); handleDebtorSelect(value);}} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={t("selectDebtorPlaceholder")} />
+                        <SelectValue placeholder={selectDebtorPlaceholder} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="manual">{t("selectDebtorManualOption")}</SelectItem>
+                      <SelectItem value="manual">{selectDebtorManualOption}</SelectItem>
                       {debtors.map((debtor) => (
                         <SelectItem key={debtor.id} value={debtor.id}>
                           {debtor.name}
@@ -129,7 +153,7 @@ export function RiskAssessmentForm() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>{t("selectDebtorDescription")}</FormDescription>
+                  <FormDescription>{selectDebtorDescription}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -140,9 +164,9 @@ export function RiskAssessmentForm() {
               name="paymentBehavior"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("paymentBehaviorLabel")}</FormLabel>
+                  <FormLabel>{paymentBehaviorLabel}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder={t("paymentBehaviorPlaceholder")} {...field} />
+                    <Textarea placeholder={paymentBehaviorPlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,7 +178,7 @@ export function RiskAssessmentForm() {
                 name="debtAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("debtAmountLabel")}</FormLabel>
+                    <FormLabel>{debtAmountLabel}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="1000" {...field} />
                     </FormControl>
@@ -167,7 +191,7 @@ export function RiskAssessmentForm() {
                 name="creditLimit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("creditLimitLabel")}</FormLabel>
+                    <FormLabel>{creditLimitLabel}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="5000" {...field} />
                     </FormControl>
@@ -181,16 +205,16 @@ export function RiskAssessmentForm() {
               name="creditScore"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("creditScoreLabel")}</FormLabel>
+                  <FormLabel>{creditScoreLabel}</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder={t("creditScorePlaceholder")} {...field} />
+                    <Input type="number" placeholder={creditScorePlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-              {isLoading ? t("assessingRiskButton") : t("assessRiskButton")}
+              {isLoading ? assessingRiskButtonText : assessRiskButtonText}
             </Button>
           </form>
         </Form>
@@ -208,10 +232,10 @@ export function RiskAssessmentForm() {
 
         {assessmentResult && !isLoading && (
           <div className="mt-8 space-y-4 p-4 border rounded-md bg-secondary/30">
-            <h3 className="text-lg font-semibold font-headline text-foreground">{t("resultTitle")}</h3>
+            <h3 className="text-lg font-semibold font-headline text-foreground">{resultTitle}</h3>
             <div>
               <p className="font-medium text-foreground flex items-center">
-                {t("riskLevelLabel")}
+                {riskLevelLabel}
                 <span className={`ml-2 rtl:mr-2 rtl:ml-0 font-bold ${
                   assessmentResult.riskLevel.toLowerCase() === 'high' ? 'text-destructive' :
                   assessmentResult.riskLevel.toLowerCase() === 'medium' ? 'text-yellow-500' :
@@ -223,11 +247,11 @@ export function RiskAssessmentForm() {
               </p>
             </div>
             <div>
-              <p className="font-medium text-foreground">{t("riskFactorsLabel")}</p>
+              <p className="font-medium text-foreground">{riskFactorsLabel}</p>
               <p className="text-sm text-muted-foreground">{assessmentResult.riskFactors}</p>
             </div>
             <div>
-              <p className="font-medium text-foreground">{t("suggestedActionsLabel")}</p>
+              <p className="font-medium text-foreground">{suggestedActionsLabel}</p>
               <p className="text-sm text-muted-foreground">{assessmentResult.suggestedActions}</p>
             </div>
           </div>

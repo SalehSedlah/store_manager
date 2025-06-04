@@ -11,29 +11,38 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter, usePathname } from "next-intl/client"; // Changed
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation"; // Changed
+// import { useTranslations } from "next-intl"; // Removed
 
 export function AppHeader() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const router = useRouter();
-  const tToast = useTranslations("Toast");
-  const tAppHeader = useTranslations("AppHeader");
-  
+  // const tToast = useTranslations("Toast"); // Removed
+  // const tAppHeader = useTranslations("AppHeader"); // Removed
+
+  // Hardcoded strings
+  const toastLogoutSuccessTitle = "Logged Out";
+  const toastLogoutSuccessDescription = "You have been successfully logged out.";
+  const toastLogoutFailedTitle = "Logout Failed";
+  const userAvatarHintText = "user avatar";
+  const userInitialsFallbackText = "DV";
+  const logoutMenuItemText = "Logout";
+
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: tToast("logoutSuccessTitle"), description: tToast("logoutSuccessDescription") });
-      router.push(`/login`); // next-intl router handles locale
+      toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
+      router.push(`/login`); // No locale prefix
     } catch (error: any) {
-      toast({ title: tToast("logoutFailedTitle"), description: error.message, variant: "destructive" });
+      toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }
   };
   
   const getInitials = (email?: string | null) => {
-    if (!email) return tAppHeader("userInitialsFallback"); 
+    if (!email) return userInitialsFallbackText; 
     const parts = email.split("@")[0].split(/[\s._-]+/); 
     if (parts.length > 1 && parts[0] && parts[1]) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -50,7 +59,7 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || "User"} data-ai-hint={tAppHeader("userAvatarHint")} />
+                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || "User"} data-ai-hint={userAvatarHintText} />
                 <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
               </Avatar>
             </Button>
@@ -69,7 +78,7 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-              <span>{tToast("logoutSuccessTitle")}</span> {/* Example translation, adjust key if needed */}
+              <span>{logoutMenuItemText}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -11,11 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-inter)', 'sans-serif'], // Inter is primary via variable
-        headline: ['var(--font-inter)', 'sans-serif'], // Inter is primary via variable
-        // Cairo is added for Arabic via html[lang="ar"] in globals.css
-        // If you need to apply Cairo font specifically to certain elements via Tailwind class:
-        // arabic: ['Cairo', 'var(--font-inter)', 'sans-serif'],
+        body: ['var(--font-inter)', 'sans-serif'], 
+        headline: ['var(--font-inter)', 'sans-serif'],
         code: ['monospace', 'monospace'],
       },
       colors: {

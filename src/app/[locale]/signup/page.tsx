@@ -2,8 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next-intl/client"; // Changed
-import {Link} from "next-intl/link"; // Changed
+import { useRouter } from "next/navigation"; // Changed
+import Link from "next/link"; // Changed
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { TrendingUp } from "lucide-react";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 export default function SignupPage() {
-  const t = useTranslations("SignupPage");
-  const tToast = useTranslations("Toast");
+  // const t = useTranslations("SignupPage"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,34 +25,50 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  // Hardcoded strings
+  const pageTitle = "Create Account";
+  const pageDescription = "Join DebtVision today";
+  const emailLabel = "Email";
+  const emailPlaceholder = "you@example.com";
+  const passwordLabel = "Password";
+  const confirmPasswordLabel = "Confirm Password";
+  const signupButtonText = "Sign Up";
+  const loadingSignupButtonText = "Creating account...";
+  const loginPromptText = "Already have an account?";
+  const loginLinkText = "Login";
+  const toastSignupSuccessTitle = "Signup Successful";
+  const toastSignupSuccessDescription = "Redirecting to dashboard...";
+  const toastSignupFailedTitle = "Signup Failed";
+
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     if (password !== confirmPassword) {
-      const specificError = "Passwords do not match."; // Consider translating
+      const specificError = "Passwords do not match.";
       setError(specificError);
-      toast({ title: tToast("signupFailedTitle"), description: specificError, variant: "destructive" });
+      toast({ title: toastSignupFailedTitle, description: specificError, variant: "destructive" });
       setLoading(false);
       return;
     }
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      toast({ title: tToast("signupSuccessTitle"), description: tToast("signupSuccessDescription") });
-      router.push(`/dashboard`); 
+      toast({ title: toastSignupSuccessTitle, description: toastSignupSuccessDescription });
+      router.push(`/dashboard`); // No locale prefix
     } catch (err: any) {
       let errorMessage = err.message;
        if (err.code === "auth/email-already-in-use") {
-        errorMessage = "This email address is already in use."; // Consider translating
+        errorMessage = "This email address is already in use.";
       } else if (err.code === "auth/weak-password") {
-        errorMessage = "The password is too weak. Please use a stronger password."; // Consider translating
+        errorMessage = "The password is too weak. Please use a stronger password.";
       } else if (err.code === "auth/invalid-email") {
-        errorMessage = "The email address is not valid."; // Consider translating
+        errorMessage = "The email address is not valid.";
       }
       setError(errorMessage);
-      toast({ title: tToast("signupFailedTitle"), description: errorMessage, variant: "destructive" });
+      toast({ title: toastSignupFailedTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -66,25 +82,25 @@ export default function SignupPage() {
       </div>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-center">{t("title")}</CardTitle>
-          <CardDescription className="text-center">{t("description")}</CardDescription>
+          <CardTitle className="text-2xl font-headline text-center">{pageTitle}</CardTitle>
+          <CardDescription className="text-center">{pageDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">{t("emailLabel")}</Label>
+              <Label htmlFor="email">{emailLabel}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("emailPlaceholder")}
+                placeholder={emailPlaceholder}
                 required
                 className="bg-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("passwordLabel")}</Label>
+              <Label htmlFor="password">{passwordLabel}</Label>
               <Input
                 id="password"
                 type="password"
@@ -96,7 +112,7 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t("confirmPasswordLabel")}</Label>
+              <Label htmlFor="confirmPassword">{confirmPasswordLabel}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -109,13 +125,13 @@ export default function SignupPage() {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t("loadingSignupButton") : t("signupButton")}
+              {loading ? loadingSignupButtonText : signupButtonText}
             </Button>
           </form>
           <p className="mt-6 text-center text-sm">
-            {t("loginPrompt")}{" "}
+            {loginPromptText}{" "}
             <Link href={`/login`} className="font-medium text-primary hover:underline">
-              {t("loginLink")}
+              {loginLinkText}
             </Link>
           </p>
         </CardContent>

@@ -9,7 +9,7 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'DebtVision', // Default title, will be overridden by LocaleLayout
+  title: 'DebtVision', 
   description: 'Manage your debts with AI-powered insights.',
 };
 
@@ -26,12 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // lang and dir will be set by src/app/[locale]/layout.tsx
-    <html className={`${inter.variable}`} suppressHydrationWarning> 
-      <head>
-        {/* Cairo font for Arabic is imported in globals.css */}
-      </head>
-      {/* font-body is the default, html[lang="ar"] in globals.css will target Arabic font */}
+    <html lang="en" dir="ltr" className={`${inter.variable}`} suppressHydrationWarning> 
+      <head />
       <body className={'font-body antialiased'}> 
           <AuthProvider>
             <DebtorsProvider>
