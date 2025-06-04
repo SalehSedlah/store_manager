@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; 
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,6 +19,7 @@ export default function HomePage() {
       }
     }
   }, [user, loading, router]);
+
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-background">

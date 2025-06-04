@@ -1,10 +1,11 @@
+
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
-import { SidebarProvider, SidebarInset, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -15,7 +16,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/login");
+      router.replace("/login"); 
     }
   }, [user, loading, router]);
 
@@ -25,7 +26,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col items-center space-y-4">
           <Skeleton className="h-12 w-12 rounded-full" />
           <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
+          <p className="text-sm text-muted-foreground">Loading user session...</p>
         </div>
       </div>
     );

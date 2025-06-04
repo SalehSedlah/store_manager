@@ -1,18 +1,13 @@
 
-import createMiddleware from 'next-intl/middleware';
-import type { NextRequest } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
  
-export default async function middleware(request: NextRequest) {
-  const handleI18nRouting = createMiddleware({
-    locales: ['en', 'ar'],
-    defaultLocale: 'en',
-    localePrefix: 'as-needed',
-    // By default, next-intl will look for i18n.ts in ./src or ./
-  });
+export function middleware(request: NextRequest): NextResponse {
+  // Simple pass-through, but we'll add security headers here
+  // This function is called for every request matched by the matcher.
+  // You can customize the response object if needed.
+  const response = Response.next();
 
-  const response = handleI18nRouting(request);
-
-  // Add other security headers to the response returned by next-intl
+  // Add other security headers to the response
   response.headers.set('x-content-type-options', 'nosniff');
   response.headers.set('x-dns-prefetch-control', 'off');
   response.headers.set('x-download-options', 'noopen');

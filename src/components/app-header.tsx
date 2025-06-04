@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,16 +7,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut } from "lucide-react"; // User as UserIcon was not used
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next-intl/navigation"; // Changed
-import { useTranslations } from "next-intl"; // Added
+import { useRouter } from "next/navigation";
 
 export function AppHeader() {
-  const t = useTranslations("AppHeader");
-  const tAuth = useTranslations("AuthContext");
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -24,16 +22,16 @@ export function AppHeader() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: t("logout"), description: "You have been successfully logged out." }); // Generic description
-      router.push("/login"); // router from next-intl/navigation handles locale
+      toast({ title: "Logged Out", description: "You have been successfully logged out." });
+      router.push("/login");
     } catch (error: any) {
-      toast({ title: tAuth("loginFailedTitle"), description: error.message, variant: "destructive" });
+      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
     }
   };
   
   const getInitials = (email?: string | null) => {
     if (!email) return "DV";
-    const parts = email.split("@")[0].split(/[\s._-]+/); // Split by common separators
+    const parts = email.split("@")[0].split(/[\s._-]+/); 
     if (parts.length > 1 && parts[0] && parts[1]) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
@@ -68,11 +66,11 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             {/* <DropdownMenuItem>
               <UserIcon className="mr-2 h-4 w-4" />
-              <span>{t("profile")}</span>
+              <span>Profile</span>
             </DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>{t("logout")}</span>
+              <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -9,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 
 export default function SignupPage() {
@@ -27,8 +28,9 @@ export default function SignupPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      toast({ title: "Signup Failed", description: "Passwords do not match.", variant: "destructive" });
+      const specificError = "Passwords do not match.";
+      setError(specificError);
+      toast({ title: "Signup Failed", description: specificError, variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -36,10 +38,18 @@ export default function SignupPage() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       toast({ title: "Signup Successful", description: "Redirecting to dashboard..." });
-      router.push("/dashboard");
+      router.push("/dashboard"); 
     } catch (err: any) {
-      setError(err.message);
-      toast({ title: "Signup Failed", description: err.message, variant: "destructive" });
+      let errorMessage = err.message;
+       if (err.code === "auth/email-already-in-use") {
+        errorMessage = "This email address is already in use.";
+      } else if (err.code === "auth/weak-password") {
+        errorMessage = "The password is too weak. Please use a stronger password.";
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage = "The email address is not valid.";
+      }
+      setError(errorMessage);
+      toast({ title: "Signup Failed", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; 
+import Link from "next/link";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -9,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 
 export default function LoginPage() {
@@ -27,10 +28,16 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
-      router.push("/dashboard");
+      router.push("/dashboard"); 
     } catch (err: any) {
-      setError(err.message);
-      toast({ title: "Login Failed", description: err.message, variant: "destructive" });
+      let errorMessage = err.message;
+      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+        errorMessage = "Invalid email or password.";
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage = "The email address is not valid.";
+      }
+      setError(errorMessage);
+      toast({ title: "Login Failed", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

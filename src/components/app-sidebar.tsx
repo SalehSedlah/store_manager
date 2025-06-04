@@ -1,6 +1,8 @@
+
 "use client";
 
-import { Link, useRouter, usePathname } from "next-intl/navigation"; // Changed import
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -17,14 +19,11 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { NavLink as NavLinkType } from "@/config/links"; // Renamed to avoid conflict
+import type { NavLink as NavLinkType } from "@/config/links";
 import { mainNavLinks, secondaryNavLinks } from "@/config/links";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslations } from "next-intl";
 
 export function AppSidebar() {
-  const t = useTranslations("AppSidebar");
-  const tAuth = useTranslations("AuthContext");
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -34,18 +33,19 @@ export function AppSidebar() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // Using a generic toast message here, or you can add specific ones to AuthContext translations
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push("/login"); // router from next-intl/navigation handles locale
+      router.push("/login"); 
     } catch (error: any) {
-      toast({ title: tAuth("loginFailedTitle"), description: error.message, variant: "destructive" });
+      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
     }
   };
 
-  const translatedMainNavLinks: NavLinkType[] = mainNavLinks.map(link => ({
+  // Use labels directly as hardcoded English strings
+  const navLinksToRender = (links: NavLinkType[]): NavLinkType[] => links.map(link => ({
     ...link,
-    label: t(link.translationKey as any || link.label) // Add translationKey to NavLinkType if it's more complex
+    label: link.label // Assuming link.label is already the desired English string
   }));
+
 
   const renderNavLink = (link: NavLinkType, index: number) => (
     <SidebarMenuItem key={`${link.label}-${index}`}>
@@ -69,7 +69,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary">
             <TrendingUp className="h-8 w-8" />
-            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">{t("brandName")}</span>}
+            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
         </Link>
       </SidebarHeader>
 
@@ -82,7 +82,7 @@ export function AppSidebar() {
               <SidebarMenuSkeleton showIcon />
             </>
           )}
-          {!loading && translatedMainNavLinks.map(renderNavLink)}
+          {!loading && navLinksToRender(mainNavLinks).map(renderNavLink)}
         </SidebarMenu>
       </SidebarContent>
 
@@ -90,7 +90,7 @@ export function AppSidebar() {
 
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {!loading && secondaryNavLinks.map((link) => renderNavLink({...link, label: t(link.translationKey as any || link.label)}, 0))}
+          {!loading && navLinksToRender(secondaryNavLinks).map((link, index) => renderNavLink(link, index))}
         </SidebarMenu>
       </SidebarContent>
 
@@ -98,9 +98,9 @@ export function AppSidebar() {
         {user && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? t("logout") : undefined}>
+              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? "Logout" : undefined}>
                 <LogOut />
-                <span>{t("logout")}</span>
+                <span>Logout</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

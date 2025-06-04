@@ -1,3 +1,4 @@
+
 "use client";
 
 import { RiskAssessmentForm } from "@/components/ai-assistant/risk-assessment-form";
