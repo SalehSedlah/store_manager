@@ -11,8 +11,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['Inter', 'sans-serif'], // Default font
+        headline: ['Inter', 'sans-serif'], // Default font
+        // Example of adding an Arabic font (ensure it's loaded, e.g., in LocaleLayout)
+        // You would also need to apply this conditionally or specifically where Arabic text appears
+        // 'sans-arabic': ['var(--font-cairo)', 'Inter', 'sans-serif'], 
         code: ['monospace', 'monospace'],
       },
       colors: {

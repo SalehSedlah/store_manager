@@ -1,8 +1,7 @@
 
 "use client";
 
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { Link, useRouter, usePathname } from "next-intl/navigation";
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -22,8 +21,12 @@ import {
 import type { NavLink as NavLinkType } from "@/config/links";
 import { mainNavLinks, secondaryNavLinks } from "@/config/links";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 
 export function AppSidebar() {
+  const t = useTranslations("Sidebar");
+  const tApp = useTranslations("App");
+  const tToast = useTranslations("Toast");
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -33,17 +36,16 @@ export function AppSidebar() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: "Logged Out", description: "You have been successfully logged out." });
+      toast({ title: tToast("logoutSuccessTitle"), description: tToast("logoutSuccessDescription") });
       router.push("/login"); 
     } catch (error: any) {
-      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
+      toast({ title: tToast("logoutFailedTitle"), description: error.message, variant: "destructive" });
     }
   };
 
-  // Use labels directly as hardcoded English strings
   const navLinksToRender = (links: NavLinkType[]): NavLinkType[] => links.map(link => ({
     ...link,
-    label: link.label // Assuming link.label is already the desired English string
+    label: t(link.label) // Translate the label which is now a key
   }));
 
 
@@ -57,7 +59,7 @@ export function AppSidebar() {
         >
           <a>
             <link.icon />
-            <span>{link.label}</span>
+            <span>{link.label}</span> 
           </a>
         </SidebarMenuButton>
       </Link>
@@ -69,7 +71,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary">
             <TrendingUp className="h-8 w-8" />
-            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
+            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">{tApp('name')}</span>}
         </Link>
       </SidebarHeader>
 
@@ -98,9 +100,9 @@ export function AppSidebar() {
         {user && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? "Logout" : undefined}>
+              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? t('logout') : undefined}>
                 <LogOut />
-                <span>Logout</span>
+                <span>{t('logout')}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

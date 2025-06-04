@@ -1,0 +1,168 @@
+
+{
+  "App": {
+    "name": "DebtVision"
+  },
+  "Sidebar": {
+    "dashboard": "لوحة التحكم",
+    "debtManagement": "إدارة الديون",
+    "aiAssistant": "مساعد الذكاء الاصطناعي",
+    "logout": "تسجيل الخروج"
+  },
+  "LoginPage": {
+    "title": "تسجيل الدخول",
+    "description": "الوصول إلى حساب DebtVision الخاص بك",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "كلمة المرور",
+    "loginButton": "تسجيل الدخول",
+    "loadingLoginButton": "جاري تسجيل الدخول...",
+    "signupPrompt": "ليس لديك حساب؟",
+    "signupLink": "إنشاء حساب"
+  },
+  "SignupPage": {
+    "title": "إنشاء حساب",
+    "description": "انضم إلى DebtVision اليوم",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "كلمة المرور",
+    "confirmPasswordLabel": "تأكيد كلمة المرور",
+    "signupButton": "إنشاء حساب",
+    "loadingSignupButton": "جاري إنشاء الحساب...",
+    "loginPrompt": "هل لديك حساب بالفعل؟",
+    "loginLink": "تسجيل الدخول"
+  },
+  "DashboardPage": {
+    "title": "لوحة التحكم",
+    "totalDebt": "إجمالي الدين",
+    "totalDebtDescription": "{utilization}٪ من حدود الائتمان مستخدمة",
+    "totalDebtors": "إجمالي المدينين",
+    "totalDebtorsDescription": "المدينون النشطون قيد التتبع",
+    "avgDebtPerDebtor": "متوسط الدين لكل مدين",
+    "avgDebtPerDebtorDescription": "متوسط المبلغ المستحق",
+    "debtorsOverLimit": "مدينون تجاوزوا الحد",
+    "debtorsOverLimitDescription": "يتجاوزون حدود الائتمان",
+    "aiDebtOverviewTitle": "نظرة عامة على الديون بالذكاء الاصطناعي",
+    "aiDebtOverviewDescription": "رؤى وتوصيات بناءً على محفظة ديونك الحالية.",
+    "refreshSummaryButton": "تحديث الملخص",
+    "refreshingSummaryButton": "جاري التحديث...",
+    "aiSummary": {
+      "summaryTitle": "الملخص",
+      "riskAssessmentTitle": "تقييم المخاطر",
+      "recommendationsTitle": "التوصيات",
+      "noDataSummary": "لا توجد بيانات مدينين متاحة لإنشاء ملخص.",
+      "noDataRisk": "غير متاح",
+      "noDataRecommendations": "أضف معلومات المدينين للحصول على ملخص وتوصيات مدعومة بالذكاء الاصطناعي.",
+      "errorSummary": "خطأ في إنشاء ملخص الذكاء الاصطناعي.",
+      "errorRisk": "تعذر تقييم المخاطر.",
+      "errorRecommendations": "يرجى المحاولة مرة أخرى لاحقًا."
+    }
+  },
+  "DebtManagementPage": {
+    "title": "إدارة الديون",
+    "addNewDebtorButton": "إضافة مدين جديد"
+  },
+  "AiAssistantPage": {
+    "title": "مساعد الذكاء الاصطناعي",
+    "description": "استفد من الذكاء الاصطناعي للحصول على رؤى واتخاذ قرارات مالية أفضل."
+  },
+  "DebtorForm": {
+    "addTitle": "إضافة مدين جديد",
+    "addDescription": "أدخل تفاصيل المدين الجديد.",
+    "editTitle": "تعديل المدين",
+    "editDescription": "قم بتحديث تفاصيل هذا المدين.",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "جون دو",
+    "amountOwedLabel": "المبلغ المستحق ($)",
+    "creditLimitLabel": "حد الائتمان ($)",
+    "paymentHistoryLabel": "سجل الدفع",
+    "paymentHistoryPlaceholder": "مثال: يدفع باستمرار في الوقت المحدد.",
+    "cancelButton": "إلغاء",
+    "addButton": "إضافة مدين",
+    "saveButton": "حفظ التغييرات",
+    "savingButton": "جاري الحفظ..."
+  },
+  "DebtorList": {
+    "noDebtors": "لم يتم العثور على مدينين. أضف مدينًا جديدًا للبدء.",
+    "nameHeader": "الاسم",
+    "amountOwedHeader": "المبلغ المستحق",
+    "creditLimitHeader": "حد الائتمان",
+    "statusHeader": "الحالة",
+    "lastUpdatedHeader": "آخر تحديث",
+    "actionsHeader": "الإجراءات",
+    "statusOverLimit": "تجاوز الحد",
+    "statusWithinLimit": "ضمن الحد",
+    "editAction": "تعديل",
+    "deleteAction": "حذف",
+    "deleteDialogTitle": "هل أنت متأكد؟",
+    "deleteDialogDescription": "لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف سجل {name} بشكل دائم.",
+    "deleteDialogCancel": "إلغاء",
+    "deleteDialogConfirm": "حذف"
+  },
+  "RiskAssessmentForm": {
+    "title": "تقييم مخاطر المدين",
+    "description": "حلل ملف مخاطر المدين باستخدام الذكاء الاصطناعي.",
+    "selectDebtorLabel": "اختر مدين (اختياري)",
+    "selectDebtorPlaceholder": "اختر مدينًا أو أدخل يدويًا",
+    "selectDebtorManualOption": "إدخال يدوي",
+    "selectDebtorDescription": "اختر مدينًا موجودًا لملء بعض الحقول مسبقًا، أو اختر \"إدخال يدوي\".",
+    "paymentBehaviorLabel": "سلوك الدفع",
+    "paymentBehaviorPlaceholder": "مثال: يدفع باستمرار في الوقت المحدد، دفعات متأخرة عرضية...",
+    "debtAmountLabel": "مبلغ الدين ($)",
+    "creditLimitLabel": "حد الائتمان ($) (اختياري)",
+    "creditScoreLabel": "درجة الائتمان (اختياري)",
+    "creditScorePlaceholder": "300-850",
+    "assessRiskButton": "تقييم المخاطر",
+    "assessingRiskButton": "جاري تقييم المخاطر...",
+    "resultTitle": "نتيجة التقييم:",
+    "riskLevelLabel": "مستوى المخاطرة:",
+    "riskFactorsLabel": "عوامل المخاطرة:",
+    "suggestedActionsLabel": "الإجراءات المقترحة:"
+  },
+  "CreditSuggestionTool": {
+    "title": "اقتراحات حد الائتمان",
+    "description": "دع الذكاء الاصطناعي يقترح حدود ائتمان مثالية لمدينيك بناءً على بياناتهم.",
+    "generateButton": "إنشاء اقتراحات لجميع المدينين",
+    "generatingButton": "جاري إنشاء الاقتراحات...",
+    "loadingDebtorsButton": "جاري تحميل المدينين...",
+    "suggestedLimitsTitle": "الحدود المقترحة:",
+    "debtorNameHeader": "اسم المدين",
+    "suggestedLimitHeader": "الحد المقترح",
+    "reasoningHeader": "السبب",
+    "noSuggestionsPlaceholder": "انقر فوق الزر أعلاه لإنشاء اقتراحات حد الائتمان.",
+    "noDebtorsPlaceholder": "يرجى إضافة مدينين في قسم إدارة الديون للحصول على اقتراحات."
+  },
+  "Toast": {
+    "loginSuccessTitle": "تم تسجيل الدخول بنجاح",
+    "loginSuccessDescription": "جاري إعادة التوجيه إلى لوحة التحكم...",
+    "loginFailedTitle": "فشل تسجيل الدخول",
+    "signupSuccessTitle": "تم إنشاء الحساب بنجاح",
+    "signupSuccessDescription": "جاري إعادة التوجيه إلى لوحة التحكم...",
+    "signupFailedTitle": "فشل إنشاء الحساب",
+    "logoutSuccessTitle": "تم تسجيل الخروج",
+    "logoutSuccessDescription": "لقد تم تسجيل خروجك بنجاح.",
+    "logoutFailedTitle": "فشل تسجيل الخروج",
+    "debtorAddedTitle": "تمت إضافة المدين",
+    "debtorAddedDescription": "تمت إضافة {name}.",
+    "debtorUpdatedTitle": "تم تحديث المدين",
+    "debtorUpdatedDescription": "تم تحديث {name}.",
+    "debtorDeletedTitle": "تم حذف المدين",
+    "debtorDeletedDescription": "تم حذف {name}.",
+    "errorTitle": "خطأ",
+    "riskAssessmentCompleteTitle": "اكتمل تقييم المخاطر",
+    "riskAssessmentCompleteDescription": "انتهى تحليل الذكاء الاصطناعي.",
+    "riskAssessmentFailedTitle": "فشل التقييم",
+    "creditSuggestionsReadyTitle": "الاقتراحات جاهزة",
+    "creditSuggestionsReadyDescription": "أنشأ الذكاء الاصطناعي اقتراحات لحدود الائتمان.",
+    "creditSuggestionFailedTitle": "فشل إنشاء الاقتراحات",
+    "noDebtorsForCreditSuggestionTitle": "لا يوجد مدينون",
+    "noDebtorsForCreditSuggestionDescription": "أضف مدينين للحصول على اقتراحات حد الائتمان."
+  },
+  "AuthGuard": {
+    "loadingSession": "جاري تحميل جلسة المستخدم..."
+  },
+  "AppHeader": {
+    "userAvatarHint": "صورة المستخدم الرمزية",
+    "userInitialsFallback": "مستخدم"
+  }
+}

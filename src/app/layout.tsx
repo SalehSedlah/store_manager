@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from "@/components/ui/toaster";
 import { DebtorsProvider } from '@/contexts/debtors-context';
 
+// Note: Metadata here is general. Locale-specific metadata might be in [locale]/layout.tsx
 export const metadata: Metadata = {
   title: 'DebtVision',
   description: 'Manage your debts with AI-powered insights.',
@@ -23,7 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr">
+    // The lang and dir attributes will be handled by the [locale]/layout.tsx
+    <html suppressHydrationWarning> 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

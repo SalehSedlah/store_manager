@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const debtorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50),
@@ -45,6 +47,8 @@ interface DebtorFormProps {
 }
 
 export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormProps) {
+  const t = useTranslations("DebtorForm");
+  const tToast = useTranslations("Toast");
   const { addDebtor, updateDebtor } = useDebtors();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -60,10 +64,12 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
   });
 
   useEffect(() => {
-    if (debtor) {
-      form.reset(debtor);
-    } else {
-      form.reset({ name: "", amountOwed: 0, creditLimit: 0, paymentHistory: "" });
+    if (isOpen) { // Reset form only when dialog opens
+      if (debtor) {
+        form.reset(debtor);
+      } else {
+        form.reset({ name: "", amountOwed: 0, creditLimit: 0, paymentHistory: "" });
+      }
     }
   }, [debtor, form, isOpen]);
 
@@ -72,29 +78,29 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
     try {
       if (debtor) {
         updateDebtor({ ...debtor, ...data });
-        toast({ title: "Debtor Updated", description: `${data.name} has been updated.` });
+        toast({ title: tToast("debtorUpdatedTitle"), description: tToast("debtorUpdatedDescription", {name: data.name}) });
       } else {
         addDebtor(data);
-        toast({ title: "Debtor Added", description: `${data.name} has been added.` });
+        toast({ title: tToast("debtorAddedTitle"), description: tToast("debtorAddedDescription", {name: data.name}) });
       }
-      form.reset();
+      // form.reset(); // Reset is handled by useEffect on isOpen change now
       setIsOpen(false);
       if (onFormSubmit) onFormSubmit();
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: tToast("errorTitle"), description: error.message, variant: "destructive" });
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {triggerButton || <Button>Add New Debtor</Button>}
+        {triggerButton || <Button>{t('addTitle')}</Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-card">
         <DialogHeader>
-          <DialogTitle className="font-headline">{debtor ? "Edit Debtor" : "Add New Debtor"}</DialogTitle>
+          <DialogTitle className="font-headline">{debtor ? t('editTitle') : t('addTitle')}</DialogTitle>
           <DialogDescription>
-            {debtor ? "Update the details for this debtor." : "Enter the details for the new debtor."}
+            {debtor ? t('editDescription') : t('addDescription')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -104,9 +110,9 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t('nameLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder={t('namePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +123,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="amountOwed"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount Owed ($)</FormLabel>
+                  <FormLabel>{t('amountOwedLabel')}</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="1000" {...field} />
                   </FormControl>
@@ -130,7 +136,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="creditLimit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Credit Limit ($)</FormLabel>
+                  <FormLabel>{t('creditLimitLabel')}</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="5000" {...field} />
                   </FormControl>
@@ -143,9 +149,9 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="paymentHistory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Payment History</FormLabel>
+                  <FormLabel>{t('paymentHistoryLabel')}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="e.g., Consistently pays on time." {...field} />
+                    <Textarea placeholder={t('paymentHistoryPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,10 +159,10 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
             />
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">{t('cancelButton')}</Button>
               </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving..." : (debtor ? "Save Changes" : "Add Debtor")}
+                {form.formState.isSubmitting ? t('savingButton') : (debtor ? t('saveButton') : t('addButton'))}
               </Button>
             </DialogFooter>
           </form>

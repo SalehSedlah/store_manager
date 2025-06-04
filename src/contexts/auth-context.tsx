@@ -5,11 +5,14 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next/navigation"; // Correct import
+import { useRouter, usePathname } from "next-intl/navigation";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  // Expose router and pathname if other parts of the app might need them via this context
+  // Otherwise, components can import them directly from next-intl/navigation
+  // For now, keeping it internal to AuthProvider's logic.
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,21 +34,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Effect for redirection logic, depends on auth state and navigation tools
+  // Effect for redirection logic
   useEffect(() => {
-    // Now router and pathname are directly from the hooks
     if (loading) { 
       return;
     }
     
-    const isAuthPage = pathname === "/login" || pathname === "/signup";
+    // For next-intl, pathname will include the locale.
+    // We need to check if the current path *ends* with /login or /signup,
+    // or is exactly /login or /signup if no locale prefix is used (depends on middleware config)
+    const isAuthPage = pathname.endsWith("/login") || pathname.endsWith("/signup");
     
     if (!user && !isAuthPage) {
       router.push("/login");
     } else if (user && isAuthPage) {
       router.push("/dashboard");
     }
-  }, [user, loading, router, pathname]); // router and pathname from hooks are dependencies
+  }, [user, loading, router, pathname]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
