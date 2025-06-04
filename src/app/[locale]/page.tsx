@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next-intl/navigation"; 
+import { useRouter } from "next/navigation"; // Changed import
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -13,9 +13,9 @@ export default function HomePage() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.replace("/dashboard");
+        router.replace("/dashboard"); // Assumes dashboard is not under [locale] anymore
       } else {
-        router.replace("/login");
+        router.replace("/login"); // Assumes login is not under [locale] anymore
       }
     }
   }, [user, loading, router]);

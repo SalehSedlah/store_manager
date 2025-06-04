@@ -4,7 +4,7 @@ import { LayoutDashboard, Users, Sparkles, Settings } from "lucide-react";
 
 export interface NavLink {
   href: string;
-  label: string; // This will now be a translation key, e.g., "dashboard"
+  label: string; // Now a direct string, not a translation key
   icon: LucideIcon;
   isActive?: (pathname: string) => boolean;
 }
@@ -12,19 +12,19 @@ export interface NavLink {
 export const mainNavLinks: NavLink[] = [
   {
     href: "/dashboard",
-    label: "dashboard", // Translation key for Sidebar.dashboard
+    label: "Dashboard", 
     icon: LayoutDashboard,
     isActive: (pathname) => pathname.includes("/dashboard"),
   },
   {
     href: "/debt-management",
-    label: "debtManagement", // Translation key for Sidebar.debtManagement
+    label: "Debt Management", 
     icon: Users,
     isActive: (pathname) => pathname.includes("/debt-management"),
   },
   {
     href: "/ai-assistant",
-    label: "aiAssistant", // Translation key for Sidebar.aiAssistant
+    label: "AI Assistant", 
     icon: Sparkles,
     isActive: (pathname) => pathname.includes("/ai-assistant"),
   },
@@ -33,7 +33,7 @@ export const mainNavLinks: NavLink[] = [
 export const secondaryNavLinks: NavLink[] = [
  /* {
     href: "/settings",
-    label: "settings", // Example translation key
+    label: "Settings", 
     icon: Settings,
     isActive: (pathname) => pathname.startsWith("/settings"),
   }, */

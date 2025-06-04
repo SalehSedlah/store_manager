@@ -10,11 +10,11 @@ import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 export function CreditSuggestionTool() {
-  const t = useTranslations("CreditSuggestionTool");
-  const tToast = useTranslations("Toast");
+  // const t = useTranslations("CreditSuggestionTool"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
   const { debtors, loadingDebtors } = useDebtors();
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<SuggestCreditLimitsOutput | null>(null);
@@ -23,8 +23,8 @@ export function CreditSuggestionTool() {
   const handleSuggestLimits = async () => {
     if (debtors.length === 0) {
       toast({ 
-        title: tToast("noDebtorsForCreditSuggestionTitle"), 
-        description: tToast("noDebtorsForCreditSuggestionDescription"), 
+        title: "No Debtors", 
+        description: "Add debtors to get credit limit suggestions.", 
         variant: "default" 
       });
       return;
@@ -40,9 +40,9 @@ export function CreditSuggestionTool() {
       }));
       const result = await suggestCreditLimits(input);
       setSuggestions(result);
-      toast({ title: tToast("creditSuggestionsReadyTitle"), description: tToast("creditSuggestionsReadyDescription") });
+      toast({ title: "Suggestions Ready", description: "AI has generated credit limit suggestions." });
     } catch (error: any) {
-      toast({ title: tToast("creditSuggestionFailedTitle"), description: error.message, variant: "destructive" });
+      toast({ title: "Suggestion Failed", description: error.message, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -53,13 +53,13 @@ export function CreditSuggestionTool() {
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
           <Sparkles className="mr-2 rtl:ml-2 rtl:mr-0 h-5 w-5 text-primary" />
-          {t('title')}
+          Credit Limit Suggestions
         </CardTitle>
-        <CardDescription>{t('description')}</CardDescription>
+        <CardDescription>Let AI suggest optimal credit limits for your debtors based on their data.</CardDescription>
       </CardHeader>
       <CardContent>
         <Button onClick={handleSuggestLimits} disabled={isLoading || loadingDebtors} className="mb-6 w-full sm:w-auto">
-          {isLoading ? t('generatingButton') : (loadingDebtors ? t('loadingDebtorsButton') : t('generateButton'))}
+          {isLoading ? "Generating Suggestions..." : (loadingDebtors ? "Loading Debtors..." : "Generate Suggestions for All Debtors")}
         </Button>
 
         {isLoading && (
@@ -72,14 +72,14 @@ export function CreditSuggestionTool() {
 
         {suggestions && !isLoading && (
           <div className="mt-4 overflow-x-auto">
-            <h3 className="text-lg font-semibold mb-2 text-foreground">{t('suggestedLimitsTitle')}</h3>
+            <h3 className="text-lg font-semibold mb-2 text-foreground">Suggested Limits:</h3>
             <div className="border rounded-md">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('debtorNameHeader')}</TableHead>
-                  <TableHead className="text-right">{t('suggestedLimitHeader')}</TableHead>
-                  <TableHead>{t('reasoningHeader')}</TableHead>
+                  <TableHead>Debtor Name</TableHead>
+                  <TableHead className="text-right">Suggested Limit</TableHead>
+                  <TableHead>Reasoning</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -96,10 +96,10 @@ export function CreditSuggestionTool() {
           </div>
         )}
         {!suggestions && !isLoading && debtors.length > 0 && (
-            <p className="text-muted-foreground text-center py-4">{t('noSuggestionsPlaceholder')}</p>
+            <p className="text-muted-foreground text-center py-4">Click the button above to generate credit limit suggestions.</p>
         )}
         {!suggestions && !isLoading && debtors.length === 0 && !loadingDebtors && (
-            <p className="text-muted-foreground text-center py-4">{t('noDebtorsPlaceholder')}</p>
+            <p className="text-muted-foreground text-center py-4">Please add debtors in the Debt Management section to get suggestions.</p>
         )}
       </CardContent>
     </Card>

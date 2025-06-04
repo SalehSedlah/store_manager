@@ -1,22 +1,13 @@
 
-import type { NextRequest } from 'next/server';
-import createMiddleware from 'next-intl/middleware';
+import type { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function middleware(request: NextRequest): NextResponse {
   // THIS IS A CRITICAL LOG TO CHECK IF MIDDLEWARE IS RUNNING
   console.log(`[MIDDLEWARE_DEBUG] Middleware is running for request: ${request.nextUrl.pathname}`);
 
-  const nextIntlMiddleware = createMiddleware({
-    locales: ['en', 'ar'],
-    defaultLocale: 'en',
-    localePrefix: 'as-needed',
-    // No explicit path needed here for i18n config if it's in /src/i18n.ts
-    // next-intl should auto-detect it.
-  });
+  // For now, just apply security headers without next-intl
+  const response = Response.next(); // Create a basic response
 
-  const response = nextIntlMiddleware(request);
-
-  // Add other security headers to the response from next-intl
   response.headers.set('x-content-type-options', 'nosniff');
   response.headers.set('x-dns-prefetch-control', 'off');
   response.headers.set('x-download-options', 'noopen');
@@ -27,6 +18,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Matcher ignoring `/_next/` and `/api/` and static assets
   matcher: ['/((?!api|_next/static|_next/image|assets|favicon.ico|sw.js).*)']
 };

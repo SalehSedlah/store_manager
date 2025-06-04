@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 const debtorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50),
@@ -47,8 +47,8 @@ interface DebtorFormProps {
 }
 
 export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormProps) {
-  const t = useTranslations("DebtorForm");
-  const tToast = useTranslations("Toast");
+  // const t = useTranslations("DebtorForm"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
   const { addDebtor, updateDebtor } = useDebtors();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -64,7 +64,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
   });
 
   useEffect(() => {
-    if (isOpen) { // Reset form only when dialog opens
+    if (isOpen) { 
       if (debtor) {
         form.reset(debtor);
       } else {
@@ -78,29 +78,28 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
     try {
       if (debtor) {
         updateDebtor({ ...debtor, ...data });
-        toast({ title: tToast("debtorUpdatedTitle"), description: tToast("debtorUpdatedDescription", {name: data.name}) });
+        toast({ title: "Debtor Updated", description: `${data.name} has been updated.` });
       } else {
         addDebtor(data);
-        toast({ title: tToast("debtorAddedTitle"), description: tToast("debtorAddedDescription", {name: data.name}) });
+        toast({ title: "Debtor Added", description: `${data.name} has been added.` });
       }
-      // form.reset(); // Reset is handled by useEffect on isOpen change now
       setIsOpen(false);
       if (onFormSubmit) onFormSubmit();
     } catch (error: any) {
-      toast({ title: tToast("errorTitle"), description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {triggerButton || <Button>{t('addTitle')}</Button>}
+        {triggerButton || <Button>Add New Debtor</Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-card">
         <DialogHeader>
-          <DialogTitle className="font-headline">{debtor ? t('editTitle') : t('addTitle')}</DialogTitle>
+          <DialogTitle className="font-headline">{debtor ? "Edit Debtor" : "Add New Debtor"}</DialogTitle>
           <DialogDescription>
-            {debtor ? t('editDescription') : t('addDescription')}
+            {debtor ? "Update the details for this debtor." : "Enter the details for the new debtor."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -110,9 +109,9 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('nameLabel')}</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('namePlaceholder')} {...field} />
+                    <Input placeholder="John Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,7 +122,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="amountOwed"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('amountOwedLabel')}</FormLabel>
+                  <FormLabel>Amount Owed ($)</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="1000" {...field} />
                   </FormControl>
@@ -136,7 +135,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="creditLimit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('creditLimitLabel')}</FormLabel>
+                  <FormLabel>Credit Limit ($)</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="5000" {...field} />
                   </FormControl>
@@ -149,9 +148,9 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
               name="paymentHistory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('paymentHistoryLabel')}</FormLabel>
+                  <FormLabel>Payment History</FormLabel>
                   <FormControl>
-                    <Textarea placeholder={t('paymentHistoryPlaceholder')} {...field} />
+                    <Textarea placeholder="e.g., Consistently pays on time." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,10 +158,10 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
             />
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline">{t('cancelButton')}</Button>
+                <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? t('savingButton') : (debtor ? t('saveButton') : t('addButton'))}
+                {form.formState.isSubmitting ? "Saving..." : (debtor ? "Save Changes" : "Add Debtor")}
               </Button>
             </DialogFooter>
           </form>

@@ -1,39 +1,34 @@
 
 import type { ReactNode } from 'react';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
-import { getMessages, getTranslations } from 'next-intl/server'; // For metadata
-import { Inter } from 'next/font/google'; // Example, ensure you have fonts for AR if needed
-
-// If you have a specific Arabic font, import it here
-// import { Cairo } from 'next/font/google'; 
-// const cairo = Cairo({ subsets: ['arabic', 'latin'], variable: '--font-cairo' });
+// import { NextIntlClientProvider, useMessages } from 'next-intl'; // Removed
+// import { getMessages, getTranslations } from 'next-intl/server'; // Removed
+import { Inter } from 'next/font/google'; 
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 type Props = {
   children: ReactNode;
-  params: { locale: string };
+  params: { locale: string }; // Locale param still here but won't be used for i18n
 };
 
 export async function generateMetadata({ params: { locale } }: Props) {
-  const t = await getTranslations({ locale, namespace: 'App' });
+  console.log(`[LocaleLayout-DEBUG] generateMetadata called for locale: ${locale}`);
+  // const t = await getTranslations({ locale, namespace: 'App' }); // Removed
   return {
-    title: t('name'),
+    title: "DebtVision (Static)", // Hardcoded title
   };
 }
 
 export default function LocaleLayout({ children, params: { locale } }: Props) {
-  const messages = useMessages();
+  // const messages = useMessages(); // Removed
+  console.log(`[LocaleLayout-DEBUG] Rendering LocaleLayout for locale: ${locale}`);
 
   return (
-    // The outer <html> and <body> are in the non-localized src/app/layout.tsx
-    // This component focuses on providing the i18n context
-    // lang and dir are set on the <html> tag in the parent RootLayout now adapted for i18n
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`${inter.variable}`}>
+    <html lang="en" dir="ltr" className={`${inter.variable}`}>
         <body>
-            <NextIntlClientProvider locale={locale} messages={messages}>
+            {/* <NextIntlClientProvider locale={locale} messages={messages}> */}
                 {children}
-            </NextIntlClientProvider>
+            {/* </NextIntlClientProvider> */}
         </body>
     </html>
   );

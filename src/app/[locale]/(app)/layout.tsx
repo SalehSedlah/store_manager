@@ -5,16 +5,16 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next-intl/navigation"; 
+import { useRouter } from "next/navigation"; // Changed import
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const t = useTranslations("AuthGuard");
+  // const t = useTranslations("AuthGuard"); // Removed
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,7 +28,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col items-center space-y-4">
           <Skeleton className="h-12 w-12 rounded-full" />
           <Skeleton className="h-4 w-[250px]" />
-          <p className="text-sm text-muted-foreground">{t('loadingSession')}</p>
+          <p className="text-sm text-muted-foreground">Loading user session...</p>
         </div>
       </div>
     );

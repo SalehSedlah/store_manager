@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Link, useRouter, usePathname } from "next-intl/navigation";
+import { Link, useRouter, usePathname } from "next/navigation"; // Changed import
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -18,15 +18,15 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { NavLink as NavLinkType } from "@/config/links";
-import { mainNavLinks, secondaryNavLinks } from "@/config/links";
+import type { NavLink as NavLinkType } from "@/config/links"; // Assuming NavLink interface is updated
+import { mainNavLinks, secondaryNavLinks } from "@/config/links"; // Assuming links are updated
 import { useToast } from "@/hooks/use-toast";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 export function AppSidebar() {
-  const t = useTranslations("Sidebar");
-  const tApp = useTranslations("App");
-  const tToast = useTranslations("Toast");
+  // const t = useTranslations("Sidebar"); // Removed
+  // const tApp = useTranslations("App"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -36,16 +36,17 @@ export function AppSidebar() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: tToast("logoutSuccessTitle"), description: tToast("logoutSuccessDescription") });
+      toast({ title: "Logged Out", description: "You have been successfully logged out." });
       router.push("/login"); 
     } catch (error: any) {
-      toast({ title: tToast("logoutFailedTitle"), description: error.message, variant: "destructive" });
+      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
     }
   };
 
-  const navLinksToRender = (links: NavLinkType[]): NavLinkType[] => links.map(link => ({
+  // Assuming NavLink labels in config/links.ts are now direct strings or handled differently
+   const navLinksToRender = (links: NavLinkType[]): NavLinkType[] => links.map(link => ({
     ...link,
-    label: t(link.label) // Translate the label which is now a key
+    label: link.label // Assuming label is now a direct string
   }));
 
 
@@ -71,7 +72,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary">
             <TrendingUp className="h-8 w-8" />
-            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">{tApp('name')}</span>}
+            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
         </Link>
       </SidebarHeader>
 
@@ -100,9 +101,9 @@ export function AppSidebar() {
         {user && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? t('logout') : undefined}>
+              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? "Logout" : undefined}>
                 <LogOut />
-                <span>{t('logout')}</span>
+                <span>Logout</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

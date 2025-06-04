@@ -2,8 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next-intl/navigation";
-import { Link } from "next-intl/navigation";
+import { useRouter, Link } from "next/navigation"; // Changed import
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -12,12 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { TrendingUp } from "lucide-react";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl"; // Removed
 
 export default function SignupPage() {
-  const t = useTranslations("SignupPage");
-  const tToast = useTranslations("Toast");
-  const tApp = useTranslations("App");
+  // const t = useTranslations("SignupPage"); // Removed
+  // const tToast = useTranslations("Toast"); // Removed
+  // const tApp = useTranslations("App"); // Removed
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,16 +32,16 @@ export default function SignupPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      const specificError = "Passwords do not match."; // This can be translated if needed
+      const specificError = "Passwords do not match.";
       setError(specificError);
-      toast({ title: tToast('signupFailedTitle'), description: specificError, variant: "destructive" });
+      toast({ title: "Signup Failed", description: specificError, variant: "destructive" });
       setLoading(false);
       return;
     }
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      toast({ title: tToast('signupSuccessTitle'), description: tToast('signupSuccessDescription') });
+      toast({ title: "Signup Successful", description: "Redirecting to dashboard..." });
       router.push("/dashboard"); 
     } catch (err: any) {
       let errorMessage = err.message;
@@ -54,7 +53,7 @@ export default function SignupPage() {
         errorMessage = "The email address is not valid.";
       }
       setError(errorMessage);
-      toast({ title: tToast('signupFailedTitle'), description: errorMessage, variant: "destructive" });
+      toast({ title: "Signup Failed", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -64,29 +63,29 @@ export default function SignupPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="flex items-center mb-8 text-primary">
         <TrendingUp className="h-10 w-10 mr-3 rtl:ml-3 rtl:mr-0" />
-        <h1 className="text-4xl font-headline font-bold">{tApp('name')}</h1>
+        <h1 className="text-4xl font-headline font-bold">DebtVision</h1>
       </div>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline text-center">{t('title')}</CardTitle>
-          <CardDescription className="text-center">{t('description')}</CardDescription>
+          <CardTitle className="text-2xl font-headline text-center">Create Account</CardTitle>
+          <CardDescription className="text-center">Join DebtVision today</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">{t('emailLabel')}</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('emailPlaceholder')}
+                placeholder="you@example.com"
                 required
                 className="bg-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t('passwordLabel')}</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -98,7 +97,7 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t('confirmPasswordLabel')}</Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -111,13 +110,13 @@ export default function SignupPage() {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t('loadingSignupButton') : t('signupButton')}
+              {loading ? "Creating account..." : "Sign Up"}
             </Button>
           </form>
           <p className="mt-6 text-center text-sm">
-            {t('loginPrompt')}{" "}
+            Already have an account?{" "}
             <Link href="/login" className="font-medium text-primary hover:underline">
-              {t('loginLink')}
+              Login
             </Link>
           </p>
         </CardContent>
