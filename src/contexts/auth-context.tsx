@@ -5,14 +5,11 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next-intl/navigation";
+import { useRouter, usePathname } from "next-intl/navigation"; // Corrected import
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  // Expose router and pathname if other parts of the app might need them via this context
-  // Otherwise, components can import them directly from next-intl/navigation
-  // For now, keeping it internal to AuthProvider's logic.
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Effect for redirection logic
   useEffect(() => {
-    if (loading) { 
+    if (loading || !router || !pathname) { 
       return;
     }
     
