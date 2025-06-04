@@ -25,7 +25,7 @@ export type SuggestCreditLimitsInput = z.infer<typeof SuggestCreditLimitsInputSc
 const CreditLimitSuggestionSchema = z.object({
   debtorName: z.string().describe('Name of the debtor'),
   suggestedCreditLimit: z.number().describe('Suggested credit limit for the debtor'),
-  reasoning: z.string().describe('Reasoning behind the suggested credit limit'),
+  reasoning: z.string().describe('التبرير وراء اقتراح الحد الائتماني. يجب أن يكون هذا النص باللغة العربية.'),
 });
 
 const SuggestCreditLimitsOutputSchema = z.array(CreditLimitSuggestionSchema).describe('Array of credit limit suggestions for each debtor.');
@@ -39,14 +39,14 @@ const prompt = ai.definePrompt({
   name: 'suggestCreditLimitsPrompt',
   input: {schema: SuggestCreditLimitsInputSchema},
   output: {schema: SuggestCreditLimitsOutputSchema},
-  prompt: `You are an AI assistant specializing in debt management and risk assessment.
-  Analyze the provided debt data for each debtor and suggest an optimal credit limit based on their payment history and overall debt amount.
-  Provide a clear reasoning for each suggested credit limit.
+  prompt: `أنت مساعد ذكاء اصطناعي متخصص في إدارة الديون وتقييم المخاطر.
+  قم بتحليل بيانات الديون المقدمة لكل مدين واقترح حدًا ائتمانيًا أمثل بناءً على تاريخ السداد ومبلغ الدين الإجمالي.
+  قدم تبريرًا واضحًا (حقل 'reasoning') لكل حد ائتماني مقترح، ويجب أن يكون هذا التبرير باللغة العربية.
 
-  Debtor Data: {{{json input}}}
+  بيانات المدينين: {{{json input}}}
 
-  Based on this data, provide an array of credit limit suggestions. Ensure the suggestions minimize risk and maximize returns.
-  Format your response as a JSON array of CreditLimitSuggestion objects.
+  بناءً على هذه البيانات، قدم مصفوفة من اقتراحات الحدود الائتمانية. تأكد من أن الاقتراحات تقلل المخاطر وتعظم العوائد.
+  قم بتنسيق ردك كمصفوفة JSON من كائنات CreditLimitSuggestion.
   `,
 });
 
@@ -57,7 +57,8 @@ const suggestCreditLimitsFlow = ai.defineFlow(
     outputSchema: SuggestCreditLimitsOutputSchema,
   },
   async input => {
-    const {output} = await prompt({input});
+    const {output} = await prompt({input}); // Note: The input to prompt should match the schema definition (i.e., the array directly)
     return output!;
   }
 );
+

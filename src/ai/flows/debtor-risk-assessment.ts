@@ -31,19 +31,19 @@ const DebtorRiskAssessmentOutputSchema = z.object({
   riskLevel: z
     .string()
     .describe(
-      'The risk level associated with the debtor (e.g., High, Medium, Low).' + 
-      'Consider payment behavior, debt amount, and credit score when determining risk. ' +
-      'If a credit limit is provided, also assess if the debt amount exceeds the credit limit.'
+      'مستوى المخاطرة المرتبط بالمدين (مثال: مرتفع، متوسط، منخفض). ' + 
+      'ضع في اعتبارك سلوك السداد ومبلغ الدين ودرجة الائتمان عند تحديد المخاطر. ' +
+      'إذا تم توفير حد ائتماني، فقم أيضًا بتقييم ما إذا كان مبلغ الدين يتجاوز الحد الائتماني. يجب أن يكون الناتج كلمة واحدة: مرتفع أو متوسط أو منخفض.'
     ),
   riskFactors: z
     .string()
     .describe(
-      'The key factors contributing to the assigned risk level, with justification.'
+      'العوامل الرئيسية التي تساهم في مستوى المخاطر المحدد، مع التبرير. يجب أن يكون الناتج باللغة العربية.'
     ),
   suggestedActions: z
     .string()
     .describe(
-      'Suggested actions for managing the debtor based on their risk level like adjusting credit limit or contacting the debtor.'
+      'الإجراءات المقترحة لإدارة المدين بناءً على مستوى المخاطر لديه مثل تعديل الحد الائتماني أو الاتصال بالمدين. يجب أن يكون الناتج باللغة العربية.'
     ),
 });
 export type DebtorRiskAssessmentOutput = z.infer<typeof DebtorRiskAssessmentOutputSchema>;
@@ -56,23 +56,18 @@ const prompt = ai.definePrompt({
   name: 'debtorRiskAssessmentPrompt',
   input: {schema: DebtorRiskAssessmentInputSchema},
   output: {schema: DebtorRiskAssessmentOutputSchema},
-  prompt: `You are an AI assistant specializing in assessing debtor risk.
+  prompt: `أنت مساعد ذكاء اصطناعي متخصص في تقييم مخاطر المدينين. الرجاء تقديم جميع الردود باللغة العربية.
 
-  Based on the debtor's payment behavior, credit score (if available), debt amount, and credit limit(if available), you will assess the risk level associated with the debtor.
+  بناءً على سلوك السداد للمدين، ودرجة الائتمان (إن وجدت)، ومبلغ الدين، والحد الائتماني (إن وجد)، ستقوم بتقييم مستوى المخاطر المرتبط بالمدين.
 
-  Payment Behavior: {{{paymentBehavior}}}
-  Credit Score: {{#if creditScore}}{{{creditScore}}}{{else}}N/A{{/if}}
-  Debt Amount: {{{debtAmount}}}
-  Credit Limit: {{#if creditLimit}}{{{creditLimit}}}{{else}}N/A{{/if}}
+  سلوك السداد: {{{paymentBehavior}}}
+  درجة الائتمان: {{#if creditScore}}{{{creditScore}}}{{else}}غير متوفر{{/if}}
+  مبلغ الدين: {{{debtAmount}}}
+  الحد الائتماني: {{#if creditLimit}}{{{creditLimit}}}{{else}}غير متوفر{{/if}}
 
-  Risk Level: Determine a risk level (High, Medium, Low) based on the provided information. Consider a high debt amount compared to the credit limit as a significant risk factor.
-  Risk Factors: List the key factors contributing to the assigned risk level.
-  Suggested Actions: Provide suggested actions for managing the debtor based on their risk level.
-
-  Output:
-  Risk Level: (High, Medium, Low)
-  Risk Factors: (Factors contributing to the risk level)
-  Suggested Actions: (Actions for managing the debtor)
+  مستوى المخاطرة: حدد مستوى المخاطرة (مرتفع، متوسط، منخفض) باللغة العربية بناءً على المعلومات المقدمة. اعتبر أن مبلغ الدين المرتفع مقارنة بالحد الائتماني هو عامل خطر كبير.
+  عوامل المخاطرة: اذكر العوامل الرئيسية التي تساهم في مستوى المخاطرة المحدد باللغة العربية.
+  الإجراءات المقترحة: قدم الإجراءات المقترحة لإدارة المدين بناءً على مستوى المخاطرة لديه باللغة العربية.
   `,
 });
 
@@ -87,3 +82,4 @@ const debtorRiskAssessmentFlow = ai.defineFlow(
     return output!;
   }
 );
+

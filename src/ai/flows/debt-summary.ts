@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -25,13 +26,13 @@ const DebtSummaryInputSchema = z.object({
 export type DebtSummaryInput = z.infer<typeof DebtSummaryInputSchema>;
 
 const DebtSummaryOutputSchema = z.object({
-  summary: z.string().describe('A summary of the total debt situation.'),
+  summary: z.string().describe('ملخص لوضع الدين الإجمالي. يجب أن يكون هذا النص باللغة العربية.'),
   riskAssessment: z
     .string()
-    .describe('An assessment of the overall risk level.'),
+    .describe('تقييم لمستوى المخاطر الإجمالي. يجب أن يكون هذا النص باللغة العربية.'),
   recommendations: z
     .string()
-    .describe('Recommendations for managing the debt.'),
+    .describe('توصيات لإدارة الدين. يجب أن يكون هذا النص باللغة العربية.'),
 });
 export type DebtSummaryOutput = z.infer<typeof DebtSummaryOutputSchema>;
 
@@ -43,15 +44,15 @@ const prompt = ai.definePrompt({
   name: 'debtSummaryPrompt',
   input: {schema: DebtSummaryInputSchema},
   output: {schema: DebtSummaryOutputSchema},
-  prompt: `You are a financial advisor providing debt summaries and risk assessments.
+  prompt: `أنت مستشار مالي متخصص في تقديم ملخصات الديون وتقييمات المخاطر. الرجاء تقديم جميع الردود باللغة العربية.
 
-  Based on the following information, provide a summary of the total debt situation, a risk assessment, and recommendations for managing the debt.
+  بناءً على المعلومات التالية، قدم ملخصًا لوضع الدين الإجمالي، وتقييمًا للمخاطر، وتوصيات لإدارة الدين.
 
-  Total Debt: {{{totalDebt}}}
-  Number of Debtors: {{{numberOfDebtors}}}
-  Average Debt Per Debtor: {{{averageDebtPerDebtor}}}
-  Largest Debt: {{{largestDebt}}}
-  Credit Limit Utilization: {{{creditLimitUtilization}}}%
+  إجمالي الدين: {{{totalDebt}}}
+  عدد المدينين: {{{numberOfDebtors}}}
+  متوسط الدين لكل مدين: {{{averageDebtPerDebtor}}}
+  أكبر دين: {{{largestDebt}}}
+  نسبة استخدام الحد الائتماني: {{{creditLimitUtilization}}}%
   `,
 });
 
@@ -66,3 +67,4 @@ const debtSummaryFlow = ai.defineFlow(
     return output!;
   }
 );
+
