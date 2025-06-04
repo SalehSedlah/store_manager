@@ -6,11 +6,12 @@ import { useDebtors } from "@/contexts/debtors-context";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, AlertTriangle, MessageSquare, MessageCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DebtorForm } from "./debtor-form";
@@ -27,11 +28,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
-// import { useTranslations } from "next-intl"; // Removed
 
 export function DebtorList() {
-  // const t = useTranslations("DebtorList"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
   const { debtors, deleteDebtor, loadingDebtors } = useDebtors();
   const { toast } = useToast();
 
@@ -60,6 +58,7 @@ export function DebtorList() {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            <TableHead>Phone Number</TableHead>
             <TableHead className="text-right">Amount Owed</TableHead>
             <TableHead className="text-right">Credit Limit</TableHead>
             <TableHead>Status</TableHead>
@@ -77,6 +76,7 @@ export function DebtorList() {
             return (
               <TableRow key={debtor.id} className={isOverLimit ? "bg-destructive/10 hover:bg-destructive/20" : ""}>
                 <TableCell className="font-medium">{debtor.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{debtor.phoneNumber || "N/A"}</TableCell>
                 <TableCell className="text-right">{amountOwedFormatted}</TableCell>
                 <TableCell className="text-right">{creditLimitFormatted}</TableCell>
                 <TableCell>
@@ -107,6 +107,22 @@ export function DebtorList() {
                           </DropdownMenuItem>
                         }
                       />
+                       {debtor.phoneNumber && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <a href={`sms:${debtor.phoneNumber}`}>
+                              <MessageSquare className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> Send SMS
+                            </a>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <a href={`https://wa.me/${debtor.phoneNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                              <MessageCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> Send WhatsApp
+                            </a>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      <DropdownMenuSeparator />
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">

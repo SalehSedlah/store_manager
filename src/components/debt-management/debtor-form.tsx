@@ -29,13 +29,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebtors } from "@/contexts/debtors-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-// import { useTranslations } from "next-intl"; // Removed
 
 const debtorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50),
   amountOwed: z.coerce.number().min(0, { message: "Amount owed must be positive." }),
   creditLimit: z.coerce.number().min(0, { message: "Credit limit must be positive." }),
   paymentHistory: z.string().min(3, {message: "Payment history description is too short."}).max(200, {message: "Payment history is too long."}),
+  phoneNumber: z.string().max(25, {message: "Phone number is too long."}).optional().or(z.literal('')),
 });
 
 type DebtorFormValues = z.infer<typeof debtorFormSchema>;
@@ -47,8 +47,6 @@ interface DebtorFormProps {
 }
 
 export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormProps) {
-  // const t = useTranslations("DebtorForm"); // Removed
-  // const tToast = useTranslations("Toast"); // Removed
   const { addDebtor, updateDebtor } = useDebtors();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -60,15 +58,22 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
       amountOwed: 0,
       creditLimit: 0,
       paymentHistory: "",
+      phoneNumber: "",
     },
   });
 
   useEffect(() => {
     if (isOpen) { 
       if (debtor) {
-        form.reset(debtor);
+        form.reset({
+          name: debtor.name,
+          amountOwed: debtor.amountOwed,
+          creditLimit: debtor.creditLimit,
+          paymentHistory: debtor.paymentHistory,
+          phoneNumber: debtor.phoneNumber || "",
+        });
       } else {
-        form.reset({ name: "", amountOwed: 0, creditLimit: 0, paymentHistory: "" });
+        form.reset({ name: "", amountOwed: 0, creditLimit: 0, paymentHistory: "", phoneNumber: "" });
       }
     }
   }, [debtor, form, isOpen]);
@@ -117,32 +122,47 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
-              name="amountOwed"
+              name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount Owed ($)</FormLabel>
+                  <FormLabel>Phone Number (Optional)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="1000" {...field} />
+                    <Input type="tel" placeholder="+1234567890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="creditLimit"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Credit Limit ($)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="5000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="amountOwed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount Owed ($)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="1000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="creditLimit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Credit Limit ($)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="5000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="paymentHistory"
