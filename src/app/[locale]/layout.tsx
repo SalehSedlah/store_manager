@@ -1,12 +1,10 @@
 
 "use client";
 
-import { NextIntlClientProvider, useMessages } from 'next-intl';
-import { Inter, Cairo } from 'next/font/google';
-import { useParams } from 'next/navigation';
-import { defaultLocale, locales } from '@/i18n';
 import { AuthProvider } from '@/contexts/auth-context';
 import { DebtorsProvider } from '@/contexts/debtors-context';
+import { Inter, Cairo } from 'next/font/google';
+import { defaultLocale, locales } from '@/i18n'; // Assuming these are exported from src/i18n.ts
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo', weight: ['300', '400', '500', '600', '700'] });
@@ -21,22 +19,27 @@ export default function LocaleLayout({
   params,
 }: LocaleLayoutProps) {
   const validatedLocale = locales.includes(params.locale) ? params.locale : defaultLocale;
-  const messages = useMessages();
-
-  const fontClassName = validatedLocale === 'ar' ? cairo.variable : inter.variable;
-  const bodyFontClassName = validatedLocale === 'ar' ? 'font-arabic' : 'font-body';
+  
+  // Determine font based on locale for the div, not the html/body tag here.
+  // The actual <html> and <body> tags are in src/app/layout.tsx
+  const fontVariableClassName = validatedLocale === 'ar' ? cairo.variable : inter.variable;
+  const fontBodyClassName = validatedLocale === 'ar' ? 'font-arabic' : 'font-body';
 
   return (
-    <NextIntlClientProvider locale={validatedLocale} messages={messages}>
-      <AuthProvider>
-        <DebtorsProvider>
-          {/* The div with lang, dir, and font classes should wrap the actual page content */}
-          {/* The <html> and <body> tags are in the root layout */}
-          <div lang={validatedLocale} dir={validatedLocale === 'ar' ? 'rtl' : 'ltr'} className={`${fontClassName} ${bodyFontClassName}`}>
-            {children}
-          </div>
-        </DebtorsProvider>
-      </AuthProvider>
-    </NextIntlClientProvider>
+    // No NextIntlClientProvider or useMessages() here.
+    // AuthProvider and DebtorsProvider are global to the locale.
+    <AuthProvider>
+      <DebtorsProvider>
+        {/* This div applies language-specific classes and font variables for Tailwind to pick up */}
+        {/* The className combines the font variable (for Tailwind to use) and the body font class */}
+        <div 
+          lang={validatedLocale} 
+          dir={validatedLocale === 'ar' ? 'rtl' : 'ltr'} 
+          className={`${fontVariableClassName} ${fontBodyClassName}`}
+        >
+          {children}
+        </div>
+      </DebtorsProvider>
+    </AuthProvider>
   );
 }
