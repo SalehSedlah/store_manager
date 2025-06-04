@@ -32,9 +32,9 @@ export const mainNavLinks: NavLink[] = [
 ];
 
 export const secondaryNavLinks: NavLink[] = [
- /* {
+  {
     href: "/settings", 
     labelKey: "settings",
     icon: Settings,
-  }, */
+  },
 ];

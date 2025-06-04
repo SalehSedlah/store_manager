@@ -31,12 +31,12 @@ export function AppSidebar() {
   const { state: sidebarState } = useSidebar();
   
   const appName = "رؤية الديون";
-  const tSidebarLabels: Record<string, string> = {
+  const tSidebarLabels: Record<NavLinkTypeDefinition['labelKey'], string> = {
     dashboard: "لوحة التحكم",
     debtManagement: "إدارة الديون",
     aiAssistant: "المساعد الذكي",
     products: "المنتجات",
-    // settings: "الإعدادات"
+    settings: "إدارة الحساب" 
   };
   const toastLogoutSuccessTitle = "تم تسجيل الخروج";
   const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح.";

@@ -10,7 +10,8 @@ import { useRouter, usePathname } from "next/navigation";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  businessName: string | null; // Added businessName
+  businessName: string | null;
+  setBusinessNameInContext: (name: string | null) => void; // Function to update business name in context
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [businessName, setBusinessName] = useState<string | null>(null); // State for business name
+  const [businessName, setBusinessNameState] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -26,16 +27,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Try to load business name from localStorage
         const storedBusinessName = localStorage.getItem('app_business_name_' + currentUser.uid);
-        setBusinessName(storedBusinessName);
+        setBusinessNameState(storedBusinessName);
       } else {
-        setBusinessName(null); // Clear business name if no user
+        setBusinessNameState(null);
       }
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  const setBusinessNameInContext = (name: string | null) => {
+    setBusinessNameState(name);
+    if (user && name) {
+      localStorage.setItem('app_business_name_' + user.uid, name);
+    } else if (user && name === null) {
+      localStorage.removeItem('app_business_name_' + user.uid);
+    }
+  };
 
   useEffect(() => {
     if (loading) {
@@ -52,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, loading, router, pathname]); 
 
   return (
-    <AuthContext.Provider value={{ user, loading, businessName }}>
+    <AuthContext.Provider value={{ user, loading, businessName, setBusinessNameInContext }}>
       {children}
     </AuthContext.Provider>
   );
