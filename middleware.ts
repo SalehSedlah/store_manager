@@ -2,14 +2,18 @@
 import type { NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 
-const nextIntlMiddleware = createMiddleware({
-  locales: ['en', 'ar'],
-  defaultLocale: 'en',
-  localePrefix: 'as-needed' 
-});
-
 export function middleware(request: NextRequest) {
-  // Apply next-intl middleware
+  // THIS IS A CRITICAL LOG TO CHECK IF MIDDLEWARE IS RUNNING
+  console.log(`[MIDDLEWARE_DEBUG] Middleware is running for request: ${request.nextUrl.pathname}`);
+
+  const nextIntlMiddleware = createMiddleware({
+    locales: ['en', 'ar'],
+    defaultLocale: 'en',
+    localePrefix: 'as-needed',
+    // No explicit path needed here for i18n config if it's in /src/i18n.ts
+    // next-intl should auto-detect it.
+  });
+
   const response = nextIntlMiddleware(request);
 
   // Add other security headers to the response from next-intl
