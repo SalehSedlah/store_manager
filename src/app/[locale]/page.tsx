@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function HomePage({ params }: { params: { locale: string }}) {
+export default function HomePage({ params: { locale: rawLocale } }: { params: { locale: string }}) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const locale = params.locale || 'en'; // Default to 'en'
+  const locale = rawLocale || 'en'; // Use the destructured prop, default to 'en'
 
   useEffect(() => {
     if (!loading) {
@@ -32,3 +32,4 @@ export default function HomePage({ params }: { params: { locale: string }}) {
       </div>
   );
 }
+
