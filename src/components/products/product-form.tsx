@@ -66,8 +66,9 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
   const categoryPlaceholder = "مثال: فواكه، حبوب، ألبان";
   const unitLabel = "وحدة القياس";
   const unitPlaceholder = "مثال: قطعة، كجم، لتر، علبة، كرتون";
-  const pricePerUnitLabel = "سعر الوحدة الواحدة (بالعملة المحلية)";
+  const pricePerUnitLabel = "سعر الوحدة الرئيسية (بالعملة المحلية)";
   const pricePerUnitPlaceholder = "مثال: 100";
+  const pricePerUnitDescription = "أدخل سعر الوحدة الرئيسية المحددة (مثال: سعر الكرتون كاملاً، سعر الكيس). إذا كانت الوحدة تحتوي على قطع (مثل كرتون به علب)، فهذا هو سعر الكرتون كاملاً، وليس سعر العلبة الواحدة.";
   const currentStockLabel = "الكمية المتوفرة في المخزون (بالوحدة الرئيسية)";
   const lowStockThresholdLabel = "حد المخزون المنخفض للتنبيه (بالوحدة الرئيسية)";
   const piecesInUnitLabel = "عدد القطع بالوحدة الرئيسية (إن وجدت)";
@@ -205,6 +206,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
                   <FormControl>
                     <Input type="number" placeholder={pricePerUnitPlaceholder} {...field} step="0.01" />
                   </FormControl>
+                  <FormDescription>{pricePerUnitDescription}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
