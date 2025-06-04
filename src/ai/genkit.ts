@@ -11,8 +11,10 @@ if (geminiApiKey) {
 }
 
 if (!googleAIPluginOptions.apiKey) {
-  // This warning will now show in all environments if the key is missing
-  console.error("CRITICAL: GEMINI_API_KEY or GOOGLE_API_KEY is not set in environment variables. Genkit Google AI features will likely fail, potentially causing server errors.");
+  const errorMessage = "CRITICAL_STARTUP_ERROR: GEMINI_API_KEY or GOOGLE_API_KEY is not set in environment variables. Genkit Google AI features cannot be initialized, and the application server will now terminate. Please set this environment variable in your Google Cloud Run service configuration for Firebase Hosting.";
+  console.error(errorMessage);
+  // Throw an error to ensure the server process stops and logs this critical failure.
+  throw new Error(errorMessage);
 }
 
 
@@ -20,4 +22,3 @@ export const ai = genkit({
   plugins: [googleAI(googleAIPluginOptions)],
   model: 'googleai/gemini-2.0-flash',
 });
-
