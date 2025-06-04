@@ -37,6 +37,7 @@ const addDebtorFormSchema = z.object({
   initialAmount: z.coerce.number().min(0, { message: "يجب أن يكون المبلغ الأولي المستحق موجبًا." }),
   creditLimit: z.coerce.number().min(0, { message: "يجب أن يكون الحد الائتماني موجبًا." }),
   paymentHistory: z.string().min(3, {message: "وصف سجل الدفع قصير جدًا."}).max(200, {message: "وصف سجل الدفع طويل جدًا."}),
+  debtReason: z.string().max(200, { message: "سبب الدين طويل جدًا (200 حرف كحد أقصى)." }).optional().or(z.literal('')),
 });
 
 const editDebtorInfoFormSchema = z.object({
@@ -75,6 +76,8 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
   const phoneNumberLabel = "رقم الهاتف (اختياري)";
   const phoneNumberPlaceholder = "05xxxxxxxx";
   const initialAmountLabel = "المبلغ الأولي للدين (بالعملة المحلية)";
+  const debtReasonLabel = "سبب الدين الأولي (اختياري)";
+  const debtReasonPlaceholder = "مثال: سلفة شخصية، شراء بضاعة محددة";
   const creditLimitLabel = "الحد الائتماني (بالعملة المحلية)";
   const paymentHistoryLabel = "ملخص سجل الدفع";
   const paymentHistoryPlaceholder = "مثال: يدفع بانتظام في الوقت المحدد.";
@@ -100,6 +103,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
       name: "",
       phoneNumber: "",
       initialAmount: 0,
+      debtReason: "",
       creditLimit: 0,
       paymentHistory: "",
     },
@@ -115,7 +119,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
           paymentHistory: debtor.paymentHistory,
         });
       } else {
-        form.reset({ name: "", phoneNumber: "", initialAmount: 0, creditLimit: 0, paymentHistory: ""});
+        form.reset({ name: "", phoneNumber: "", initialAmount: 0, debtReason: "", creditLimit: 0, paymentHistory: ""});
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -128,8 +132,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
         toast({ title: toastDebtorUpdatedTitle, description: toastDebtorUpdatedDescription(data.name) });
       } else {
         const addData = data as AddDebtorFormValues;
-        const { initialAmount, ...debtorBaseData } = addData;
-        addDebtor(debtorBaseData, initialAmount);
+        addDebtor(addData);
         toast({ title: toastDebtorAddedTitle, description: toastDebtorAddedDescription(data.name) });
       }
       setIsOpen(false);
@@ -184,7 +187,8 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
              {!isEditing && (
                 <FormField
                   control={form.control}
-                  name="initialAmount"
+                  // @ts-ignore 
+                  name="initialAmount" 
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{initialAmountLabel}</FormLabel>
@@ -200,7 +204,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
                 control={form.control}
                 name="creditLimit"
                 render={({ field }) => (
-                  <FormItem className={isEditing ? "col-span-2" : ""}>
+                  <FormItem className={isEditing || !form.getValues("initialAmount" as keyof AddDebtorFormValues) ? "col-span-2" : ""}>
                     <FormLabel>{creditLimitLabel}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="5000" {...field} />
@@ -210,6 +214,22 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
                 )}
               />
             </div>
+            {!isEditing && (
+               <FormField
+                control={form.control}
+                 // @ts-ignore 
+                name="debtReason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{debtReasonLabel}</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder={debtReasonPlaceholder} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
              {isEditing && (
                  <FormItem>
                     <FormLabel>المبلغ الحالي المستحق</FormLabel>

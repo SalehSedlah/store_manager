@@ -11,7 +11,7 @@ import { WhatsappReminderToastAction } from "@/components/debt-management/whatsa
 
 interface DebtorsContextType {
   debtors: Debtor[];
-  addDebtor: (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed">, initialAmount: number) => void;
+  addDebtor: (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed"> & { initialAmount: number; debtReason?: string }) => void;
   updateDebtorInfo: (debtorId: string, debtorInfo: Pick<Debtor, "name" | "phoneNumber" | "creditLimit" | "paymentHistory">) => void;
   deleteDebtor: (id: string) => void;
   addTransaction: (debtorId: string, transactionData: Omit<Transaction, "id" | "date">) => void;
@@ -30,7 +30,7 @@ const transactionTypeArabic: Record<TransactionType, string> = {
   adjustment_increase: "تسوية (زيادة)",
   adjustment_decrease: "تسوية (نقصان)",
   full_settlement: "دفع كامل سداد",
-  // 'initial_balance' removed as initial debt is now 'new_credit'
+  // 'initial_balance' is no longer used for the first transaction.
 };
 
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
@@ -44,7 +44,7 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
     }
 
     switch (tx.type) {
-      case 'new_credit': // Includes initial debt recorded as 'new_credit'
+      case 'new_credit': 
       case 'adjustment_increase':
         newBalance += amount;
         break;
@@ -53,8 +53,10 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
       case 'full_settlement':
         newBalance -= amount;
         break;
+      // Removed 'initial_balance' case as it's deprecated for this logic
       default:
-        console.warn(`Unknown transaction type: ${tx.type}`);
+        // Avoid logging for unknown types if 'initial_balance' might still exist in old data
+        // console.warn(`Unknown transaction type: ${tx.type}`); 
         return balance; 
     }
     return parseFloat(newBalance.toFixed(2));
@@ -63,7 +65,7 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
 
 
 export function DebtorsProvider({ children }: { children: ReactNode }) {
-  const { user, businessName: appBusinessName } = useAuth(); // Get businessName from AuthContext
+  const { user, businessName: appBusinessName } = useAuth(); 
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loadingDebtors, setLoadingDebtors] = useState(true);
 
@@ -123,7 +125,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
     }
     const newDebtorOverLimit = wasOverLimitBefore === undefined && isCurrentlyOverLimit;
 
-    if ((justExceededLimit || newDebtorOverLimit) && debtor.phoneNumber) { // Only proceed if phone number exists
+    if ((justExceededLimit || newDebtorOverLimit) && debtor.phoneNumber) { 
       try {
         const transactionsForReminder = await prepareTransactionsForReminder(debtor.transactions || []);
 
@@ -155,7 +157,6 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
         }, 0);
       }
     } else if (justExceededLimit || newDebtorOverLimit) {
-        // Debtor exceeded limit but no phone number
         setTimeout(() => {
             toast({
                 title: `تنبيه: ${debtor.name} تجاوز(ت) الحد الائتماني`,
@@ -167,7 +168,8 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addDebtor = (debtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed">, initialAmount: number) => {
+  const addDebtor = (fullDebtorData: Omit<Debtor, "id" | "lastUpdated" | "userId" | "transactions" | "amountOwed"> & { initialAmount: number; debtReason?: string }) => {
+    const { initialAmount, debtReason, ...debtorBaseData } = fullDebtorData;
     const initialTransactionAmount = Number(initialAmount) || 0;
     const newTransactions: Transaction[] = [];
 
@@ -177,12 +179,12 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
         date: new Date().toISOString(),
         type: 'new_credit', 
         amount: initialTransactionAmount,
-        description: undefined, // Makes it appear as a standard new credit without special description
+        description: debtReason || undefined, 
       });
     }
 
     const newDebtor: Debtor = {
-      ...debtorData,
+      ...debtorBaseData,
       id: Date.now().toString(),
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
@@ -194,7 +196,6 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
         toast({ title: toastDebtorAddedTitle, description: `تمت إضافة ${newDebtor.name}.` });
     }, 0);
     
-    // Check if new debtor is over limit after creation
     triggerWhatsappReminderIfNeeded(newDebtor); 
   };
 
@@ -297,4 +298,3 @@ export function useDebtors() {
   }
   return context;
 }
-
