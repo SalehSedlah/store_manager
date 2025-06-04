@@ -36,11 +36,11 @@ const transactionTypeArabic: Record<TransactionType, string> = {
 const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
   return transactions.reduce((balance, tx) => {
     let newBalance = balance;
-    const amount = Number(tx.amount); // Ensure tx.amount is treated as a number
+    const amount = Number(tx.amount); 
 
     if (isNaN(amount) || !isFinite(amount)) {
       console.error(`Invalid or non-finite amount in transaction, skipping:`, tx);
-      return balance; // Skip transaction with invalid amount
+      return balance; 
     }
 
     switch (tx.type) {
@@ -58,14 +58,13 @@ const calculateAmountOwedInternal = (transactions: Transaction[]): number => {
         console.warn(`Unknown transaction type: ${tx.type}`);
         return balance; 
     }
-    // Round to 2 decimal places at each step to avoid floating point issues
     return parseFloat(newBalance.toFixed(2));
   }, 0);
 };
 
 
 export function DebtorsProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, businessName: appBusinessName } = useAuth(); // Get businessName from AuthContext
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loadingDebtors, setLoadingDebtors] = useState(true);
 
@@ -88,7 +87,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
           const storedDebtors: Debtor[] = JSON.parse(storedDebtorsString);
           const debtorsWithCalculatedAmounts = storedDebtors.map(d => ({
             ...d,
-            transactions: (d.transactions || []).map(tx => ({...tx, amount: Number(tx.amount) || 0})), // Ensure amounts are numbers
+            transactions: (d.transactions || []).map(tx => ({...tx, amount: Number(tx.amount) || 0})),
             amountOwed: calculateAmountOwedInternal(d.transactions || []),
           }));
           setDebtors(debtorsWithCalculatedAmounts);
@@ -135,6 +134,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
           creditLimit: debtor.creditLimit,
           transactions: transactionsForReminder,
           debtorPhoneNumber: debtor.phoneNumber,
+          businessName: appBusinessName || "متجرك", // Use businessName from AuthContext or a fallback
         };
         const result = await generateWhatsappReminder(input);
         setTimeout(() => {
@@ -225,7 +225,7 @@ export function DebtorsProvider({ children }: { children: ReactNode }) {
             ...transactionData,
             id: Date.now().toString() + "_tx_" + Math.random().toString(36).substring(2, 7),
             date: new Date().toISOString(),
-            amount: Number(transactionData.amount) || 0, // Ensure amount is a number
+            amount: Number(transactionData.amount) || 0, 
           };
           const updatedTransactions = [...(debtor.transactions || []), newTransaction];
           const newAmountOwed = calculateAmountOwedInternal(updatedTransactions);

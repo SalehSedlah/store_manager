@@ -17,6 +17,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [businessName, setBusinessName] = useState(""); // New state for business name
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function SignupPage() {
   const emailPlaceholder = "you@example.com";
   const passwordLabel = "كلمة المرور";
   const confirmPasswordLabel = "تأكيد كلمة المرور";
+  const businessNameLabel = "اسم البقالة / النشاط التجاري"; // New label
+  const businessNamePlaceholder = "بقالة الوفاء"; // New placeholder
   const signupButtonText = "إنشاء حساب";
   const loadingSignupButtonText = "جاري إنشاء الحساب...";
   const loginPromptText = "هل لديك حساب بالفعل؟";
@@ -49,9 +52,21 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
+    if (!businessName.trim()) { // Validate business name
+        const specificError = "الرجاء إدخال اسم البقالة / النشاط التجاري.";
+        setError(specificError);
+        toast({ title: toastSignupFailedTitle, description: specificError, variant: "destructive" });
+        setLoading(false);
+        return;
+    }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      if (user) {
+        // Store business name in localStorage, keyed by user UID
+        localStorage.setItem('app_business_name_' + user.uid, businessName.trim());
+      }
       toast({ title: toastSignupSuccessTitle, description: toastSignupSuccessDescription });
       router.push(`/dashboard`); 
     } catch (err: any) {
@@ -83,6 +98,18 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="businessName">{businessNameLabel}</Label> 
+              <Input
+                id="businessName"
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder={businessNamePlaceholder}
+                required
+                className="bg-white dark:bg-input"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">{emailLabel}</Label>
               <Input

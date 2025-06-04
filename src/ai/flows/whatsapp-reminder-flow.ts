@@ -25,6 +25,7 @@ const WhatsappReminderInputSchema = z.object({
   creditLimit: z.number().describe('الحد الائتماني للمدين'),
   transactions: z.array(TransactionDetailSchema).describe('قائمة بمعاملات المدين التي أدت إلى الدين الحالي. يجب أن تكون باللغة العربية إذا كانت نصية. لا تتضمن الرصيد الافتتاحي.'),
   debtorPhoneNumber: z.string().optional().describe('رقم هاتف المدين لإدراجه في الرسالة إذا لزم الأمر'),
+  businessName: z.string().describe('اسم البقالة أو الشركة المُرسلة للتذكير. هذا الاسم سيظهر في توقيع الرسالة.'),
 });
 export type WhatsappReminderInput = z.infer<typeof WhatsappReminderInputSchema>;
 
@@ -59,9 +60,15 @@ const prompt = ai.definePrompt({
     - تاريخ: {{{date}}}, النوع: {{{type}}}, المبلغ: {{{amount}}} ريال{{#if description}}, الوصف: {{{description}}}{{/if}}
     {{/each}}
 5.  طلب مهذب لسداد المبلغ المستحق أو جزء منه في أقرب وقت ممكن.
-6.  خاتمة مناسبة.
+6.  خاتمة مناسبة مع ذكر اسم النشاط التجاري الخاص بك.
 
 اجعل الرسالة واضحة وموجزة ومهنية. يجب أن تكون الرسالة بالكامل باللغة العربية.
+
+مثال للخاتمة:
+...
+نشكر تعاونكم.
+مع تحيات،
+{{{businessName}}}
 `,
 });
 
@@ -80,16 +87,12 @@ const whatsappReminderFlow = ai.defineFlow(
 // Helper function to select relevant transactions (e.g., last 5 debt-increasing ones, excluding initial balance)
 export async function prepareTransactionsForReminder(transactions: Transaction[]): Promise<WhatsappReminderInput['transactions']> {
   return transactions
-    .filter(tx => tx.type === 'new_credit' || tx.type === 'adjustment_increase') // Exclude 'initial_balance'
+    .filter(tx => tx.type === 'new_credit' || tx.type === 'adjustment_increase') // Exclude 'initial_balance' and other non-debt increasing types
     .slice(-5) // Take last 5 relevant debt-increasing transactions
     .map(tx => {
-      // Map transaction types to Arabic for the AI if not already handled by the main context
-      // For simplicity, using the type as is and letting the AI handle it based on prompt context.
-      // However, you could map them here:
-      // const typeArabic = transactionTypeArabic[tx.type] || tx.type;
       return {
         date: new Date(tx.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }),
-        type: tx.type, // Or typeArabic if you map it
+        type: tx.type, 
         amount: tx.amount,
         description: tx.description,
       };

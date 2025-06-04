@@ -10,6 +10,7 @@ import { useRouter, usePathname } from "next/navigation";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  businessName: string | null; // Added businessName
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,12 +18,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [businessName, setBusinessName] = useState<string | null>(null); // State for business name
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        // Try to load business name from localStorage
+        const storedBusinessName = localStorage.getItem('app_business_name_' + currentUser.uid);
+        setBusinessName(storedBusinessName);
+      } else {
+        setBusinessName(null); // Clear business name if no user
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -43,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, loading, router, pathname]); 
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, businessName }}>
       {children}
     </AuthContext.Provider>
   );
