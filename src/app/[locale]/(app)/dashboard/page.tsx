@@ -9,10 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getDebtSummary, type DebtSummaryInput, type DebtSummaryOutput } from "@/ai/flows/debt-summary";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { useTranslations } from "next-intl"; // Removed
+import { useTranslations } from "next-intl";
 
 export default function DashboardPage() {
-  // const t = useTranslations("DashboardPage"); // Removed
+  const t = useTranslations("DashboardPage");
+  const tAi = useTranslations("DashboardPage.aiSummary");
   const { debtors, loadingDebtors } = useDebtors();
   const [aiSummary, setAiSummary] = useState<DebtSummaryOutput | null>(null);
   const [loadingAiSummary, setLoadingAiSummary] = useState(false);
@@ -38,9 +39,9 @@ export default function DashboardPage() {
   const fetchAiSummary = async () => {
     if (stats.numberOfDebtors === 0) {
       setAiSummary({
-        summary: "No debtor data available to generate a summary.", // Hardcoded
-        riskAssessment: "N/A", // Hardcoded
-        recommendations: "Add debtor information to get an AI-powered summary and recommendations." // Hardcoded
+        summary: tAi("noDataSummary"),
+        riskAssessment: tAi("noDataRisk"),
+        recommendations: tAi("noDataRecommendations")
       });
       return;
     }
@@ -59,9 +60,9 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error fetching AI summary:", error);
       setAiSummary({
-        summary: "Error generating AI summary.", // Hardcoded
-        riskAssessment: "Could not assess risk.", // Hardcoded
-        recommendations: "Please try again later." // Hardcoded
+        summary: tAi("errorSummary"),
+        riskAssessment: tAi("errorRisk"),
+        recommendations: tAi("errorRecommendations")
       });
     } finally {
       setLoadingAiSummary(false);
@@ -73,40 +74,40 @@ export default function DashboardPage() {
       fetchAiSummary();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingDebtors, debtors]); 
+  }, [loadingDebtors, debtors]); // tAi dependency removed as it's stable
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-headline font-semibold text-foreground">Dashboard</h1>
+      <h1 className="text-3xl font-headline font-semibold text-foreground">{t("title")}</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <SummaryCard
-          title="Total Debt"
+          title={t("totalDebt")}
           value={`$${stats.totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={DollarSign}
           isLoading={loadingDebtors}
-          description={`${stats.creditLimitUtilization.toFixed(1)}% of credit limits utilized`}
+          description={t("totalDebtDescription", { utilization: stats.creditLimitUtilization.toFixed(1)})}
         />
         <SummaryCard
-          title="Total Debtors"
+          title={t("totalDebtors")}
           value={stats.numberOfDebtors}
           icon={Users}
           isLoading={loadingDebtors}
-          description="Active debtors being tracked"
+          description={t("totalDebtorsDescription")}
         />
         <SummaryCard
-          title="Avg. Debt per Debtor"
+          title={t("avgDebtPerDebtor")}
           value={`$${stats.averageDebtPerDebtor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={BarChartBig}
           isLoading={loadingDebtors}
-          description="Average amount owed"
+          description={t("avgDebtPerDebtorDescription")}
         />
         <SummaryCard
-          title="Debtors Over Limit"
+          title={t("debtorsOverLimit")}
           value={stats.debtorsOverLimit}
           icon={AlertTriangle}
           isLoading={loadingDebtors}
-          description="Exceeding credit limits"
+          description={t("debtorsOverLimitDescription")}
         />
       </div>
 
@@ -115,12 +116,12 @@ export default function DashboardPage() {
           <div>
             <CardTitle className="text-xl font-headline flex items-center">
               <Sparkles className="h-6 w-6 mr-2 rtl:ml-2 rtl:mr-0 text-primary" />
-              AI Debt Overview
+              {t("aiDebtOverviewTitle")}
             </CardTitle>
-            <CardDescription>Insights and recommendations based on your current debt portfolio.</CardDescription>
+            <CardDescription>{t("aiDebtOverviewDescription")}</CardDescription>
           </div>
           <Button onClick={fetchAiSummary} disabled={loadingAiSummary || loadingDebtors} size="sm">
-            {loadingAiSummary ? "Refreshing..." : "Refresh Summary"}
+            {loadingAiSummary ? t("refreshingSummaryButton") : t("refreshSummaryButton")}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -136,20 +137,20 @@ export default function DashboardPage() {
           ) : aiSummary ? (
             <>
               <div>
-                <h3 className="font-semibold text-foreground">Summary</h3>
+                <h3 className="font-semibold text-foreground">{tAi("summaryTitle")}</h3>
                 <p className="text-sm text-muted-foreground">{aiSummary.summary}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Risk Assessment</h3>
+                <h3 className="font-semibold text-foreground">{tAi("riskAssessmentTitle")}</h3>
                 <p className="text-sm text-muted-foreground">{aiSummary.riskAssessment}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Recommendations</h3>
+                <h3 className="font-semibold text-foreground">{tAi("recommendationsTitle")}</h3>
                 <p className="text-sm text-muted-foreground">{aiSummary.recommendations}</p>
               </div>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">Click "Refresh Summary" to generate insights.</p>
+            <p className="text-sm text-muted-foreground">Click "{t("refreshSummaryButton")}" to generate insights.</p>
           )}
         </CardContent>
       </Card>

@@ -1,27 +1,33 @@
 
 import type { ReactNode } from 'react';
-
-// Removed Inter font import from here, it will be in RootLayout
+import { NextIntlClientProvider, useMessages } from 'next-intl';
 
 type Props = {
   children: ReactNode;
-  params: { locale: string }; // locale param still here but won't be used for i18n
+  params: { locale: string };
 };
 
 export async function generateMetadata({ params: { locale } }: Props) {
   console.log(`[LocaleLayout-DEBUG] generateMetadata called for locale: ${locale}`);
-  // Since we removed next-intl, a static title is fine.
-  // If you re-add next-intl, you'd fetch translations here.
+  // In a real app with next-intl, you'd use getTranslations here
+  // For now, a static title is fine as we are re-integrating
+  const title = locale === 'ar' ? "DebtVision (رؤية الديون)" : "DebtVision";
   return {
-    title: "DebtVision", 
+    title: title,
   };
 }
 
 export default function LocaleLayout({ children, params: { locale } }: Props) {
-  // This console.log is fine for debugging if needed
   console.log(`[LocaleLayout-DEBUG] Rendering LocaleLayout for locale: ${locale}`);
+  const messages = useMessages();
 
-  // This layout should NOT render <html> or <body> tags.
-  // It only provides the content for the specific locale segment.
-  return <>{children}</>;
+  return (
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
 }

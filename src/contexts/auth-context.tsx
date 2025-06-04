@@ -5,7 +5,8 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next/navigation"; // Ensure using next/navigation
+import { useRouter, usePathname, useParams } from "next-intl/client"; // Changed to next-intl/client for useParams
+// For Link, use next-intl/link if you need locale-aware links
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const router = useRouter(); 
   const pathname = usePathname();
+  const params = useParams();
+  const locale = params && typeof params.locale === 'string' ? params.locale : 'en';
   
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -34,17 +37,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Simplified routing logic as [locale] might become just 'en' or be removed later
-    const isAuthPage = pathname.endsWith("/login") || pathname.endsWith("/signup"); 
+    // pathname from next-intl/navigation does not include locale, so we check raw pathname for auth pages
+    const rawPathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isAuthPage = rawPathname.endsWith("/login") || rawPathname.endsWith("/signup"); 
     
-    if (!user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico') { 
-      const targetPath = pathname.includes("login") || pathname.includes("signup") ? pathname : "/login";
-      router.push(targetPath.startsWith("/en/") ? targetPath : `/en${targetPath}`);
+    if (!user && !isAuthPage && !rawPathname.startsWith('/_next/') && rawPathname !== '/favicon.ico') { 
+      // useRouter from next-intl will handle locale prefixing
+      router.push("/login");
     } else if (user && isAuthPage) {
-      router.push("/en/dashboard"); // Assuming 'en' will be the locale segment for now
+      router.push("/dashboard");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, locale]); // Added locale to dependency array
 
   return (
     <AuthContext.Provider value={{ user, loading }}>

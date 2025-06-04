@@ -3,15 +3,15 @@
 
 import { RiskAssessmentForm } from "@/components/ai-assistant/risk-assessment-form";
 import { CreditSuggestionTool } from "@/components/ai-assistant/credit-suggestion-tool";
-// import { useTranslations } from "next-intl"; // Removed
+import { useTranslations } from "next-intl";
 
 export default function AiAssistantPage() {
-  // const t = useTranslations("AiAssistantPage"); // Removed
+  const t = useTranslations("AiAssistantPage");
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-headline font-semibold text-foreground">AI Assistant</h1>
-        <p className="text-muted-foreground">Leverage AI to gain insights and make better financial decisions.</p>
+        <h1 className="text-3xl font-headline font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
       
       <RiskAssessmentForm />

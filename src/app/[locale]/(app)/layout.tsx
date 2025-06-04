@@ -5,19 +5,24 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation"; 
+import { useRouter, useParams } from "next-intl/client"; // Changed to next-intl/client
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const locale = params && typeof params.locale === 'string' ? params.locale : 'en';
+  const t = useTranslations("AuthGuard");
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/en/login"); // Assuming 'en' will be the locale segment
+      // useRouter from next-intl handles locale prefixing automatically
+      router.replace("/login"); 
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, locale]); // Added locale
 
   if (loading || !user) {
     return (
@@ -25,7 +30,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col items-center space-y-4">
           <Skeleton className="h-12 w-12 rounded-full" />
           <Skeleton className="h-4 w-[250px]" />
-          <p className="text-sm text-muted-foreground">Loading user session...</p>
+          <p className="text-sm text-muted-foreground">{t("loadingSession")}</p>
         </div>
       </div>
     );

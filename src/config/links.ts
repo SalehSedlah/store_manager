@@ -2,39 +2,36 @@
 import type { LucideIcon } from "lucide-react";
 import { LayoutDashboard, Users, Sparkles, Settings } from "lucide-react";
 
+// NavLink interface now uses labelKey for translation
 export interface NavLink {
   href: string;
-  label: string; // Now a direct string, not a translation key
+  labelKey: string; // Key for useTranslations
   icon: LucideIcon;
-  isActive?: (pathname: string) => boolean;
+  // isActive logic might need adjustment if pathname from next-intl/client doesn't include locale
 }
 
 export const mainNavLinks: NavLink[] = [
   {
     href: "/dashboard",
-    label: "Dashboard", 
+    labelKey: "dashboard", 
     icon: LayoutDashboard,
-    isActive: (pathname) => pathname.includes("/dashboard"),
   },
   {
     href: "/debt-management",
-    label: "Debt Management", 
+    labelKey: "debtManagement", 
     icon: Users,
-    isActive: (pathname) => pathname.includes("/debt-management"),
   },
   {
     href: "/ai-assistant",
-    label: "AI Assistant", 
+    labelKey: "aiAssistant", 
     icon: Sparkles,
-    isActive: (pathname) => pathname.includes("/ai-assistant"),
   },
 ];
 
 export const secondaryNavLinks: NavLink[] = [
  /* {
     href: "/settings",
-    label: "Settings", 
+    labelKey: "settings", // Example if settings page is added
     icon: Settings,
-    isActive: (pathname) => pathname.startsWith("/settings"),
   }, */
 ];

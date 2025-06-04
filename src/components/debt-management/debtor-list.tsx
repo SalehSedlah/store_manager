@@ -28,14 +28,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
+import { useTranslations } from "next-intl";
 
 export function DebtorList() {
   const { debtors, deleteDebtor, loadingDebtors } = useDebtors();
   const { toast } = useToast();
+  const t = useTranslations("DebtorList");
+  const tToast = useTranslations("Toast");
+
 
   const handleDelete = (id: string, name: string) => {
     deleteDebtor(id);
-    toast({ title: "Debtor Deleted", description: `${name} has been deleted.` });
+    toast({ title: tToast("debtorDeletedTitle"), description: tToast("debtorDeletedDescription", {name}) });
   };
 
   if (loadingDebtors) {
@@ -49,7 +53,7 @@ export function DebtorList() {
   }
 
   if (debtors.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">No debtors found. Add a new debtor to get started.</p>;
+    return <p className="text-center text-muted-foreground py-8">{t("noDebtors")}</p>;
   }
 
   return (
@@ -57,13 +61,13 @@ export function DebtorList() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Phone Number</TableHead>
-            <TableHead className="text-right">Amount Owed</TableHead>
-            <TableHead className="text-right">Credit Limit</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Last Updated</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("nameHeader")}</TableHead>
+            <TableHead>{t("phoneNumberHeader")}</TableHead>
+            <TableHead className="text-right">{t("amountOwedHeader")}</TableHead>
+            <TableHead className="text-right">{t("creditLimitHeader")}</TableHead>
+            <TableHead>{t("statusHeader")}</TableHead>
+            <TableHead className="text-right">{t("lastUpdatedHeader")}</TableHead>
+            <TableHead className="text-right">{t("actionsHeader")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,10 +87,10 @@ export function DebtorList() {
                   {isOverLimit ? (
                     <Badge variant="destructive" className="flex items-center gap-1 w-fit">
                       <AlertTriangle className="h-3 w-3" />
-                      Over Limit
+                      {t("statusOverLimit")}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary">Within Limit</Badge>
+                    <Badge variant="secondary">{t("statusWithinLimit")}</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">{lastUpdatedFormatted}</TableCell>
@@ -103,7 +107,7 @@ export function DebtorList() {
                         debtor={debtor}
                         triggerButton={
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Edit className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> Edit
+                            <Edit className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("editAction")}
                           </DropdownMenuItem>
                         }
                       />
@@ -112,12 +116,12 @@ export function DebtorList() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <a href={`sms:${debtor.phoneNumber}`}>
-                              <MessageSquare className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> Send SMS
+                              <MessageSquare className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("sendSmsAction")}
                             </a>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <a href={`https://wa.me/${debtor.phoneNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                              <MessageCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> Send WhatsApp
+                              <MessageCircle className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("sendWhatsAppAction")}
                             </a>
                           </DropdownMenuItem>
                         </>
@@ -126,23 +130,23 @@ export function DebtorList() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> Delete
+                            <Trash2 className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" /> {t("deleteAction")}
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              {`This action cannot be undone. This will permanently delete ${debtor.name}'s record.`}
+                              {t("deleteDialogDescription", {name: debtor.name})}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t("deleteDialogCancel")}</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(debtor.id, debtor.name)}
                               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                             >
-                              Delete
+                              {t("deleteDialogConfirm")}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

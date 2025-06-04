@@ -11,32 +11,29 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter, usePathname } from "next/navigation"; 
+import { useRouter, usePathname } from "next-intl/client"; // Changed
+import { useTranslations } from "next-intl";
 
 export function AppHeader() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const router = useRouter();
-  const pathname = usePathname();
+  const tToast = useTranslations("Toast");
+  const tAppHeader = useTranslations("AppHeader");
   
-  // Determine current locale from pathname, default to 'en'
-  const pathSegments = pathname.split('/');
-  const locale = pathSegments[1] && pathSegments[1].length === 2 ? pathSegments[1] : 'en';
-
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push(`/${locale}/login`);
+      toast({ title: tToast("logoutSuccessTitle"), description: tToast("logoutSuccessDescription") });
+      router.push(`/login`); // next-intl router handles locale
     } catch (error: any) {
-      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
+      toast({ title: tToast("logoutFailedTitle"), description: error.message, variant: "destructive" });
     }
   };
   
   const getInitials = (email?: string | null) => {
-    if (!email) return "DV"; 
+    if (!email) return tAppHeader("userInitialsFallback"); 
     const parts = email.split("@")[0].split(/[\s._-]+/); 
     if (parts.length > 1 && parts[0] && parts[1]) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -53,7 +50,7 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || "User"} data-ai-hint="user avatar" />
+                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || "User"} data-ai-hint={tAppHeader("userAvatarHint")} />
                 <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
               </Avatar>
             </Button>
@@ -72,7 +69,7 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 rtl:ml-2 rtl:mr-0 h-4 w-4" />
-              <span>Logout</span>
+              <span>{tToast("logoutSuccessTitle")}</span> {/* Example translation, adjust key if needed */}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -4,12 +4,12 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from "@/components/ui/toaster";
 import { DebtorsProvider } from '@/contexts/debtors-context';
-import { Inter } from 'next/font/google'; // Import Inter font
+import { Inter } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' }); // Instantiate Inter font
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'DebtVision',
+  title: 'DebtVision', // Default title, will be overridden by LocaleLayout
   description: 'Manage your debts with AI-powered insights.',
 };
 
@@ -26,11 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" className={`${inter.variable}`} suppressHydrationWarning> 
+    // lang and dir will be set by src/app/[locale]/layout.tsx
+    <html className={`${inter.variable}`} suppressHydrationWarning> 
       <head>
-        {/* Google Fonts <link> tags are handled by next/font, no need for manual <link> here if using Inter from next/font */}
+        {/* Cairo font for Arabic is imported in globals.css */}
       </head>
-      <body className={'font-body antialiased'}> {/* Applied Inter font variable to html tag, body classes are fine */}
+      {/* font-body is the default, html[lang="ar"] in globals.css will target Arabic font */}
+      <body className={'font-body antialiased'}> 
           <AuthProvider>
             <DebtorsProvider>
               {children}

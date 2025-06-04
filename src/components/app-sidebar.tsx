@@ -1,8 +1,8 @@
 
 "use client";
 
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation"; 
+import { Link } from "next-intl/link"; // Changed
+import { useRouter, usePathname } from "next-intl/client"; // Changed
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -19,51 +19,50 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { NavLink as NavLinkType } from "@/config/links"; 
+import type { NavLink as NavLinkTypeDefinition } from "@/config/links"; 
 import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 
 export function AppSidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname(); // from next-intl/client, returns path without locale
   const { user, loading } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
+  const router = useRouter(); // from next-intl/client
   const { state: sidebarState } = useSidebar();
+  const t = useTranslations("Sidebar");
+  const tToast = useTranslations("Toast");
 
-  // Determine current locale from pathname, default to 'en'
-  const pathSegments = pathname.split('/');
-  const locale = pathSegments[1] && pathSegments[1].length === 2 ? pathSegments[1] : 'en';
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push(`/${locale}/login`); 
+      toast({ title: tToast("logoutSuccessTitle"), description: tToast("logoutSuccessDescription") });
+      router.push(`/login`); 
     } catch (error: any) {
-      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
+      toast({ title: tToast("logoutFailedTitle"), description: error.message, variant: "destructive" });
     }
   };
 
-   const navLinksToRender = (links: NavLinkType[]): NavLinkType[] => links.map(link => ({
+   const navLinksToRender = (links: NavLinkTypeDefinition[]): NavLinkTypeDefinition[] => links.map(link => ({
     ...link,
-    // Prepend locale to href if it's not an external link
-    href: link.href.startsWith('http') ? link.href : `/${locale}${link.href}`,
-    label: link.label 
+    // Link component from next-intl handles locale prefixing automatically
+    href: link.href, 
+    labelKey: link.labelKey // Use labelKey for translation
   }));
 
 
-  const renderNavLink = (link: NavLinkType, index: number) => (
-    <SidebarMenuItem key={`${link.label}-${index}`}>
+  const renderNavLink = (link: NavLinkTypeDefinition, index: number) => (
+    <SidebarMenuItem key={`${link.labelKey}-${index}`}>
       <Link href={link.href} passHref legacyBehavior>
         <SidebarMenuButton
           asChild
-          // isActive for prefixed links needs to check the path *after* the locale
-          isActive={pathname.startsWith(link.href)}
-          tooltip={sidebarState === "collapsed" ? link.label : undefined}
+          isActive={pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))}
+          tooltip={sidebarState === "collapsed" ? t(link.labelKey) : undefined}
         >
           <a>
             <link.icon />
-            <span>{link.label}</span> 
+            <span>{t(link.labelKey)}</span> 
           </a>
         </SidebarMenuButton>
       </Link>
@@ -73,7 +72,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
-        <Link href={`/${locale}/dashboard`} className="flex items-center gap-2 text-primary">
+        {/* Link from next-intl/link will handle locale */}
+        <Link href={`/dashboard`} className="flex items-center gap-2 text-primary">
             <TrendingUp className="h-8 w-8" />
             {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
         </Link>
@@ -104,9 +104,9 @@ export function AppSidebar() {
         {user && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? "Logout" : undefined}>
+              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? t("logout") : undefined}>
                 <LogOut />
-                <span>Logout</span>
+                <span>{t("logout")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

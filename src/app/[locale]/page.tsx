@@ -2,24 +2,27 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter, useParams } from "next-intl/client"; // Changed to next-intl/client
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function HomePage({ params: { locale: rawLocale } }: { params: { locale: string }}) {
+export default function HomePage() { 
   const { user, loading } = useAuth();
   const router = useRouter();
-  const locale = rawLocale || 'en'; // Use the destructured prop, default to 'en'
+  const params = useParams();
+  const locale = params && typeof params.locale === 'string' ? params.locale : 'en';
+
 
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.replace(`/${locale}/dashboard`); 
+        // useRouter from next-intl will handle locale
+        router.replace(`/dashboard`); 
       } else {
-        router.replace(`/${locale}/login`); 
+        router.replace(`/login`); 
       }
     }
-  }, [user, loading, router, locale]);
+  }, [user, loading, router, locale]); // Added locale
 
 
   return (
@@ -32,4 +35,3 @@ export default function HomePage({ params: { locale: rawLocale } }: { params: { 
       </div>
   );
 }
-
