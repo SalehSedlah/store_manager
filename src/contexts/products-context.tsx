@@ -67,6 +67,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   const addProduct = (productData: Omit<Product, "id" | "lastUpdated" | "userId">) => {
     const newProduct: Product = {
       ...productData,
+      pricePerUnit: Number(productData.pricePerUnit) || 0,
+      currentStock: Number(productData.currentStock) || 0,
+      lowStockThreshold: Number(productData.lowStockThreshold) || 0,
       id: Date.now().toString(),
       userId: user?.uid,
       lastUpdated: new Date().toISOString(),
@@ -81,7 +84,13 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     setProducts(prevProducts =>
       prevProducts.map(p =>
         p.id === productId
-          ? { ...p, ...productData, lastUpdated: new Date().toISOString() }
+          ? { ...p, 
+              ...productData,
+              pricePerUnit: Number(productData.pricePerUnit) || 0,
+              currentStock: Number(productData.currentStock) || 0,
+              lowStockThreshold: Number(productData.lowStockThreshold) || 0,
+              lastUpdated: new Date().toISOString() 
+            }
           : p
       )
     );
@@ -107,7 +116,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     setProducts(prevProducts =>
       prevProducts.map(p =>
         p.id === productId
-          ? { ...p, currentStock: newStock, lastUpdated: new Date().toISOString() }
+          ? { ...p, currentStock: Number(newStock) || 0, lastUpdated: new Date().toISOString() }
           : p
       )
     );
@@ -138,5 +147,3 @@ export function useProducts() {
   }
   return context;
 }
-
-    

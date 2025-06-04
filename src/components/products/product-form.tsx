@@ -29,12 +29,12 @@ import {
 import { useProducts } from "@/contexts/products-context";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-// import { Textarea } from "../ui/textarea"; // Assuming you might need textarea for category or description later
 
 const productFormSchema = z.object({
   name: z.string().min(2, { message: "يجب أن يتكون اسم المنتج من حرفين على الأقل." }).max(100),
   category: z.string().min(2, { message: "يجب أن تتكون الفئة من حرفين على الأقل." }).max(50),
   unit: z.string().min(1, { message: "وحدة القياس مطلوبة."}).max(20),
+  pricePerUnit: z.coerce.number().min(0, { message: "يجب أن يكون سعر الوحدة موجبًا أو صفرًا." }),
   currentStock: z.coerce.number().min(0, { message: "لا يمكن أن يكون المخزون سالبًا." }),
   lowStockThreshold: z.coerce.number().min(0, { message: "لا يمكن أن يكون حد المخزون المنخفض سالبًا." }),
 });
@@ -54,22 +54,24 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
 
   const isEditing = !!product;
 
-  const addTitle = "إضافة منتج جديد";
-  const addDescription = "أدخل تفاصيل المنتج الجديد.";
-  const editTitle = "تعديل المنتج";
-  const editDescription = "قم بتحديث تفاصيل المنتج.";
+  const addTitle = "إضافة صنف جديد";
+  const addDescription = "أدخل تفاصيل الصنف الجديد، بما في ذلك اسمه، سعره، والكمية المتوفرة.";
+  const editTitle = "تعديل الصنف";
+  const editDescription = "قم بتحديث تفاصيل الصنف.";
   
-  const nameLabel = "اسم المنتج";
-  const namePlaceholder = "مثال: تفاح، أرز";
+  const nameLabel = "اسم الصنف";
+  const namePlaceholder = "مثال: سكر، دقيق، زيت";
   const categoryLabel = "الفئة";
   const categoryPlaceholder = "مثال: فواكه، حبوب، ألبان";
   const unitLabel = "وحدة القياس";
   const unitPlaceholder = "مثال: قطعة، كجم، لتر، علبة";
-  const currentStockLabel = "المخزون الحالي";
-  const lowStockThresholdLabel = "حد المخزون المنخفض";
+  const pricePerUnitLabel = "سعر الوحدة الواحدة (بالعملة المحلية)";
+  const pricePerUnitPlaceholder = "مثال: 100";
+  const currentStockLabel = "الكمية المتوفرة في المخزون";
+  const lowStockThresholdLabel = "حد المخزون المنخفض للتنبيه";
   
   const cancelButton = "إلغاء";
-  const addButtonText = "إضافة منتج";
+  const addButtonText = "إضافة";
   const saveButtonText = "حفظ التغييرات";
   const savingButtonText = "جاري الحفظ...";
 
@@ -81,12 +83,14 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
       name: product.name,
       category: product.category,
       unit: product.unit,
+      pricePerUnit: product.pricePerUnit,
       currentStock: product.currentStock,
       lowStockThreshold: product.lowStockThreshold,
     } : {
       name: "",
       category: "",
       unit: "",
+      pricePerUnit: 0,
       currentStock: 0,
       lowStockThreshold: 0,
     },
@@ -99,11 +103,12 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
           name: product.name,
           category: product.category,
           unit: product.unit,
+          pricePerUnit: product.pricePerUnit,
           currentStock: product.currentStock,
           lowStockThreshold: product.lowStockThreshold,
         });
       } else {
-        form.reset({ name: "", category: "", unit: "", currentStock: 0, lowStockThreshold: 0 });
+        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, currentStock: 0, lowStockThreshold: 0 });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -151,29 +156,43 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
                 </FormItem>
               )}
             />
-            <FormField
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{categoryLabel}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={categoryPlaceholder} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{unitLabel}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={unitPlaceholder} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <FormField
               control={form.control}
-              name="category"
+              name="pricePerUnit"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{categoryLabel}</FormLabel>
+                  <FormLabel>{pricePerUnitLabel}</FormLabel>
                   <FormControl>
-                    <Input placeholder={categoryPlaceholder} {...field} />
+                    <Input type="number" placeholder={pricePerUnitPlaceholder} {...field} step="0.01" />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="unit"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{unitLabel}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={unitPlaceholder} {...field} />
-                  </FormControl>
-                  <FormDescription>مثال: قطعة، كجم، لتر، علبة، صندوق</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
