@@ -1,0 +1,64 @@
+{
+  "LoginPage": {
+    "title": "Login",
+    "description": "Access your DebtVision account",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "loginButton": "Login",
+    "loadingLoginButton": "Logging in...",
+    "signupPrompt": "Don't have an account?",
+    "signupLink": "Sign up",
+    "brandName": "DebtVision"
+  },
+  "SignupPage": {
+    "title": "Create Account",
+    "description": "Join DebtVision today",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "signupButton": "Sign Up",
+    "loadingSignupButton": "Creating account...",
+    "loginPrompt": "Already have an account?",
+    "loginLink": "Login",
+    "brandName": "DebtVision"
+  },
+  "DashboardPage": {
+    "title": "Dashboard"
+  },
+  "DebtManagementPage": {
+    "title": "Debt Management",
+    "addNewDebtorButton": "Add New Debtor"
+  },
+  "AiAssistantPage": {
+    "title": "AI Assistant",
+    "description": "Leverage AI to gain insights and make better financial decisions."
+  },
+  "AppSidebar": {
+    "brandName": "DebtVision",
+    "dashboard": "Dashboard",
+    "debtManagement": "Debt Management",
+    "aiAssistant": "AI Assistant",
+    "logout": "Logout"
+  },
+  "AppHeader": {
+    "userMenuLabel": "User Menu",
+    "logout": "Log out",
+    "profile": "Profile"
+  },
+  "AuthContext": {
+    "loginSuccessTitle": "Login Successful",
+    "loginSuccessDescription": "Redirecting to dashboard...",
+    "loginFailedTitle": "Login Failed",
+    "signupSuccessTitle": "Signup Successful",
+    "signupSuccessDescription": "Redirecting to dashboard...",
+    "signupFailedTitle": "Signup Failed",
+    "passwordsDoNotMatch": "Passwords do not match."
+  },
+  "AppLayout": {
+    "loadingMessage": "Loading user session..."
+  },
+  "RootLayout": {
+      "pageTitle": "DebtVision",
+      "pageDescription": "Manage your debts with AI-powered insights."
+  }
+}

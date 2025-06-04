@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, useRouter, usePathname } from "next-intl/navigation"; // Changed import
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -19,11 +17,14 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { NavLink} from "@/config/links";
+import type { NavLink as NavLinkType } from "@/config/links"; // Renamed to avoid conflict
 import { mainNavLinks, secondaryNavLinks } from "@/config/links";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from "next-intl";
 
 export function AppSidebar() {
+  const t = useTranslations("AppSidebar");
+  const tAuth = useTranslations("AuthContext");
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -33,19 +34,25 @@ export function AppSidebar() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      // Using a generic toast message here, or you can add specific ones to AuthContext translations
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push("/login");
+      router.push("/login"); // router from next-intl/navigation handles locale
     } catch (error: any) {
-      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
+      toast({ title: tAuth("loginFailedTitle"), description: error.message, variant: "destructive" });
     }
   };
 
-  const renderNavLink = (link: NavLink, index: number) => (
+  const translatedMainNavLinks: NavLinkType[] = mainNavLinks.map(link => ({
+    ...link,
+    label: t(link.translationKey as any || link.label) // Add translationKey to NavLinkType if it's more complex
+  }));
+
+  const renderNavLink = (link: NavLinkType, index: number) => (
     <SidebarMenuItem key={`${link.label}-${index}`}>
       <Link href={link.href} passHref legacyBehavior>
         <SidebarMenuButton
           asChild
-          isActive={link.isActive ? link.isActive(pathname) : pathname === link.href}
+          isActive={link.isActive ? link.isActive(pathname) : pathname.startsWith(link.href)}
           tooltip={sidebarState === "collapsed" ? link.label : undefined}
         >
           <a>
@@ -62,7 +69,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary">
             <TrendingUp className="h-8 w-8" />
-            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">DebtVision</span>}
+            {sidebarState === "expanded" && <span className="text-xl font-headline font-semibold">{t("brandName")}</span>}
         </Link>
       </SidebarHeader>
 
@@ -75,7 +82,7 @@ export function AppSidebar() {
               <SidebarMenuSkeleton showIcon />
             </>
           )}
-          {!loading && mainNavLinks.map(renderNavLink)}
+          {!loading && translatedMainNavLinks.map(renderNavLink)}
         </SidebarMenu>
       </SidebarContent>
 
@@ -83,7 +90,7 @@ export function AppSidebar() {
 
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {!loading && secondaryNavLinks.map(renderNavLink)}
+          {!loading && secondaryNavLinks.map((link) => renderNavLink({...link, label: t(link.translationKey as any || link.label)}, 0))}
         </SidebarMenu>
       </SidebarContent>
 
@@ -91,9 +98,9 @@ export function AppSidebar() {
         {user && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? "Logout" : undefined}>
+              <SidebarMenuButton onClick={handleLogout} tooltip={sidebarState === "collapsed" ? t("logout") : undefined}>
                 <LogOut />
-                <span>Logout</span>
+                <span>{t("logout")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

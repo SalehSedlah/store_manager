@@ -5,7 +5,8 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next-intl/navigation"; // Changed import
+import { useLocale } from "next-intl";
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -31,16 +33,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
-    const publicPaths = ["/login", "/signup"];
-    const isPublicPath = publicPaths.includes(pathname);
-    const isAuthPage = pathname === "/login" || pathname === "/signup";
+    // For next-intl, public paths are generally those not prefixed by a locale
+    // or specific locale-prefixed auth pages.
+    // The middleware handles redirecting to a locale for `/`
+    // So, `pathname` here will already be locale-prefixed if not an asset.
+    const isAuthPage = pathname === `/login` || pathname === `/signup`;
+    // If the path is just `/${locale}`, it's effectively a public landing before redirect
+    const isLocaleRoot = pathname === `/${locale}`;
 
-    if (!user && !isPublicPath) {
+
+    if (!user && !isAuthPage && !isLocaleRoot) {
+      // Redirect to locale-specific login
       router.push("/login");
-    } else if (user && isAuthPage) {
+    } else if (user && (isAuthPage || isLocaleRoot)) {
+      // Redirect to locale-specific dashboard
       router.push("/dashboard");
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, locale]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>

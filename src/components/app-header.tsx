@@ -10,9 +10,12 @@ import { LogOut, User as UserIcon } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next-intl/navigation"; // Changed
+import { useTranslations } from "next-intl"; // Added
 
 export function AppHeader() {
+  const t = useTranslations("AppHeader");
+  const tAuth = useTranslations("AuthContext");
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -21,18 +24,18 @@ export function AppHeader() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push("/login");
+      toast({ title: t("logout"), description: "You have been successfully logged out." }); // Generic description
+      router.push("/login"); // router from next-intl/navigation handles locale
     } catch (error: any) {
-      toast({ title: "Logout Failed", description: error.message, variant: "destructive" });
+      toast({ title: tAuth("loginFailedTitle"), description: error.message, variant: "destructive" });
     }
   };
   
   const getInitials = (email?: string | null) => {
     if (!email) return "DV";
-    const parts = email.split("@")[0].split(".");
-    if (parts.length > 1) {
-      return parts.map(part => part[0]).join("").toUpperCase();
+    const parts = email.split("@")[0].split(/[\s._-]+/); // Split by common separators
+    if (parts.length > 1 && parts[0] && parts[1]) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return email.substring(0, 2).toUpperCase();
   };
@@ -65,11 +68,11 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             {/* <DropdownMenuItem>
               <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>{t("profile")}</span>
             </DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t("logout")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
