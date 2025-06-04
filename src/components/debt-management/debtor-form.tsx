@@ -74,7 +74,7 @@ export function DebtorForm({ debtor, onFormSubmit, triggerButton }: DebtorFormPr
   const namePlaceholder = "فلان الفلاني";
   const phoneNumberLabel = "رقم الهاتف (اختياري)";
   const phoneNumberPlaceholder = "05xxxxxxxx";
-  const initialAmountLabel = "المبلغ الأولي المستحق (بالعملة المحلية)";
+  const initialAmountLabel = "المبلغ الأولي للدين (بالعملة المحلية)";
   const creditLimitLabel = "الحد الائتماني (بالعملة المحلية)";
   const paymentHistoryLabel = "ملخص سجل الدفع";
   const paymentHistoryPlaceholder = "مثال: يدفع بانتظام في الوقت المحدد.";
