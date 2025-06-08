@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,7 +11,7 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from '@/navigation'; // Use localized navigation
+import { useRouter } from 'next/navigation';
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -18,7 +19,6 @@ export function AppHeader() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // These texts can be translated later using useTranslations
   const toastLogoutSuccessTitle = "تم تسجيل الخروج";
   const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح.";
   const toastLogoutFailedTitle = "فشل تسجيل الخروج";
@@ -30,7 +30,7 @@ export function AppHeader() {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push(`/login`); // Localized router handles prefix
+      router.push(`/login`); 
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }

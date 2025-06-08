@@ -1,40 +1,43 @@
-import createNextIntlMiddleware from 'next-intl/middleware';
-import { NextRequest, NextResponse } from 'next/server';
-import { locales, defaultLocale, localePrefix } from './src/i18n.config';
 
-const intlMiddleware = createNextIntlMiddleware({
+import createNextIntlMiddleware from 'next-intl/middleware';
+import { NextRequest } from 'next/server';
+import { locales, defaultLocale, localePrefix, pathnames } from './src/i18n.config'; // Ensure path is correct
+
+const handleI18nRouting = createNextIntlMiddleware({
   locales,
   defaultLocale,
   localePrefix,
-  // Define pathnames for localized routes if needed, e.g.
-  // pathnames: {
-  //   '/login': {
-  //     en: '/login',
-  //     ar: '/تسجيل-الدخول'
-  //   }
-  // }
+  pathnames,
 });
 
-export function middleware(request: NextRequest) {
-  // Apply next-intl middleware first
-  const response = intlMiddleware(request);
+export default function middleware(request: NextRequest) {
+  // Apply i18n routing
+  const response = handleI18nRouting(request);
 
-  // Add security headers to the response from next-intl,
-  // unless it's a redirect.
-  if (!(response.status === 307 || response.status === 308)) {
-    response.headers.set('x-content-type-options', 'nosniff');
-    response.headers.set('x-dns-prefetch-control', 'off');
-    response.headers.set('x-download-options', 'noopen');
-    response.headers.set('x-frame-options', 'SAMEORIGIN');
-    response.headers.set('x-xss-protection', '1; mode=block');
-  }
+  // Add security headers to the response from next-intl
+  response.headers.set('x-content-type-options', 'nosniff');
+  response.headers.set('x-dns-prefetch-control', 'off');
+  response.headers.set('x-download-options', 'noopen');
+  response.headers.set('x-frame-options', 'SAMEORIGIN');
+  response.headers.set('x-xss-protection', '1; mode=block');
   
   return response;
 }
 
 export const config = {
-  // Match all paths except for internal Next.js paths, API routes, and static files
+  // Matcher ignoring `/_next/` and `/api/`
+  // Adjust this based on your specific needs and static assets paths.
   matcher: [
-    '/((?!api|_next/static|_next/image|assets|favicon.ico|sw.js).*)',
+    // Enable a redirect to a matching locale at the root
+    '/',
+
+    // Set a cookie to remember the previous locale for
+    // all requests that have a locale prefix
+    '/(ar|en)/:path*',
+
+    // Enable redirects that add missing locales
+    // (e.g. `/pathnames` -> `/en/pathnames`)
+    // Exclude API routes, Next.js internal paths, and static files like images/favicon
+    '/((?!api|_next/static|_next/image|assets|favicon.ico|sw.js).*)'
   ]
 };

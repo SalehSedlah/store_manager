@@ -1,12 +1,20 @@
-// src/navigation.ts
-// Direct exports from next-intl/navigation.
-// These are automatically locale-aware and work with the middleware.
-export {Link, redirect, usePathname, useRouter} from 'next-intl/navigation';
 
-// The createLocalizedPathnamesNavigation function was causing a TypeScript error.
-// It's primarily used for defining custom pathnames (e.g., /en/about vs /ar/من-نحن),
-// a feature not currently in use as the pathnames object was commented out.
-// The locale prefixing (e.g., /en/page vs /ar/page) is handled by the middleware
-// and the directly exported utilities are compatible with this.
-// If custom pathnames are needed in the future, this file would need to be revisited
-// and the original issue with createLocalizedPathnamesNavigation resolved.
+import {
+  Link as NextIntlLink,
+  redirect as nextIntlRedirect,
+  usePathname as nextIntlUsePathname,
+  useRouter as nextIntlUseRouter,
+  // getPathname is typically part of the object from createLocalizedPathnamesNavigation
+  // If you need it, ensure your i18n.config.ts has `pathnames` correctly defined
+  // and consider using createLocalizedPathnamesNavigation if that was intended.
+} from 'next-intl/navigation';
+
+// Re-export with the same names for consistent usage in the app
+export const Link = NextIntlLink;
+export const redirect = nextIntlRedirect;
+export const usePathname = nextIntlUsePathname;
+export const useRouter = nextIntlUseRouter;
+
+// Note: If you were previously using createLocalizedPathnamesNavigation for `getPathname`
+// and other advanced features, you might need to adjust.
+// This setup provides the core locale-aware navigation utilities.

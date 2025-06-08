@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LogOut, TrendingUp } from "lucide-react";
@@ -19,8 +20,8 @@ import {
 import type { NavLink as NavLinkTypeDefinition } from "@/config/links"; 
 import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
-import { Link, useRouter, usePathname } from '@/navigation'; // Use localized navigation
-import {useTranslations} from 'next-intl';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -28,33 +29,32 @@ export function AppSidebar() {
   const { toast } = useToast();
   const router = useRouter(); 
   const { state: sidebarState } = useSidebar();
-  const t = useTranslations('AppSidebar');
   
-  const appName = t('appName');
-  const tSidebarLabels: Record<NavLinkTypeDefinition['labelKey'], string> = {
-    dashboard: t('navLinks.dashboard'),
-    debtManagement: t('navLinks.debtManagement'),
-    aiAssistant: t('navLinks.aiAssistant'),
-    products: t('navLinks.products'),
-    settings: t('navLinks.settings')
+  const appName = "رؤية الديون";
+  const navLabels: Record<NavLinkTypeDefinition['labelKey'], string> = {
+    dashboard: "لوحة التحكم",
+    debtManagement: "إدارة الديون",
+    aiAssistant: "المساعد الذكي",
+    products: "المنتجات",
+    settings: "إدارة الحساب"
   };
-  const toastLogoutSuccessTitle = "تم تسجيل الخروج"; // Can be translated
-  const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح."; // Can be translated
-  const toastLogoutFailedTitle = "فشل تسجيل الخروج"; // Can be translated
-  const logoutButtonText = t('logoutButtonText');
+  const toastLogoutSuccessTitle = "تم تسجيل الخروج";
+  const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح.";
+  const toastLogoutFailedTitle = "فشل تسجيل الخروج";
+  const logoutButtonText = "تسجيل الخروج";
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push(`/login`); // Localized router handles prefix
+      router.push(`/login`);
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }
   };
 
   const renderNavLink = (link: NavLinkTypeDefinition, index: number) => {
-    const label = tSidebarLabels[link.labelKey] || link.labelKey; // Fallback to key if not found
+    const label = navLabels[link.labelKey] || link.label; // Use direct label from config
     return (
     <SidebarMenuItem key={`${link.labelKey}-${index}`}>
       <Link href={link.href} passHref legacyBehavior>

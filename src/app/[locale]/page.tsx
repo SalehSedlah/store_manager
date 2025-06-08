@@ -1,22 +1,23 @@
+
 "use client";
 
-import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { useAuth } from "@/contexts/auth-context";
-import { Skeleton } from "@/components/ui/skeleton";
-import {useTranslations} from 'next-intl';
-import {useRouter} from '@/navigation'; // Use localized router
+import { useRouter } from '@/navigation';
+import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function RootPage() {
+export default function LocaleRootPage() {
+  const t = useTranslations('LocaleRootPage');
   const { user, loading } = useAuth();
   const router = useRouter();
-  const t = useTranslations('RootPage');
 
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.replace("/dashboard"); // Localized router handles prefixing
+        router.replace("/dashboard");
       } else {
-        router.replace("/login"); // Localized router handles prefixing
+        router.replace("/login");
       }
     }
   }, [user, loading, router]);

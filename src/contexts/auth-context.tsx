@@ -1,10 +1,11 @@
+
 "use client";
 
 import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from '@/navigation'; // Use localized navigation
+import { useRouter, usePathname } from 'next/navigation'; 
 
 interface AuthContextType {
   user: User | null;
@@ -20,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessNameState] = useState<string | null>(null);
   const router = useRouter();
-  const pathname = usePathname(); // This will be the locale-aware pathname
+  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -49,11 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (loading) {
       return;
     }
-    // With next-intl's router, pathname includes locale when localePrefix is 'always' or when on non-default locale with 'as-needed'.
-    // We check against the base paths like '/login' or '/dashboard'.
-    // The localized router.replace will handle adding the correct locale prefix.
-    const isLoginPage = pathname === '/login' || pathname.endsWith('/login');
-    const isSignupPage = pathname === '/signup' || pathname.endsWith('/signup');
+    const isLoginPage = pathname === '/login';
+    const isSignupPage = pathname === '/signup';
     const isAuthPage = isLoginPage || isSignupPage;
 
     if (!user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico' && !pathname.endsWith('/favicon.ico')) {

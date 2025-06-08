@@ -1,39 +1,11 @@
+
 {
-  "RootLayout": {
-    "htmlLang": "en",
-    "htmlDir": "ltr",
-    "fontClassName": "font-body"
-  },
-  "RootPage": {
+  "LocaleRootPage": {
     "loadingText": "Loading..."
   },
-  "AuthGuard": {
-    "loadingSessionText": "Loading user session..."
-  },
-  "LoginPage": {
-    "appName": "DebtVision",
-    "pageTitle": "Login",
-    "pageDescription": "Access your DebtVision account",
-    "emailLabel": "Email",
-    "emailPlaceholder": "you@example.com",
-    "passwordLabel": "Password",
-    "loginButtonText": "Login",
-    "loadingLoginButtonText": "Logging in...",
-    "signupPromptText": "Don't have an account?",
-    "signupLinkText": "Sign up",
-    "toastLoginSuccessTitle": "Login Successful",
-    "toastLoginSuccessDescription": "Redirecting to dashboard...",
-    "toastLoginFailedTitle": "Login Failed"
-  },
-  "AppSidebar": {
-    "appName": "DebtVision",
-    "navLinks": {
-      "dashboard": "Dashboard",
-      "debtManagement": "Debt Management",
-      "aiAssistant": "AI Assistant",
-      "products": "Products",
-      "settings": "Account Management"
-    },
-    "logoutButtonText": "Logout"
+  "RootLayout": {
+    "applicationErrorTitle": "Application Error",
+    "applicationErrorMessages": "Could not load essential internationalization messages. Please check server logs.",
+    "localeAttempted": "Locale attempted"
   }
 }
