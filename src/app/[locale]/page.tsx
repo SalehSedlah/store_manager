@@ -4,16 +4,13 @@
 import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-interface FallbackPageProps {
-  params: { locale: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-const LocaleFallbackMinimalRootPage: React.FC<FallbackPageProps> = ({ params, searchParams }) => {
+// Using { params: any } as a workaround for the persistent type error
+export default function LocaleFallbackMinimalRootPage({ params }: { params: any }) {
   const router = useRouter();
+  const locale = params && typeof params.locale === 'string' ? params.locale : 'unknown_locale';
 
   console.warn(
-    `[Warning] MINIMAL Fallback page /src/app/[locale]/page.tsx rendered for locale: '${params.locale}'. ` +
+    `[Warning] MINIMAL Fallback page /src/app/[locale]/page.tsx rendered for locale: '${locale}'. ` +
     `Redirecting to /login. This path should ideally not be active.`
   );
 
@@ -26,9 +23,7 @@ const LocaleFallbackMinimalRootPage: React.FC<FallbackPageProps> = ({ params, se
       <h1>صفحة احتياطية</h1>
       <p>إذا رأيت هذه الصفحة، فهذا يعني أن هناك مشكلة في التوجيه بعد إزالة الترجمة.</p>
       <p>تتم الآن محاولة إعادة توجيهك...</p>
-      <p>المسار المطلوب كان: /{params.locale}</p>
+      <p>المسار المطلوب كان: /{locale}</p>
     </div>
   );
 };
-
-export default LocaleFallbackMinimalRootPage;

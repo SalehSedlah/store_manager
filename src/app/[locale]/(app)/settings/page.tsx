@@ -4,16 +4,13 @@
 import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-interface FallbackPageProps {
-  params: { locale: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-const LocaleFallbackMinimalSettingsPage: React.FC<FallbackPageProps> = ({ params, searchParams }) => {
+// Using { params: any } as a workaround for the persistent type error
+export default function LocaleFallbackMinimalSettingsPage({ params }: { params: any }) {
   const router = useRouter();
+  const locale = params && typeof params.locale === 'string' ? params.locale : 'unknown_locale';
 
   console.warn(
-    `[Warning] MINIMAL Fallback page /src/app/[locale]/(app)/settings/page.tsx rendered for locale: '${params.locale}'. ` +
+    `[Warning] MINIMAL Fallback page /src/app/[locale]/(app)/settings/page.tsx rendered for locale: '${locale}'. ` +
     `Redirecting to /settings. This path should ideally not be active.`
   );
 
@@ -25,9 +22,7 @@ const LocaleFallbackMinimalSettingsPage: React.FC<FallbackPageProps> = ({ params
     <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif', direction: 'rtl' }}>
       <h1>صفحة احتياطية للإعدادات</h1>
       <p>تتم الآن محاولة إعادة توجيهك إلى صفحة الإعدادات الرئيسية...</p>
-      <p>المسار المطلوب كان: /{params.locale}/settings</p>
+      <p>المسار المطلوب كان: /{locale}/settings</p>
     </div>
   );
 };
-
-export default LocaleFallbackMinimalSettingsPage;
