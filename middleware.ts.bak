@@ -1,15 +1,33 @@
+import createNextIntlMiddleware from 'next-intl/middleware';
+import { NextRequest, NextResponse } from 'next/server';
+import { locales, defaultLocale, localePrefix } from './src/i18n.config';
 
-import {NextRequest, NextResponse} from 'next/server';
+const intlMiddleware = createNextIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix,
+  // Define pathnames for localized routes if needed, e.g.
+  // pathnames: {
+  //   '/login': {
+  //     en: '/login',
+  //     ar: '/تسجيل-الدخول'
+  //   }
+  // }
+});
 
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+  // Apply next-intl middleware first
+  const response = intlMiddleware(request);
 
-  // Apply security headers
-  response.headers.set('x-content-type-options', 'nosniff');
-  response.headers.set('x-dns-prefetch-control', 'off');
-  response.headers.set('x-download-options', 'noopen');
-  response.headers.set('x-frame-options', 'SAMEORIGIN');
-  response.headers.set('x-xss-protection', '1; mode=block');
+  // Add security headers to the response from next-intl,
+  // unless it's a redirect.
+  if (!(response.status === 307 || response.status === 308)) {
+    response.headers.set('x-content-type-options', 'nosniff');
+    response.headers.set('x-dns-prefetch-control', 'off');
+    response.headers.set('x-download-options', 'noopen');
+    response.headers.set('x-frame-options', 'SAMEORIGIN');
+    response.headers.set('x-xss-protection', '1; mode=block');
+  }
   
   return response;
 }

@@ -1,3 +1,39 @@
-// This file is effectively deleted as next-intl is removed.
-// All text will be hardcoded in English.
-{}
+{
+  "RootLayout": {
+    "htmlLang": "en",
+    "htmlDir": "ltr",
+    "fontClassName": "font-body"
+  },
+  "RootPage": {
+    "loadingText": "Loading..."
+  },
+  "AuthGuard": {
+    "loadingSessionText": "Loading user session..."
+  },
+  "LoginPage": {
+    "appName": "DebtVision",
+    "pageTitle": "Login",
+    "pageDescription": "Access your DebtVision account",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "loginButtonText": "Login",
+    "loadingLoginButtonText": "Logging in...",
+    "signupPromptText": "Don't have an account?",
+    "signupLinkText": "Sign up",
+    "toastLoginSuccessTitle": "Login Successful",
+    "toastLoginSuccessDescription": "Redirecting to dashboard...",
+    "toastLoginFailedTitle": "Login Failed"
+  },
+  "AppSidebar": {
+    "appName": "DebtVision",
+    "navLinks": {
+      "dashboard": "Dashboard",
+      "debtManagement": "Debt Management",
+      "aiAssistant": "AI Assistant",
+      "products": "Products",
+      "settings": "Account Management"
+    },
+    "logoutButtonText": "Logout"
+  }
+}

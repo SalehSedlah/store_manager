@@ -1,8 +1,5 @@
-
 "use client";
 
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
 import { LogOut, TrendingUp } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -22,6 +19,8 @@ import {
 import type { NavLink as NavLinkTypeDefinition } from "@/config/links"; 
 import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
+import { Link, useRouter, usePathname } from '@/navigation'; // Use localized navigation
+import {useTranslations} from 'next-intl';
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -29,49 +28,52 @@ export function AppSidebar() {
   const { toast } = useToast();
   const router = useRouter(); 
   const { state: sidebarState } = useSidebar();
+  const t = useTranslations('AppSidebar');
   
-  const appName = "رؤية الديون";
+  const appName = t('appName');
   const tSidebarLabels: Record<NavLinkTypeDefinition['labelKey'], string> = {
-    dashboard: "لوحة التحكم",
-    debtManagement: "إدارة الديون",
-    aiAssistant: "المساعد الذكي",
-    products: "المنتجات",
-    settings: "إدارة الحساب" 
+    dashboard: t('navLinks.dashboard'),
+    debtManagement: t('navLinks.debtManagement'),
+    aiAssistant: t('navLinks.aiAssistant'),
+    products: t('navLinks.products'),
+    settings: t('navLinks.settings')
   };
-  const toastLogoutSuccessTitle = "تم تسجيل الخروج";
-  const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح.";
-  const toastLogoutFailedTitle = "فشل تسجيل الخروج";
-  const logoutButtonText = "تسجيل الخروج";
+  const toastLogoutSuccessTitle = "تم تسجيل الخروج"; // Can be translated
+  const toastLogoutSuccessDescription = "لقد تم تسجيل خروجك بنجاح."; // Can be translated
+  const toastLogoutFailedTitle = "فشل تسجيل الخروج"; // Can be translated
+  const logoutButtonText = t('logoutButtonText');
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast({ title: toastLogoutSuccessTitle, description: toastLogoutSuccessDescription });
-      router.push(`/login`); 
+      router.push(`/login`); // Localized router handles prefix
     } catch (error: any) {
       toast({ title: toastLogoutFailedTitle, description: error.message, variant: "destructive" });
     }
   };
 
-  const renderNavLink = (link: NavLinkTypeDefinition, index: number) => (
+  const renderNavLink = (link: NavLinkTypeDefinition, index: number) => {
+    const label = tSidebarLabels[link.labelKey] || link.labelKey; // Fallback to key if not found
+    return (
     <SidebarMenuItem key={`${link.labelKey}-${index}`}>
       <Link href={link.href} passHref legacyBehavior>
         <SidebarMenuButton
           asChild
           isActive={pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))}
-          tooltip={sidebarState === "collapsed" ? tSidebarLabels[link.labelKey] : undefined} 
+          tooltip={sidebarState === "collapsed" ? label : undefined} 
         >
           <a>
             <link.icon />
-            <span>{tSidebarLabels[link.labelKey]}</span> 
+            <span>{label}</span> 
           </a>
         </SidebarMenuButton>
       </Link>
     </SidebarMenuItem>
-  );
+  )};
 
   return (
-    <Sidebar collapsible="icon" side="right"> {/* Changed side to right for RTL */}
+    <Sidebar collapsible="icon" side="right">
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary"> 
             <TrendingUp className="h-8 w-8" />

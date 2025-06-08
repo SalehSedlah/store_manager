@@ -1,2 +1,39 @@
-// This file is effectively deleted as next-intl is removed.
-{}
+{
+  "RootLayout": {
+    "htmlLang": "ar",
+    "htmlDir": "rtl",
+    "fontClassName": "font-arabic"
+  },
+  "RootPage": {
+    "loadingText": "جاري التحميل..."
+  },
+  "AuthGuard": {
+    "loadingSessionText": "جاري تحميل جلسة المستخدم..."
+  },
+  "LoginPage": {
+    "appName": "DebtVision | رؤية الديون",
+    "pageTitle": "تسجيل الدخول",
+    "pageDescription": "قم بالوصول إلى حساب DebtVision الخاص بك",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "كلمة المرور",
+    "loginButtonText": "تسجيل الدخول",
+    "loadingLoginButtonText": "جاري تسجيل الدخول...",
+    "signupPromptText": "ليس لديك حساب؟",
+    "signupLinkText": "إنشاء حساب",
+    "toastLoginSuccessTitle": "تم تسجيل الدخول بنجاح",
+    "toastLoginSuccessDescription": "جاري التوجيه إلى لوحة التحكم...",
+    "toastLoginFailedTitle": "فشل تسجيل الدخول"
+  },
+  "AppSidebar": {
+    "appName": "رؤية الديون",
+    "navLinks": {
+      "dashboard": "لوحة التحكم",
+      "debtManagement": "إدارة الديون",
+      "aiAssistant": "المساعد الذكي",
+      "products": "المنتجات",
+      "settings": "إدارة الحساب"
+    },
+    "logoutButtonText": "تسجيل الخروج"
+  }
+}
