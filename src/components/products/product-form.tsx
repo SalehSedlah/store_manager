@@ -40,6 +40,7 @@ const productFormSchema = z.object({
   lowStockThreshold: z.coerce.number().min(0, { message: "لا يمكن أن يكون حد المخزون المنخفض سالبًا." }),
   piecesInUnit: z.coerce.number().min(0, {message: "عدد القطع يجب أن يكون موجباً أو صفراً."}).optional().nullable(),
   expiryDate: z.string().optional().nullable(), // YYYY-MM-DD format
+  quantitySold: z.coerce.number().min(0, { message: "الكمية المباعة لا يمكن أن تكون سالبة." }),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -84,6 +85,8 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
   const piecesInUnitPlaceholder = "12";
 
   const expiryDateLabel = "تاريخ الانتهاء (اختياري)";
+  const quantitySoldLabel = "الكمية المباعة";
+  const quantitySoldDescription = "إجمالي الكمية المباعة من هذا المنتج. (للتتبع اليدوي أو يتم تحديثها عبر عمليات البيع).";
   
   const cancelButton = "إلغاء";
   const addButtonText = "إضافة";
@@ -104,6 +107,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
       lowStockThreshold: product.lowStockThreshold,
       piecesInUnit: product.piecesInUnit ?? null,
       expiryDate: product.expiryDate ?? null,
+      quantitySold: product.quantitySold,
     } : {
       name: "",
       category: "",
@@ -114,6 +118,7 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
       lowStockThreshold: 0,
       piecesInUnit: null,
       expiryDate: null,
+      quantitySold: 0,
     },
   });
 
@@ -130,9 +135,10 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
           lowStockThreshold: product.lowStockThreshold,
           piecesInUnit: product.piecesInUnit ?? null,
           expiryDate: product.expiryDate ?? null,
+          quantitySold: product.quantitySold,
         });
       } else {
-        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, purchasePricePerUnit: 0, currentStock: 0, lowStockThreshold: 0, piecesInUnit: null, expiryDate: null });
+        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, purchasePricePerUnit: 0, currentStock: 0, lowStockThreshold: 0, piecesInUnit: null, expiryDate: null, quantitySold: 0 });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,16 +146,24 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
 
   function onSubmit(data: ProductFormValues) {
     try {
-      const productDataToSave: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold"> & {quantitySold?: number} = {
+      const commonData = {
         ...data,
-        piecesInUnit: data.piecesInUnit === null ? undefined : data.piecesInUnit,
+        pricePerUnit: Number(data.pricePerUnit) || 0,
+        purchasePricePerUnit: Number(data.purchasePricePerUnit) || 0,
+        currentStock: Number(data.currentStock) || 0,
+        lowStockThreshold: Number(data.lowStockThreshold) || 0,
+        piecesInUnit: (data.piecesInUnit !== undefined && data.piecesInUnit !== null) ? (Number(data.piecesInUnit) || 0) : undefined,
         expiryDate: data.expiryDate === null || data.expiryDate === "" ? undefined : data.expiryDate,
+        quantitySold: Number(data.quantitySold) || 0,
       };
 
       if (isEditing && product) {
-        updateProduct(product.id, {...productDataToSave, quantitySold: product.quantitySold });
+        updateProduct(product.id, commonData);
       } else {
-        addProduct(productDataToSave);
+        // For adding, addProduct in context initializes quantitySold to 0.
+        // We omit quantitySold before passing to addProduct to match its type signature.
+        const { quantitySold, ...addData } = commonData;
+        addProduct(addData);
       }
       setIsOpen(false);
       if (onFormSubmit) onFormSubmit();
@@ -287,6 +301,22 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
                 )}
               />
             </div>
+            {isEditing && (
+              <FormField
+                control={form.control}
+                name="quantitySold"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{quantitySoldLabel}</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormDescription>{quantitySoldDescription}</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
              <FormField
               control={form.control}
               name="expiryDate"
@@ -319,3 +349,5 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
     </Dialog>
   );
 }
+
+    
