@@ -193,7 +193,7 @@ export function ProductList() {
                   <TableCell className="text-left rtl:text-right">{formatCurrency(product.purchasePricePerUnit)}</TableCell>
                   <TableCell className="text-left rtl:text-right">{formatCurrency(product.pricePerUnit)}</TableCell>
                   <TableCell className="text-left rtl:text-right font-semibold">{displayQuantity()}</TableCell>
-                  <TableCell className="text-left rtl:text-right">{quantitySoldNum.toLocaleString('ar-EG')}</TableCell>
+                  <TableCell className="text-left rtl:text-right">{quantitySoldNum.toLocaleString('ar-EG')} {product.unit}</TableCell>
                   <TableCell className="text-left rtl:text-right font-semibold">{formatCurrency(productTotalValue)}</TableCell>
                   <TableCell>
                     {expiryStatus ? (
@@ -293,3 +293,5 @@ export function ProductList() {
     </>
   );
 }
+
+    
