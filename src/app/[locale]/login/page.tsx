@@ -27,3 +27,4 @@ export default function LocaleFallbackMinimalLoginPage({ params }: { params: { l
     </div>
   );
 }
+

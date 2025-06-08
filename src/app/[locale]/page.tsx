@@ -29,3 +29,4 @@ export default function LocaleFallbackMinimalRootPage({ params }: { params: { lo
     </div>
   );
 }
+

@@ -27,3 +27,4 @@ export default function LocaleFallbackMinimalAiAssistantPage({ params }: { param
     </div>
   );
 }
+

@@ -27,3 +27,4 @@ export default function LocaleFallbackMinimalDebtManagementPage({ params }: { pa
     </div>
   );
 }
+

@@ -27,3 +27,4 @@ export default function LocaleFallbackMinimalSettingsPage({ params }: { params: 
     </div>
   );
 }
+
