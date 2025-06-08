@@ -22,11 +22,11 @@ import {
 interface ProductsContextType {
   products: Product[];
   addProduct: (productData: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold">) => Promise<void>;
-  updateProduct: (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId">) => Promise<void>;
+  updateProduct: (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold"> & { quantitySold?: number }) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   loadingProducts: boolean;
   getProductById: (id: string) => Product | undefined;
-  updateStock: (productId: string, newStock: number) => Promise<void>;
+  updateStock: (productId: string, newStock: number, soldQuantityIncrement?: number) => Promise<void>;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
@@ -45,7 +45,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   const convertToProductType = (docSnap: any): Product => {
     const data = docSnap.data();
     const pricePerUnitVal = Number(data.pricePerUnit);
-    const purchasePricePerUnitVal = data.purchasePricePerUnit !== undefined ? Number(data.purchasePricePerUnit) : undefined;
+    const purchasePricePerUnitVal = Number(data.purchasePricePerUnit);
     const currentStockVal = Number(data.currentStock);
     const lowStockThresholdVal = Number(data.lowStockThreshold);
     const quantitySoldVal = Number(data.quantitySold);
@@ -62,8 +62,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     if (isNaN(pricePerUnitVal)) {
       console.warn(`Product ID ${docSnap.id} ('${data.name}') has invalid pricePerUnit: '${data.pricePerUnit}'. Defaulting to 0.`);
     }
-    if (purchasePricePerUnitVal !== undefined && isNaN(purchasePricePerUnitVal)) {
-        console.warn(`Product ID ${docSnap.id} ('${data.name}') has invalid purchasePricePerUnit: '${data.purchasePricePerUnit}'. Defaulting to undefined.`);
+    if (isNaN(purchasePricePerUnitVal)) {
+        console.warn(`Product ID ${docSnap.id} ('${data.name}') has invalid purchasePricePerUnit: '${data.purchasePricePerUnit}'. Defaulting to 0.`);
     }
     if (isNaN(currentStockVal)) {
       console.warn(`Product ID ${docSnap.id} ('${data.name}') has invalid currentStock: '${data.currentStock}'. Defaulting to 0.`);
@@ -79,11 +79,12 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       id: docSnap.id,
       ...data,
       pricePerUnit: isNaN(pricePerUnitVal) ? 0 : pricePerUnitVal,
-      purchasePricePerUnit: purchasePricePerUnitVal !== undefined && isNaN(purchasePricePerUnitVal) ? undefined : purchasePricePerUnitVal,
+      purchasePricePerUnit: isNaN(purchasePricePerUnitVal) ? 0 : purchasePricePerUnitVal,
       currentStock: isNaN(currentStockVal) ? 0 : currentStockVal,
       lowStockThreshold: isNaN(lowStockThresholdVal) ? 0 : lowStockThresholdVal,
       piecesInUnit: piecesInUnitVal,
       quantitySold: isNaN(quantitySoldVal) ? 0 : quantitySoldVal,
+      expiryDate: data.expiryDate || undefined, // Keep as string or undefined
       lastUpdated: (data.lastUpdated as Timestamp)?.toDate ? (data.lastUpdated as Timestamp).toDate().toISOString() : new Date().toISOString(),
     } as Product;
   };
@@ -119,19 +120,19 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         return;
     }
     
-    const newProductDataForFirestore: Record<string, any> = { // Use Record<string, any> for easier manipulation before sending
+    const newProductDataForFirestore: Record<string, any> = { 
       ...productData,
       pricePerUnit: Number(productData.pricePerUnit) || 0,
-      purchasePricePerUnit: productData.purchasePricePerUnit !== undefined ? (Number(productData.purchasePricePerUnit) || 0) : undefined,
+      purchasePricePerUnit: Number(productData.purchasePricePerUnit) || 0,
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
       piecesInUnit: (productData.piecesInUnit !== undefined && productData.piecesInUnit !== null) ? (Number(productData.piecesInUnit) || 0) : undefined,
       quantitySold: 0, 
+      expiryDate: productData.expiryDate || undefined,
       userId: user.uid,
       lastUpdated: serverTimestamp(),
     };
 
-    // Remove undefined fields before sending to Firestore
     Object.keys(newProductDataForFirestore).forEach(key => {
       if (newProductDataForFirestore[key] === undefined) {
         delete newProductDataForFirestore[key];
@@ -150,21 +151,22 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProduct = async (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId">) => {
+  const updateProduct = async (productId: string, productData: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold"> & { quantitySold?: number }) => {
     if (!user) {
         toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لتحديث المنتج.", variant: "destructive"});
         return;
     }
     const productDocRef = doc(db, `users/${user.uid}/products`, productId);
     
-    const updatedProductDataForFirestore: Record<string, any> = { // Use Record<string, any> for easier manipulation
+    const updatedProductDataForFirestore: Record<string, any> = { 
       ...productData,
       pricePerUnit: Number(productData.pricePerUnit) || 0,
-      purchasePricePerUnit: productData.purchasePricePerUnit !== undefined ? (Number(productData.purchasePricePerUnit) || 0) : undefined,
+      purchasePricePerUnit: Number(productData.purchasePricePerUnit) || 0,
       currentStock: Number(productData.currentStock) || 0,
       lowStockThreshold: Number(productData.lowStockThreshold) || 0,
       piecesInUnit: (productData.piecesInUnit !== undefined && productData.piecesInUnit !== null) ? (Number(productData.piecesInUnit) || 0) : undefined,
-      quantitySold: productData.quantitySold !== undefined ? (Number(productData.quantitySold) || 0) : 0, 
+      quantitySold: productData.quantitySold !== undefined ? (Number(productData.quantitySold) || 0) : products.find(p=>p.id === productId)?.quantitySold || 0, 
+      expiryDate: productData.expiryDate || undefined,
       lastUpdated: serverTimestamp(),
     };
 
@@ -173,6 +175,15 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         delete updatedProductDataForFirestore[key];
       }
     });
+    
+    // Ensure quantitySold is not accidentally removed if not provided
+    if (productData.quantitySold === undefined) {
+      const currentProduct = products.find(p => p.id === productId);
+      if (currentProduct) {
+        updatedProductDataForFirestore.quantitySold = currentProduct.quantitySold;
+      }
+    }
+
 
     try {
       await updateDoc(productDocRef, updatedProductDataForFirestore);
@@ -207,20 +218,23 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     return products.find(product => product.id === id);
   }, [products]);
 
-  const updateStock = async (productId: string, newStock: number) => {
+  const updateStock = async (productId: string, newStock: number, soldQuantityIncrement: number = 0) => {
     if (!user) {
         toast({title: firestoreErrorToastTitle, description: "يجب تسجيل الدخول لتحديث المخزون.", variant: "destructive"});
         return;
     }
     const productDocRef = doc(db, `users/${user.uid}/products`, productId);
-    const productName = products.find(p => p.id === productId)?.name || "المنتج";
+    const product = products.find(p => p.id === productId);
+    const productName = product?.name || "المنتج";
+    const currentSoldQuantity = product?.quantitySold || 0;
     try {
       await updateDoc(productDocRef, {
         currentStock: Number(newStock) || 0,
+        quantitySold: currentSoldQuantity + (Number(soldQuantityIncrement) || 0),
         lastUpdated: serverTimestamp(),
       });
       setTimeout(() => {
-        toast({ title: toastStockUpdatedTitle, description: `تم تحديث مخزون ${productName} إلى ${newStock}.` });
+        toast({ title: toastStockUpdatedTitle, description: `تم تحديث مخزون ${productName}.` });
       }, 0);
     } catch (error: any) {
       console.error("Error updating stock in Firestore:", error);
@@ -250,4 +264,3 @@ export function useProducts() {
   }
   return context;
 }
-

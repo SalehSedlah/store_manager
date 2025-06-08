@@ -34,10 +34,12 @@ const productFormSchema = z.object({
   name: z.string().min(2, { message: "يجب أن يتكون اسم المنتج من حرفين على الأقل." }).max(100),
   category: z.string().min(2, { message: "يجب أن تتكون الفئة من حرفين على الأقل." }).max(50),
   unit: z.string().min(1, { message: "وحدة القياس مطلوبة."}).max(20),
-  pricePerUnit: z.coerce.number().min(0, { message: "يجب أن يكون سعر الوحدة موجبًا أو صفرًا." }),
+  pricePerUnit: z.coerce.number().min(0, { message: "يجب أن يكون سعر البيع موجبًا أو صفرًا." }),
+  purchasePricePerUnit: z.coerce.number().min(0, { message: "يجب أن يكون سعر الشراء موجبًا أو صفرًا." }),
   currentStock: z.coerce.number().min(0, { message: "لا يمكن أن يكون المخزون سالبًا." }),
   lowStockThreshold: z.coerce.number().min(0, { message: "لا يمكن أن يكون حد المخزون المنخفض سالبًا." }),
   piecesInUnit: z.coerce.number().min(0, {message: "عدد القطع يجب أن يكون موجباً أو صفراً."}).optional().nullable(),
+  expiryDate: z.string().optional().nullable(), // YYYY-MM-DD format
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -66,14 +68,22 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
   const categoryPlaceholder = "مثال: فواكه، حبوب، ألبان";
   const unitLabel = "وحدة القياس";
   const unitPlaceholder = "مثال: قطعة، كجم، لتر، علبة، كرتون";
-  const pricePerUnitLabel = "سعر الوحدة الرئيسية (بالعملة المحلية)";
+  
+  const pricePerUnitLabel = "سعر البيع للوحدة الرئيسية (بالعملة المحلية)";
   const pricePerUnitPlaceholder = "مثال: 100";
-  const pricePerUnitDescription = "أدخل سعر الوحدة الرئيسية المحددة (مثال: سعر الكرتون كاملاً، سعر الكيس). إذا كانت الوحدة تحتوي على قطع (مثل كرتون به علب)، فهذا هو سعر الكرتون كاملاً، وليس سعر العلبة الواحدة.";
+  const pricePerUnitDescription = "أدخل سعر البيع للوحدة الرئيسية المحددة (مثال: سعر الكرتون كاملاً، سعر الكيس).";
+  
+  const purchasePricePerUnitLabel = "سعر الشراء للوحدة الرئيسية (بالعملة المحلية)";
+  const purchasePricePerUnitPlaceholder = "مثال: 80";
+  
   const currentStockLabel = "الكمية المتوفرة في المخزون (بالوحدة الرئيسية)";
   const lowStockThresholdLabel = "حد المخزون المنخفض للتنبيه (بالوحدة الرئيسية)";
+  
   const piecesInUnitLabel = "عدد القطع بالوحدة الرئيسية (إن وجدت)";
   const piecesInUnitDescription = "مثال: إذا كانت الوحدة 'كرتونة شاي' وتحتوي على 12 علبة، أدخل 12. اترك فارغاً إذا كانت الوحدة هي القطعة نفسها.";
   const piecesInUnitPlaceholder = "12";
+
+  const expiryDateLabel = "تاريخ الانتهاء (اختياري)";
   
   const cancelButton = "إلغاء";
   const addButtonText = "إضافة";
@@ -89,17 +99,21 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
       category: product.category,
       unit: product.unit,
       pricePerUnit: product.pricePerUnit,
+      purchasePricePerUnit: product.purchasePricePerUnit,
       currentStock: product.currentStock,
       lowStockThreshold: product.lowStockThreshold,
       piecesInUnit: product.piecesInUnit ?? null,
+      expiryDate: product.expiryDate ?? null,
     } : {
       name: "",
       category: "",
       unit: "",
       pricePerUnit: 0,
+      purchasePricePerUnit: 0,
       currentStock: 0,
       lowStockThreshold: 0,
       piecesInUnit: null,
+      expiryDate: null,
     },
   });
 
@@ -111,12 +125,14 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
           category: product.category,
           unit: product.unit,
           pricePerUnit: product.pricePerUnit,
+          purchasePricePerUnit: product.purchasePricePerUnit,
           currentStock: product.currentStock,
           lowStockThreshold: product.lowStockThreshold,
           piecesInUnit: product.piecesInUnit ?? null,
+          expiryDate: product.expiryDate ?? null,
         });
       } else {
-        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, currentStock: 0, lowStockThreshold: 0, piecesInUnit: null });
+        form.reset({ name: "", category: "", unit: "", pricePerUnit: 0, purchasePricePerUnit: 0, currentStock: 0, lowStockThreshold: 0, piecesInUnit: null, expiryDate: null });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -124,13 +140,14 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
 
   function onSubmit(data: ProductFormValues) {
     try {
-      const productDataToSave = {
+      const productDataToSave: Omit<Product, "id" | "lastUpdated" | "userId" | "quantitySold"> & {quantitySold?: number} = {
         ...data,
-        piecesInUnit: data.piecesInUnit === null ? undefined : data.piecesInUnit, // Convert null to undefined for storage if needed
+        piecesInUnit: data.piecesInUnit === null ? undefined : data.piecesInUnit,
+        expiryDate: data.expiryDate === null || data.expiryDate === "" ? undefined : data.expiryDate,
       };
 
       if (isEditing && product) {
-        updateProduct(product.id, productDataToSave);
+        updateProduct(product.id, {...productDataToSave, quantitySold: product.quantitySold });
       } else {
         addProduct(productDataToSave);
       }
@@ -213,6 +230,19 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
             />
             <FormField
               control={form.control}
+              name="purchasePricePerUnit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{purchasePricePerUnitLabel}</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder={purchasePricePerUnitPlaceholder} {...field} step="0.01" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="piecesInUnit"
               render={({ field }) => (
                 <FormItem>
@@ -257,6 +287,24 @@ export function ProductForm({ product, onFormSubmit, triggerButton }: ProductFor
                 )}
               />
             </div>
+             <FormField
+              control={form.control}
+              name="expiryDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{expiryDateLabel}</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="date" 
+                      {...field} 
+                      value={field.value ?? ""}
+                      onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => { form.reset(); setIsOpen(false); }}>{cancelButton}</Button>
