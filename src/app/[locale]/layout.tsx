@@ -1,18 +1,18 @@
 
 import {NextIntlClientProvider} from 'next-intl';
-import {getMessages} from 'next-intl/server';
+import {getMessages, getTranslations} from 'next-intl/server'; // Added getTranslations
 import { Inter, Cairo } from 'next/font/google';
-import '../globals.css'; // Assuming globals.css is one level up from [locale]
+import '../globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { DebtorsProvider } from '@/contexts/debtors-context';
 import { ProductsProvider } from '@/contexts/products-context';
 import { Toaster } from "@/components/ui/toaster";
 import type { Metadata, Viewport } from 'next';
 
-// Font setup (copied from the non-locale layout)
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo', weight: ['300', '400', '500', '600', '700'], display: 'swap' });
 
+// Metadata and Viewport can remain as they are, or be localized using generateMetadata
 export const metadata: Metadata = {
   title: 'DebtVision | رؤية الديون',
   description: 'قم بإدارة ديونك برؤى مدعومة بالذكاء الاصطناعي.',
@@ -35,25 +35,31 @@ export default async function LocaleLayout({
   params: { locale },
 }: Readonly<LocaleLayoutProps>) {
   let messages;
-  const fontClassName = `${cairo.variable} font-arabic ${inter.variable} font-body`;
+  const fontClassName = `${locale === 'ar' ? cairo.variable : inter.variable} ${locale === 'ar' ? 'font-arabic' : 'font-body'}`;
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
+
+  // Static fallback messages
+  const fallbackErrorTitle = "Application Error";
+  const fallbackErrorMessages = "Could not load essential internationalization messages. Please check server logs.";
+  const fallbackLocaleAttempted = "Locale attempted";
 
   try {
     messages = await getMessages({ locale });
   } catch (error) {
     console.error(`[Error] Failed to load messages for locale "${locale}":`, error);
     // Fallback: render basic HTML structure with an error message
-    // This ensures the function still returns a valid React renderable output (JSX)
+    // Using static strings here to avoid dependency on translations if they failed to load.
     return (
       <html lang={locale} dir={direction} className={fontClassName}>
         <head>
-          <title>Application Error</title>
+          <title>{fallbackErrorTitle}</title>
         </head>
         <body>
           <div>
-            <h1>Application Error</h1>
-            <p>Could not load essential internationalization messages. Please check server logs.</p>
-            <p>Locale attempted: {locale}</p>
+            <h1>{fallbackErrorTitle}</h1>
+            <p>{fallbackErrorMessages}</p>
+            <p>{fallbackLocaleAttempted}: {locale}</p>
+            {error instanceof Error && <pre>Error details: {error.stack || error.message}</pre>}
           </div>
         </body>
       </html>
