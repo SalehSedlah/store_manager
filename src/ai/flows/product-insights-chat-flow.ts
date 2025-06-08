@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview AI chat assistant for product management insights.
@@ -35,21 +36,18 @@ export type ProductInsightsChatInput = z.infer<typeof ProductInsightsChatInputSc
 
 const ProductInsightsChatOutputSchema = z.object({
   answer: z.string().describe('إجابة الذكاء الاصطناعي على سؤال المستخدم باللغة العربية. يجب أن تكون الإجابة مفصلة ومفيدة.'),
-  // chartData: z.any().optional().describe('بيانات منظمة يمكن استخدامها لإنشاء رسوم بيانية إذا كان السؤال يتطلب ذلك'),
 });
 export type ProductInsightsChatOutput = z.infer<typeof ProductInsightsChatOutputSchema>;
 
 export async function chatWithProductInsightsAI(input: ProductInsightsChatInput): Promise<ProductInsightsChatOutput> {
   try {
-    // Basic validation or transformation before calling the flow if needed
     if (!input.products || input.products.length === 0) {
       return { answer: "لا توجد بيانات منتجات متاحة حاليًا للإجابة على سؤالك. يرجى إضافة بعض المنتجات أولاً." };
     }
     const result = await productInsightsChatFlow(input);
     return result;
   } catch (error) {
-    console.error(`[Flow Error: chatWithProductInsightsAI] ${error instanceof Error ? error.message : String(error)}`, {input, error});
-    // Return a user-friendly error message
+    console.error(`[Flow Error Handler: chatWithProductInsightsAI] Caught error: ${error instanceof Error ? error.message : String(error)}`, {input, errorDetails: error instanceof Error ? error.stack : error});
     return { answer: "عذرًا، حدث خطأ أثناء محاولة معالجة طلبك. يرجى المحاولة مرة أخرى لاحقًا." };
   }
 }
@@ -71,18 +69,20 @@ const prompt = ai.definePrompt({
 2.  استخدم بيانات المنتجات المقدمة فقط في تحليلاتك. لا تخترع بيانات.
 3.  **حساب الأرباح وأسعار القطع:**
     *   الربح المحتمل للمنتج (بالوحدة الرئيسية) = (\`pricePerUnit\` - \`purchasePricePerUnit\`) * \`currentStock\`.
-    *   إذا كان للمنتج \`piecesInUnit\` أكبر من 0:
+    *   إذا كان للمنتج \`piecesInUnit\` وكان \`piecesInUnit\` أكبر من 0:
         *   سعر بيع القطعة = \`pricePerUnit\` / \`piecesInUnit\`.
         *   سعر شراء القطعة = \`purchasePricePerUnit\` / \`piecesInUnit\`.
         *   ربح القطعة = سعر بيع القطعة - سعر شراء القطعة.
-    *   عند السؤال عن الأرباح، وضح أن الأرباح المحسوبة هي "أرباح محتملة" بناءً على المخزون الحالي وأسعار البيع والشراء للوحدات الرئيسية. إذا كان السؤال عن ربح القطع، استخدم الحسابات أعلاه.
-4.  **المنتجات الأكثر ربحية:** عند السؤال عن المنتجات الأكثر ربحية، اذكر أفضل 3-5 منتجات. إذا لم يحدد المستخدم (وحدة رئيسية أم قطعة)، افترض الربح بناءً على الوحدة الرئيسية. يمكنك توضيح الربح لكل قطعة أيضًا إذا كان ذلك مناسبًا.
+        *   عند ذكر سعر القطعة أو ربحها، وضح أن هذا الحساب تم بناءً على \`piecesInUnit\`. إذا لم يكن \`piecesInUnit\` متاحًا أو كان صفرًا، اذكر أنه لا يمكن حساب سعر/ربح القطعة.
+    *   عند السؤال عن الأرباح، وضح أن الأرباح المحسوبة هي "أرباح محتملة" بناءً على المخزون الحالي وأسعار البيع والشراء للوحدات الرئيسية. إذا كان السؤال عن ربح القطع، استخدم الحسابات أعلاه مع مراعاة صحة \`piecesInUnit\`.
+4.  **المنتجات الأكثر ربحية:** عند السؤال عن المنتجات الأكثر ربحية، اذكر أفضل 3-5 منتجات. إذا لم يحدد المستخدم (وحدة رئيسية أم قطعة)، افترض الربح بناءً على الوحدة الرئيسية. يمكنك توضيح الربح لكل قطعة أيضًا إذا كان ذلك مناسبًا و\`piecesInUnit\` يسمح بذلك.
 5.  **مبيعات القطع الفردية (إذا ذكر المستخدم أنه باع قطعًا):**
     *   إذا قال المستخدم شيئًا مثل "بعت 10 علب تونة" (وكان للمنتج "تونة" \`piecesInUnit\` مناسب وليكن 24):
         *   أكّد المعلومة: "مفهوم، تم بيع 10 علب تونة."
-        *   لكل منتج ذُكر في سياق البيع بالقطعة: ابحث عن المنتج في قائمة \`products\` المقدمة لك. إذا وجدته وكان لديه \`piecesInUnit\` > 0:
-            *   اشرح المتبقي في الوحدة الرئيسية الافتراضية التي تم فتحها: "إذا تم أخذ هذه الـ 10 علب من كرتونة واحدة من منتج {{name}} (والتي تحتوي على {{piecesInUnit}} علبة)، فسيتبقى في تلك الكرتونة {{subtract piecesInUnit 10}} علبة." (استبدل 10 بعدد القطع المذكورة، و name و piecesInUnit بتفاصيل المنتج).
-            *   اذكر سعر القطعة: "سعر العلبة الواحدة من {{name}} هو {{divide pricePerUnit piecesInUnit}} ريال."
+        *   لكل منتج ذُكر في سياق البيع بالقطعة: ابحث عن المنتج في قائمة \`products\` المقدمة لك. إذا وجدته وكان لديه \`piecesInUnit\` وكان \`piecesInUnit\` > 0:
+            *   اشرح المتبقي في الوحدة الرئيسية الافتراضية التي تم فتحها: "إذا تم أخذ هذه الـ 10 علب من كرتونة واحدة من منتج {{name}} (والتي تحتوي على {{piecesInUnit}} علبة)، فسيتبقى في تلك الكرتونة (\`piecesInUnit\` - 10) علبة." (استبدل 10 بعدد القطع المذكورة، و name و piecesInUnit بتفاصيل المنتج).
+            *   اذكر سعر القطعة: "سعر العلبة الواحدة من {{name}} هو (\`pricePerUnit\` / \`piecesInUnit\`) ريال."
+        *   إذا لم يكن للمنتج \`piecesInUnit\` أو كان صفرًا، اذكر أنه لا يمكن تحديد المتبقي في الكرتونة بهذه الطريقة أو سعر القطعة بدقة.
         *   **تذكير مهم:** ذكّر المستخدم بأن تتبع المخزون (\`currentStock\`) والكميات المباعة (\`quantitySold\`) في النظام يتم بالوحدة الرئيسية (مثلاً، بالكرتون). لا تقم بتعديل هذه القيم تلقائيًا بناءً على الدردشة. يمكنك أن تقترح عليه تعديلها يدويًا إذا أراد.
 6.  إذا سأل عن منتجات قاربت على النفاد، تحقق من حقل "currentStock" مقابل "lowStockThreshold".
 7.  إذا سأل عن منتجات منتهية الصلاحية أو قاربت على الانتهاء، تحقق من حقل "expiryDate". افترض أن اليوم هو {{currentDate}}.
@@ -92,7 +92,7 @@ const prompt = ai.definePrompt({
 
 مثال للإجابة على "ما هي المنتجات الأكثر ربحية؟":
 "بناءً على المخزون الحالي، هذه هي المنتجات التي لديها أعلى ربح محتمل إذا تم بيع كل الكمية المتوفرة (بالوحدة الرئيسية):
-1.  اسم المنتج أ: ربح محتمل X ريال (Y وحدة متوفرة) - ربح القطعة الواحدة Z ريال إذا كان المنتج مقسمًا.
+1.  اسم المنتج أ: ربح محتمل X ريال (Y وحدة متوفرة) - ربح القطعة الواحدة Z ريال إذا كان المنتج مقسمًا و \`piecesInUnit\` > 0.
 2.  اسم المنتج ب: ربح محتمل W ريال (V وحدة متوفرة)
 ..."
 
@@ -103,10 +103,6 @@ const prompt = ai.definePrompt({
 `,
 });
 
-// Handlebars helpers for simple arithmetic (conceptual, actual implementation might vary based on Genkit capabilities or pre-processing)
-// Genkit prompts are primarily text-based, so complex logic is better handled in the flow code if needed.
-// For this case, we're instructing the LLM to perform the calculation as part of its text generation.
-// However, if we needed to pass pre-calculated values, we'd do it in the flow.
 
 const productInsightsChatFlow = ai.defineFlow(
   {
@@ -115,22 +111,28 @@ const productInsightsChatFlow = ai.defineFlow(
     outputSchema: ProductInsightsChatOutputSchema,
   },
   async (input) => {
+    console.log('[Flow Log: productInsightsChatFlow] Received input:', JSON.stringify(input, null, 2));
+    
     // Add current date to the prompt context for expiry calculations
     const promptInput = {
       ...input,
       currentDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD
     };
-    const {output} = await prompt(promptInput);
-    return output!;
+
+    try {
+      const {output, usage} = await prompt(promptInput);
+      console.log('[Flow Log: productInsightsChatFlow] Successfully received output from prompt.', {output, usage});
+      if (!output) {
+        console.error('[Flow Log: productInsightsChatFlow] Prompt output was null or undefined.');
+        throw new Error('Prompt returned no output.');
+      }
+      return output;
+    } catch (error) {
+      console.error(`[Flow Log: productInsightsChatFlow] Error during prompt execution: ${error instanceof Error ? error.message : String(error)}`, {promptInput, errorDetails: error instanceof Error ? error.stack : error});
+      // Re-throw the error to be caught by the calling function's error handler which returns a user-friendly message
+      throw error;
+    }
   }
 );
 
-// Note: Handlebars helpers like 'subtract' or 'divide' are conceptual.
-// The LLM is expected to understand the arithmetic instruction from the text.
-// If precise pre-calculation is needed, the flow itself would prepare those values
-// and pass them into the prompt context. For example, if a user query involved
-// complex calculations before showing to the LLM, those would happen in the TypeScript flow.
-// Here, the calculation is simple enough for the LLM to infer from instructions like
-// "سعر العلبة الواحدة من {{name}} هو {{divide pricePerUnit piecesInUnit}} ريال."
-// The LLM will interpret "{{divide pricePerUnit piecesInUnit}}" as "pricePerUnit / piecesInUnit".
-
+    
