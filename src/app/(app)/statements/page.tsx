@@ -43,7 +43,7 @@ export default function StatementsPage() {
     } else {
       setSelectedDebtor(null);
     }
-  }, [selectedDebtorId, getDebtorById, debtors]); // Add debtors to dependency array to refetch if list changes
+  }, [selectedDebtorId, getDebtorById, debtors]); // Added debtors to dependency array
 
   return (
     <div className="space-y-8">
