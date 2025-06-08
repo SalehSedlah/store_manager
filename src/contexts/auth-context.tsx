@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useRouter, usePathname } from 'next/navigation'; 
+import { useRouter, usePathname } from 'next/navigation'; // Standard Next.js
 
 interface AuthContextType {
   user: User | null;
@@ -54,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isSignupPage = pathname === '/signup';
     const isAuthPage = isLoginPage || isSignupPage;
 
-    if (!user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico' && !pathname.endsWith('/favicon.ico')) {
+    // Ensure pathname exists before trying to check if it starts with something
+    if (pathname && !user && !isAuthPage && !pathname.startsWith('/_next/') && pathname !== '/favicon.ico' && !pathname.endsWith('/favicon.ico')) {
       router.replace(`/login`);
     } else if (user && isAuthPage) {
       router.replace(`/dashboard`);

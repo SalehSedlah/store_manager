@@ -1,11 +1,1 @@
-
-{
-  "LocaleRootPage": {
-    "loadingText": "جاري التحميل..."
-  },
-  "RootLayout": {
-    "applicationErrorTitle": "خطأ في التطبيق",
-    "applicationErrorMessages": "تعذر تحميل رسائل التدويل الأساسية. يرجى مراجعة سجلات الخادم.",
-    "localeAttempted": "اللغة المطلوبة"
-  }
-}
+{}

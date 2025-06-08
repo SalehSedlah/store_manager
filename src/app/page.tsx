@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation'; // Changed from @/navigation
 
 export default function RootPage() {
   const { user, loading } = useAuth();

@@ -29,8 +29,9 @@ interface RootLayoutProps {
 export default function RootLayout({
   children,
 }: Readonly<RootLayoutProps>) {
-  const fontClassName = `${cairo.variable} font-arabic`; // Default to Arabic
-  const direction = 'rtl'; // Default to RTL
+  // Default to Arabic font and RTL direction
+  const fontClassName = `${cairo.variable} font-arabic`; 
+  const direction = 'rtl';
 
   return (
     <html lang="ar" dir={direction} className={fontClassName}>

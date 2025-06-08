@@ -10,8 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { TrendingUp } from "lucide-react";
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Standard Next.js Link
+import { useRouter } from 'next/navigation'; // Standard Next.js Router
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

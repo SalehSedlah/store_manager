@@ -11,7 +11,7 @@ import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; // Standard Next.js
 
 export function AppHeader() {
   const { user } = useAuth();

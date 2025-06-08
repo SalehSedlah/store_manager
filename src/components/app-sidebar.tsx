@@ -20,8 +20,8 @@ import {
 import type { NavLink as NavLinkTypeDefinition } from "@/config/links"; 
 import { mainNavLinks, secondaryNavLinks } from "@/config/links"; 
 import { useToast } from "@/hooks/use-toast";
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link'; // Standard Next.js Link
+import { useRouter, usePathname } from 'next/navigation'; // Standard Next.js
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -31,6 +31,8 @@ export function AppSidebar() {
   const { state: sidebarState } = useSidebar();
   
   const appName = "رؤية الديون";
+  // Direct labels are now used from config/links.ts, so navLabels map is not strictly needed
+  // but can be kept for reference or future dynamic label needs.
   const navLabels: Record<NavLinkTypeDefinition['labelKey'], string> = {
     dashboard: "لوحة التحكم",
     debtManagement: "إدارة الديون",
@@ -54,13 +56,16 @@ export function AppSidebar() {
   };
 
   const renderNavLink = (link: NavLinkTypeDefinition, index: number) => {
-    const label = navLabels[link.labelKey] || link.label; // Use direct label from config
+    const label = link.label; // Use direct label from config
+    // Ensure pathname is not null or undefined before using startsWith
+    const isActive = pathname === link.href || (pathname && link.href !== '/' && pathname.startsWith(link.href));
+
     return (
     <SidebarMenuItem key={`${link.labelKey}-${index}`}>
       <Link href={link.href} passHref legacyBehavior>
         <SidebarMenuButton
           asChild
-          isActive={pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))}
+          isActive={isActive}
           tooltip={sidebarState === "collapsed" ? label : undefined} 
         >
           <a>

@@ -1,20 +1,10 @@
 
-import createNextIntlMiddleware from 'next-intl/middleware';
-import { NextRequest } from 'next/server';
-import { locales, defaultLocale, localePrefix, pathnames } from './src/i18n.config'; // Ensure path is correct
+import { NextRequest, NextResponse } from 'next/server';
 
-const handleI18nRouting = createNextIntlMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix,
-  pathnames,
-});
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
 
-export default function middleware(request: NextRequest) {
-  // Apply i18n routing
-  const response = handleI18nRouting(request);
-
-  // Add security headers to the response from next-intl
+  // Add security headers
   response.headers.set('x-content-type-options', 'nosniff');
   response.headers.set('x-dns-prefetch-control', 'off');
   response.headers.set('x-download-options', 'noopen');
@@ -25,19 +15,12 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Matcher ignoring `/_next/` and `/api/`
-  // Adjust this based on your specific needs and static assets paths.
   matcher: [
-    // Enable a redirect to a matching locale at the root
-    '/',
-
-    // Set a cookie to remember the previous locale for
-    // all requests that have a locale prefix
-    '/(ar|en)/:path*',
-
-    // Enable redirects that add missing locales
-    // (e.g. `/pathnames` -> `/en/pathnames`)
-    // Exclude API routes, Next.js internal paths, and static files like images/favicon
-    '/((?!api|_next/static|_next/image|assets|favicon.ico|sw.js).*)'
-  ]
+    // Match all request paths except for the ones starting with:
+    // - api (API routes)
+    // - _next/static (static files)
+    // - _next/image (image optimization files)
+    // - favicon.ico (favicon file)
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 };
