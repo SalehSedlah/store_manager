@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from "react";
@@ -5,9 +6,10 @@ import { useRouter } from 'next/navigation';
 
 interface FallbackPageProps {
   params: { locale: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-const LocaleFallbackMinimalRootPage: React.FC<FallbackPageProps> = ({ params }) => {
+const LocaleFallbackMinimalRootPage: React.FC<FallbackPageProps> = ({ params, searchParams }) => {
   const router = useRouter();
 
   console.warn(
@@ -16,7 +18,7 @@ const LocaleFallbackMinimalRootPage: React.FC<FallbackPageProps> = ({ params }) 
   );
 
   useEffect(() => {
-    router.replace("/login");
+    router.replace("/login"); // Or perhaps just / to let the root page decide
   }, [router]);
 
   return (

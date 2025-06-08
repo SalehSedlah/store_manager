@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from "react";
@@ -5,9 +6,10 @@ import { useRouter } from 'next/navigation';
 
 interface FallbackPageProps {
   params: { locale: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-const LocaleFallbackMinimalAiAssistantPage: React.FC<FallbackPageProps> = ({ params }) => {
+const LocaleFallbackMinimalAiAssistantPage: React.FC<FallbackPageProps> = ({ params, searchParams }) => {
   const router = useRouter();
 
   console.warn(
