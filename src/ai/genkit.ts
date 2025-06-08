@@ -3,7 +3,11 @@ import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {config as dotenvConfig} from 'dotenv'; // Added for local .env loading
 
-console.log('[Genkit Init] Loading src/ai/genkit.ts file...'); // Initial log
+console.log('============================================================');
+console.log('[Genkit Init] Attempting to load src/ai/genkit.ts...');
+console.log('NodeJS Environment:', process.env.NODE_ENV);
+console.log('Vercel Environment:', process.env.VERCEL_ENV);
+console.log('============================================================');
 
 dotenvConfig(); // Load .env file for local development
 
@@ -11,7 +15,7 @@ dotenvConfig(); // Load .env file for local development
 const googleAIPluginOptions: { apiKey?: string } = {};
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-console.log(`[Genkit Init] Attempting to initialize Genkit. GEMINI_API_KEY found in process.env: ${!!geminiApiKey}`);
+console.log(`[Genkit Init] Attempting to initialize Genkit. GEMINI_API_KEY found (length): ${geminiApiKey ? geminiApiKey.length : 'NOT FOUND'}`);
 
 if (geminiApiKey) {
   googleAIPluginOptions.apiKey = geminiApiKey;
@@ -34,7 +38,9 @@ SOLUTION:
 6. Deploy the new revision.
 
 The application server will now terminate.`;
+  console.error('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
   console.error(errorMessage);
+  console.error('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
   // Throw an error to ensure the server process stops and logs this critical failure.
   throw new Error(errorMessage.trim().split('\n')[1]); // Throw a shorter summary for the error object
 }

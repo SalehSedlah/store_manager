@@ -7,13 +7,14 @@ import '../globals.css'; // Path to globals.css from app/[locale]/
 
 export default function LocaleFallbackMinimalLayout({
   children,
-  params
+  params // Use 'any'
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: any; // Explicitly 'any'
 }) {
+  const locale = params && typeof params.locale === 'string' ? params.locale : 'unknown_locale_in_root_layout';
   console.warn(
-    `[Warning] MINIMAL Fallback layout /src/app/[locale]/layout.tsx rendered for locale: '${params.locale}'. ` +
+    `[Warning] MINIMAL Fallback layout /src/app/[locale]/layout.tsx rendered for locale: '${locale}'. ` +
     `This path should ideally not be active. Ensure Next.js is routing to /app/layout.tsx.`
   );
 
