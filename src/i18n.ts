@@ -1,37 +1,47 @@
 
 import {getRequestConfig} from 'next-intl/server';
 import {notFound} from 'next/navigation';
-
-export const locales = ['ar', 'en'];
-export const defaultLocale = 'ar';
+import { locales } from './i18n.config'; // Ensure path is correct
 
 export default getRequestConfig(async ({locale}) => {
   // Validate that the incoming `locale` parameter is valid
   if (!locales.includes(locale as any)) {
-    console.error(`[i18n] Invalid locale: "${locale}". Triggering notFound().`);
-    notFound();
+    console.error(`[i18n-diag] Invalid locale: "${locale}". Triggering notFound().`);
+    notFound(); // This is standard next-intl practice for invalid locales.
   }
 
+  // For this diagnostic, we'll return very simple, static messages
+  // to avoid issues with dynamic imports of JSON files for now.
+  console.log(`[i18n-diag] Configuring for locale: ${locale} with static messages.`);
+
   let messages;
-  try {
-    if (locale === 'en') {
-      console.log('[i18n] Attempting to load messages for: en');
-      messages = (await import('./messages/en.json')).default;
-      console.log('[i18n] Successfully loaded messages for: en');
-    } else if (locale === 'ar') {
-      console.log('[i18n] Attempting to load messages for: ar');
-      messages = (await import('./messages/ar.json')).default;
-      console.log('[i18n] Successfully loaded messages for: ar');
-    } else {
-      // Should be caught by the initial validation, but as a safeguard:
-      console.error(`[i18n] Unhandled locale: "${locale}" after validation. This should not happen.`);
-      notFound();
-    }
-  } catch (error) {
-    console.error(`[i18n] CRITICAL: Failed to import message file for locale "${locale}":`, error);
-    // Optional: you could re-throw or call notFound() here too if messages are absolutely critical
-    // For now, we let getMessages in the layout handle the UI fallback
-    throw new Error(`Failed to load messages for locale ${locale}. Cause: ${error instanceof Error ? error.message : String(error)}`);
+  if (locale === 'en') {
+    messages = {
+      "LocaleRootPage": {
+        "loadingText": "Loading..."
+      },
+      "RootLayout": {
+        "applicationErrorTitle": "Application Error (Static EN)",
+        "applicationErrorMessages": "Could not load essential internationalization messages (Static EN). Please check server logs.",
+        "localeAttempted": "Locale attempted (Static EN)"
+      }
+    };
+  } else if (locale === 'ar') {
+    messages = {
+      "LocaleRootPage": {
+        "loadingText": "جاري التحميل..."
+      },
+      "RootLayout": {
+        "applicationErrorTitle": "خطأ في التطبيق (ثابت عربي)",
+        "applicationErrorMessages": "تعذر تحميل رسائل التدويل الأساسية (ثابت عربي). يرجى مراجعة سجلات الخادم.",
+        "localeAttempted": "اللغة المطلوبة (ثابت عربي)"
+      }
+    };
+  } else {
+    // This case should ideally not be reached if the locales array and validation are correct.
+    // Providing a default empty messages object as a safeguard.
+    console.warn(`[i18n-diag] Locale "${locale}" was valid but not explicitly handled for static messages. Returning empty messages.`);
+    messages = {};
   }
 
   return {
