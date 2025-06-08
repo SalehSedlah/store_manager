@@ -1,11 +1,11 @@
 
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, Users, Sparkles, Settings, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Users, Sparkles, Settings, ShoppingCart, Archive } from "lucide-react";
 
 export interface NavLink {
   href: string;
   label: string; // Changed from labelKey to direct label
-  labelKey: "dashboard" | "debtManagement" | "aiAssistant" | "products" | "settings"; // Keep for mapping if needed, or remove if direct labels are enough
+  labelKey: "dashboard" | "debtManagement" | "aiAssistant" | "products" | "settings" | "statements"; // Keep for mapping if needed, or remove if direct labels are enough
   icon: LucideIcon;
 }
 
@@ -29,6 +29,12 @@ export const mainNavLinks: NavLink[] = [
     icon: ShoppingCart,
   },
   {
+    href: "/statements",
+    label: "كشوفات الحسابات",
+    labelKey: "statements",
+    icon: Archive,
+  },
+  {
     href: "/ai-assistant", 
     label: "المساعد الذكي",
     labelKey: "aiAssistant",
@@ -44,3 +50,4 @@ export const secondaryNavLinks: NavLink[] = [
     icon: Settings,
   },
 ];
+
