@@ -1,13 +1,13 @@
-
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-// Minimal fallback page for [locale]/products.
-// This should ideally not be rendered.
+interface FallbackPageProps {
+  params: { locale: string };
+}
 
-export default function LocaleFallbackMinimalProductsPage({ params }: { params: { locale: string }}) {
+const LocaleFallbackMinimalProductsPage: React.FC<FallbackPageProps> = ({ params }) => {
   const router = useRouter();
 
   console.warn(
@@ -26,5 +26,6 @@ export default function LocaleFallbackMinimalProductsPage({ params }: { params: 
       <p>المسار المطلوب كان: /{params.locale}/products</p>
     </div>
   );
-}
+};
 
+export default LocaleFallbackMinimalProductsPage;

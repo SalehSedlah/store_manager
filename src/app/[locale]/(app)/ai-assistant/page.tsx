@@ -1,13 +1,13 @@
-
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-// Minimal fallback page for [locale]/ai-assistant.
-// This should ideally not be rendered.
+interface FallbackPageProps {
+  params: { locale: string };
+}
 
-export default function LocaleFallbackMinimalAiAssistantPage({ params }: { params: { locale: string }}) {
+const LocaleFallbackMinimalAiAssistantPage: React.FC<FallbackPageProps> = ({ params }) => {
   const router = useRouter();
 
   console.warn(
@@ -26,5 +26,6 @@ export default function LocaleFallbackMinimalAiAssistantPage({ params }: { param
       <p>المسار المطلوب كان: /{params.locale}/ai-assistant</p>
     </div>
   );
-}
+};
 
+export default LocaleFallbackMinimalAiAssistantPage;

@@ -1,13 +1,13 @@
-
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-// Minimal fallback page for [locale]/debt-management.
-// This should ideally not be rendered.
+interface FallbackPageProps {
+  params: { locale: string };
+}
 
-export default function LocaleFallbackMinimalDebtManagementPage({ params }: { params: { locale: string }}) {
+const LocaleFallbackMinimalDebtManagementPage: React.FC<FallbackPageProps> = ({ params }) => {
   const router = useRouter();
 
   console.warn(
@@ -26,5 +26,6 @@ export default function LocaleFallbackMinimalDebtManagementPage({ params }: { pa
       <p>المسار المطلوب كان: /{params.locale}/debt-management</p>
     </div>
   );
-}
+};
 
+export default LocaleFallbackMinimalDebtManagementPage;

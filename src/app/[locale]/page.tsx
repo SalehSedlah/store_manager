@@ -1,13 +1,13 @@
-
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-// Minimal fallback page for [locale] root.
-// This should ideally not be rendered.
+interface FallbackPageProps {
+  params: { locale: string };
+}
 
-export default function LocaleFallbackMinimalRootPage({ params }: { params: { locale: string }}) {
+const LocaleFallbackMinimalRootPage: React.FC<FallbackPageProps> = ({ params }) => {
   const router = useRouter();
 
   console.warn(
@@ -16,7 +16,6 @@ export default function LocaleFallbackMinimalRootPage({ params }: { params: { lo
   );
 
   useEffect(() => {
-    // Attempt to redirect to a known working page if this fallback is hit.
     router.replace("/login");
   }, [router]);
 
@@ -28,5 +27,6 @@ export default function LocaleFallbackMinimalRootPage({ params }: { params: { lo
       <p>المسار المطلوب كان: /{params.locale}</p>
     </div>
   );
-}
+};
 
+export default LocaleFallbackMinimalRootPage;
