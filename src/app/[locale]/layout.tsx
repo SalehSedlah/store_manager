@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import '../globals.css'; // Path relative to src/app
 import { AuthProvider } from '@/contexts/auth-context';
@@ -5,8 +6,8 @@ import { DebtorsProvider } from '@/contexts/debtors-context';
 import { ProductsProvider } from '@/contexts/products-context';
 import { Toaster } from "@/components/ui/toaster";
 import { Inter, Cairo } from 'next/font/google';
-import {NextIntlClientProvider, useMessages} from 'next-intl';
-import {getTranslations} from 'next-intl/server';
+import {NextIntlClientProvider} from 'next-intl';
+import {getMessages, getTranslations} from 'next-intl/server'; // Import getMessages
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo', weight: ['300', '400', '500', '600', '700'], display: 'swap' });
@@ -32,11 +33,11 @@ interface RootLayoutProps {
   params: {locale: string};
 }
 
-export default function RootLayout({
+export default async function RootLayout({ // Make the function async
   children,
   params: {locale}
 }: Readonly<RootLayoutProps>) {
-  const messages = useMessages();
+  const messages = await getMessages(); // Fetch messages on the server
 
   const isArabic = locale === 'ar';
   const fontClassName = isArabic ? `${cairo.variable} font-arabic` : `${inter.variable} font-body`;
