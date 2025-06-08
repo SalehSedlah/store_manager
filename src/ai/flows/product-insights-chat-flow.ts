@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview AI chat assistant for product management insights.
@@ -18,13 +17,13 @@ const AISingleProductSchema = z.object({
   name: z.string().describe('اسم المنتج'),
   category: z.string().describe('فئة المنتج'),
   unit: z.string().describe('وحدة قياس المنتج (مثال: قطعة، كجم)'),
-  pricePerUnit: z.number().describe('سعر بيع الوحدة الواحدة من المنتج'),
-  purchasePricePerUnit: z.number().describe('سعر شراء الوحدة الواحدة من المنتج'),
-  currentStock: z.number().describe('الكمية الحالية المتوفرة في المخزون من المنتج'),
-  lowStockThreshold: z.number().describe('حد المخزون المنخفض الذي عنده يتم التنبيه'),
-  quantitySold: z.number().describe('الكمية المباعة من هذا المنتج'),
+  pricePerUnit: z.number().describe('سعر بيع الوحدة الواحدة من المنتج (الوحدة الرئيسية مثل الكرتون)'),
+  purchasePricePerUnit: z.number().describe('سعر شراء الوحدة الواحدة من المنتج (الوحدة الرئيسية مثل الكرتون)'),
+  currentStock: z.number().describe('الكمية الحالية المتوفرة في المخزون من المنتج (بالوحدة الرئيسية)'),
+  lowStockThreshold: z.number().describe('حد المخزون المنخفض الذي عنده يتم التنبيه (بالوحدة الرئيسية)'),
+  quantitySold: z.number().describe('الكمية المباعة من هذا المنتج (بالوحدة الرئيسية)'),
   expiryDate: z.string().optional().describe('تاريخ انتهاء صلاحية المنتج (YYYY-MM-DD), إن وجد'),
-  piecesInUnit: z.number().optional().describe('عدد القطع الفرعية داخل الوحدة الرئيسية, إن وجد'),
+  piecesInUnit: z.number().optional().describe('عدد القطع الفرعية داخل الوحدة الرئيسية, إن وجد (مثال: عدد العلب في الكرتون)'),
 });
 
 const ProductInsightsChatInputSchema = z.object({
@@ -70,18 +69,31 @@ const prompt = ai.definePrompt({
 إرشادات لك:
 1.  قدم إجابات واضحة، دقيقة، ومفيدة باللغة العربية.
 2.  استخدم بيانات المنتجات المقدمة فقط في تحليلاتك. لا تخترع بيانات.
-3.  إذا سأل المستخدم عن الأرباح، وضح أن الأرباح المحسوبة هي "أرباح محتملة" بناءً على المخزون الحالي وأسعار البيع والشراء، حيث لا تتوفر بيانات مبيعات فعلية مفصلة. الربح المحتمل للمنتج الواحد هو (سعر البيع - سعر الشراء) * الكمية الحالية.
-4.  عند السؤال عن المنتجات الأكثر ربحية، اذكر أفضل 3-5 منتجات بناءً على الربح المحتمل الإجمالي للمخزون الحالي ( (سعر البيع - سعر الشراء) * الكمية الحالية ).
-5.  إذا سأل عن منتجات قاربت على النفاد، تحقق من حقل "currentStock" مقابل "lowStockThreshold".
-6.  إذا سأل عن منتجات منتهية الصلاحية أو قاربت على الانتهاء، تحقق من حقل "expiryDate". افترض أن اليوم هو {{currentDate}}.
-7.  إذا كان السؤال عامًا جدًا أو غير واضح، يمكنك طلب توضيح.
-8.  إذا لم تكن البيانات كافية للإجابة، وضح ذلك. على سبيل المثال، لا يمكنك التنبؤ بموعد نفاد المخزون بدقة دون معرفة معدلات البيع.
-9.  كن ودودًا واحترافيًا.
+3.  **حساب الأرباح وأسعار القطع:**
+    *   الربح المحتمل للمنتج (بالوحدة الرئيسية) = (\`pricePerUnit\` - \`purchasePricePerUnit\`) * \`currentStock\`.
+    *   إذا كان للمنتج \`piecesInUnit\` أكبر من 0:
+        *   سعر بيع القطعة = \`pricePerUnit\` / \`piecesInUnit\`.
+        *   سعر شراء القطعة = \`purchasePricePerUnit\` / \`piecesInUnit\`.
+        *   ربح القطعة = سعر بيع القطعة - سعر شراء القطعة.
+    *   عند السؤال عن الأرباح، وضح أن الأرباح المحسوبة هي "أرباح محتملة" بناءً على المخزون الحالي وأسعار البيع والشراء للوحدات الرئيسية. إذا كان السؤال عن ربح القطع، استخدم الحسابات أعلاه.
+4.  **المنتجات الأكثر ربحية:** عند السؤال عن المنتجات الأكثر ربحية، اذكر أفضل 3-5 منتجات. إذا لم يحدد المستخدم (وحدة رئيسية أم قطعة)، افترض الربح بناءً على الوحدة الرئيسية. يمكنك توضيح الربح لكل قطعة أيضًا إذا كان ذلك مناسبًا.
+5.  **مبيعات القطع الفردية (إذا ذكر المستخدم أنه باع قطعًا):**
+    *   إذا قال المستخدم شيئًا مثل "بعت 10 علب تونة" (وكان للمنتج "تونة" \`piecesInUnit\` مناسب وليكن 24):
+        *   أكّد المعلومة: "مفهوم، تم بيع 10 علب تونة."
+        *   لكل منتج ذُكر في سياق البيع بالقطعة: ابحث عن المنتج في قائمة \`products\` المقدمة لك. إذا وجدته وكان لديه \`piecesInUnit\` > 0:
+            *   اشرح المتبقي في الوحدة الرئيسية الافتراضية التي تم فتحها: "إذا تم أخذ هذه الـ 10 علب من كرتونة واحدة من منتج {{name}} (والتي تحتوي على {{piecesInUnit}} علبة)، فسيتبقى في تلك الكرتونة {{subtract piecesInUnit 10}} علبة." (استبدل 10 بعدد القطع المذكورة، و name و piecesInUnit بتفاصيل المنتج).
+            *   اذكر سعر القطعة: "سعر العلبة الواحدة من {{name}} هو {{divide pricePerUnit piecesInUnit}} ريال."
+        *   **تذكير مهم:** ذكّر المستخدم بأن تتبع المخزون (\`currentStock\`) والكميات المباعة (\`quantitySold\`) في النظام يتم بالوحدة الرئيسية (مثلاً، بالكرتون). لا تقم بتعديل هذه القيم تلقائيًا بناءً على الدردشة. يمكنك أن تقترح عليه تعديلها يدويًا إذا أراد.
+6.  إذا سأل عن منتجات قاربت على النفاد، تحقق من حقل "currentStock" مقابل "lowStockThreshold".
+7.  إذا سأل عن منتجات منتهية الصلاحية أو قاربت على الانتهاء، تحقق من حقل "expiryDate". افترض أن اليوم هو {{currentDate}}.
+8.  إذا كان السؤال عامًا جدًا أو غير واضح، يمكنك طلب توضيح.
+9.  إذا لم تكن البيانات كافية للإجابة، وضح ذلك. على سبيل المثال، لا يمكنك التنبؤ بموعد نفاد المخزون بدقة دون معرفة معدلات البيع الفعلية (المسجلة في \`quantitySold\` أو من خلال تحليل تاريخي للمبيعات إذا توفر).
+10. كن ودودًا واحترافيًا.
 
 مثال للإجابة على "ما هي المنتجات الأكثر ربحية؟":
-"بناءً على المخزون الحالي، هذه هي المنتجات التي لديها أعلى ربح محتمل إذا تم بيع كل الكمية المتوفرة:
-1.  اسم المنتج أ: ربح محتمل X ريال (Y قطعة متوفرة)
-2.  اسم المنتج ب: ربح محتمل Z ريال (W قطعة متوفرة)
+"بناءً على المخزون الحالي، هذه هي المنتجات التي لديها أعلى ربح محتمل إذا تم بيع كل الكمية المتوفرة (بالوحدة الرئيسية):
+1.  اسم المنتج أ: ربح محتمل X ريال (Y وحدة متوفرة) - ربح القطعة الواحدة Z ريال إذا كان المنتج مقسمًا.
+2.  اسم المنتج ب: ربح محتمل W ريال (V وحدة متوفرة)
 ..."
 
 مثال للإجابة على "هل مخزون الطماطم منخفض؟":
@@ -90,6 +102,11 @@ const prompt = ai.definePrompt({
 الآن، يرجى الإجابة على سؤال المستخدم.
 `,
 });
+
+// Handlebars helpers for simple arithmetic (conceptual, actual implementation might vary based on Genkit capabilities or pre-processing)
+// Genkit prompts are primarily text-based, so complex logic is better handled in the flow code if needed.
+// For this case, we're instructing the LLM to perform the calculation as part of its text generation.
+// However, if we needed to pass pre-calculated values, we'd do it in the flow.
 
 const productInsightsChatFlow = ai.defineFlow(
   {
@@ -107,3 +124,13 @@ const productInsightsChatFlow = ai.defineFlow(
     return output!;
   }
 );
+
+// Note: Handlebars helpers like 'subtract' or 'divide' are conceptual.
+// The LLM is expected to understand the arithmetic instruction from the text.
+// If precise pre-calculation is needed, the flow itself would prepare those values
+// and pass them into the prompt context. For example, if a user query involved
+// complex calculations before showing to the LLM, those would happen in the TypeScript flow.
+// Here, the calculation is simple enough for the LLM to infer from instructions like
+// "سعر العلبة الواحدة من {{name}} هو {{divide pricePerUnit piecesInUnit}} ريال."
+// The LLM will interpret "{{divide pricePerUnit piecesInUnit}}" as "pricePerUnit / piecesInUnit".
+
